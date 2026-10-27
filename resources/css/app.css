@@ -1,0 +1,245 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body,
+html {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+:root {
+    /* Permukaan */
+    --bg: #0A0D0E;
+    --panel: #10171A;
+
+    /* Aksen */
+    --neon: #39FF14;
+    --cyan: #19F5D4;
+
+    /* Peta: 5 kelas diskrit */
+    --kelas-1: #14535E;
+    --kelas-2: #1A7C86;
+    --kelas-3: #16BDB8;
+    --kelas-4: #19F5D4;
+    --kelas-5: #39FF14;
+
+    /* Peringatan */
+    --bahaya: #FF5C5C;
+    --waspada: #FFC53D;
+
+    /* Teks */
+    --teks: #F4F7F5;
+    --teks-redup: #8FA1A0;
+    --teks-di-neon: #04110A;
+
+    /* Netral */
+    --garis: #243034;
+    --garis-terang: #3A4A4F;
+
+    /* Bayangan keras */
+    --bs: 3px 3px 0 var(--cyan);
+    --bs2: 3px 3px 0 var(--garis);
+}
+
+.font-display {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+.font-ui {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Respons Tekan Tombol Tactile (100ms) */
+.btn-primary-tactile {
+    background-color: var(--neon);
+    color: var(--teks-di-neon);
+    border: 2px solid var(--teks);
+    box-shadow: var(--bs);
+    border-radius: 12px;
+    height: 44px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    cursor: pointer;
+    transition: transform 100ms cubic-bezier(0.2, 0, 0, 1), box-shadow 100ms cubic-bezier(0.2, 0, 0, 1);
+    user-select: none;
+}
+.btn-primary-tactile:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--cyan);
+}
+.btn-primary-tactile:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--cyan);
+}
+
+.btn-secondary-tactile {
+    background-color: var(--panel);
+    color: var(--teks);
+    border: 2px solid var(--garis-terang);
+    box-shadow: var(--bs2);
+    border-radius: 12px;
+    height: 44px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    cursor: pointer;
+    transition: transform 100ms cubic-bezier(0.2, 0, 0, 1), box-shadow 100ms cubic-bezier(0.2, 0, 0, 1), background-color 100ms ease;
+    user-select: none;
+}
+.btn-secondary-tactile:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--garis);
+    background-color: var(--garis);
+}
+.btn-secondary-tactile:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--garis);
+}
+
+.btn-danger-tactile {
+    background-color: var(--bahaya);
+    color: var(--teks-di-neon);
+    border: 2px solid var(--teks);
+    box-shadow: 3px 3px 0 var(--garis);
+    border-radius: 12px;
+    height: 44px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    cursor: pointer;
+    transition: transform 100ms cubic-bezier(0.2, 0, 0, 1), box-shadow 100ms cubic-bezier(0.2, 0, 0, 1);
+    user-select: none;
+}
+.btn-danger-tactile:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--garis);
+}
+.btn-danger-tactile:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--garis);
+}
+
+.input-tactile {
+    height: 44px;
+    border-radius: 12px;
+    border: 2px solid var(--garis);
+    background-color: var(--panel);
+    color: var(--teks);
+    padding: 0 14px;
+    outline: none;
+    transition: border-color 150ms ease;
+}
+.input-tactile:focus {
+    outline: 3px solid var(--cyan);
+    outline-offset: 2px;
+    border-color: var(--cyan);
+}
+
+/* Pola Zona Penyakit */
+.pattern-bahaya {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 92, 92, 0.25),
+        rgba(255, 92, 92, 0.25) 6px,
+        rgba(16, 23, 26, 0.9) 6px,
+        rgba(16, 23, 26, 0.9) 12px
+    );
+}
+
+.pattern-waspada {
+    background-image: radial-gradient(var(--waspada) 15%, transparent 20%);
+    background-size: 8px 8px;
+    background-color: rgba(16, 23, 26, 0.9);
+}
+
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 0 0% 3.9%;
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 3.9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 3.9%;
+        --primary: 0 0% 9%;
+        --primary-foreground: 0 0% 98%;
+        --secondary: 0 0% 92.1%;
+        --secondary-foreground: 0 0% 9%;
+        --muted: 0 0% 96.1%;
+        --muted-foreground: 0 0% 45.1%;
+        --accent: 0 0% 96.1%;
+        --accent-foreground: 0 0% 9%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 92.8%;
+        --input: 0 0% 89.8%;
+        --ring: 0 0% 3.9%;
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+        --radius: 0.5rem;
+        --sidebar-background: 0 0% 98%;
+        --sidebar-foreground: 240 5.3% 26.1%;
+        --sidebar-primary: 0 0% 10%;
+        --sidebar-primary-foreground: 0 0% 98%;
+        --sidebar-accent: 0 0% 94%;
+        --sidebar-accent-foreground: 0 0% 30%;
+        --sidebar-border: 0 0% 91%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
+    }
+
+    .dark {
+        --background: 0 0% 3.9%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 0 0% 3.9%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 0 0% 98%;
+        --primary-foreground: 0 0% 9%;
+        --secondary: 0 0% 14.9%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 0 0% 6.9%;
+        --muted-foreground: 0 0% 63.9%;
+        --accent: 0 0% 14.9%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 14.9%;
+        --input: 0 0% 14.9%;
+        --ring: 0 0% 83.1%;
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+        --sidebar-background: 0 0% 7%;
+        --sidebar-foreground: 0 0% 95.9%;
+        --sidebar-primary: 360, 100%, 100%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 0 0% 15.9%;
+        --sidebar-accent-foreground: 240 4.8% 95.9%;
+        --sidebar-border: 0 0% 15.9%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
