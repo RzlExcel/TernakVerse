@@ -6,10 +6,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -18,6 +19,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'nama',
+        'name',
         'email',
         'password',
         'nip_pegawai',
@@ -34,6 +36,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -47,7 +51,24 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'aktif' => 'boolean',
+            'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Accessor for name attribute (compatibility with Fortify & UI).
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->nama ?? '';
+    }
+
+    /**
+     * Mutator for name attribute.
+     */
+    public function setNameAttribute($value): void
+    {
+        $this->attributes['nama'] = $value;
     }
 
     public function isAdmin(): bool

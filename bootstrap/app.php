@@ -26,7 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+
         $middleware->web(append: [
+            \App\Http\Middleware\HandleAppearance::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
     })

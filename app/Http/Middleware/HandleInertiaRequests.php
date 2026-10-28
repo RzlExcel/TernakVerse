@@ -38,10 +38,12 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
 
         return array_merge(parent::share($request), [
+            'name' => config('app.name', 'TERNAKVERSE WebGIS Banyumas'),
             'appName' => config('app.name', 'TERNAKVERSE WebGIS Banyumas'),
             'auth' => [
                 'user' => $user ? [
                     'id' => $user->id,
+                    'name' => $user->nama,
                     'nama' => $user->nama,
                     'email' => $user->email,
                     'role' => $user->role,
@@ -50,6 +52,7 @@ class HandleInertiaRequests extends Middleware
                     'is_stakeholder' => $user->role === 'stakeholder',
                 ] : null,
             ],
+            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
