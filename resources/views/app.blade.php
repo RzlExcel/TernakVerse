@@ -30,16 +30,22 @@
     </style>
 
     <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-    <!-- Google Fonts: Inter, Outfit, & JetBrains Mono -->
+    <!-- Google Fonts: Bricolage Grotesque, Plus Jakarta Sans, Inter, JetBrains Mono, Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700..800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
 
+    <!-- Leaflet CSS for WebGIS maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+
+    @routes
     @vite(['resources/css/app.css', 'resources/js/app.ts'])
     @inertiaHead
 </head>
-<body class="font-sans antialiased bg-[#0A0D0E] text-[#F0F6FC]">
+<body class="bg-[#0A0D0E] text-[#F4F7F5] antialiased selection:bg-[#39FF14] selection:text-[#04110A]" style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif;">
     @inertia
 </body>
 </html>

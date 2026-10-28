@@ -2,12 +2,11 @@
 import AppContent from '@/components/AppContent.vue';
 import AppHeader from '@/components/AppHeader.vue';
 import AppShell from '@/components/AppShell.vue';
-import { Toaster } from '@/components/ui/sonner';
-import type { BreadcrumbItem } from '@/types';
+import type { BreadcrumbItemType } from '@/types';
 
-type Props = {
-    breadcrumbs?: BreadcrumbItem[];
-};
+interface Props {
+    breadcrumbs?: BreadcrumbItemType[];
+}
 
 withDefaults(defineProps<Props>(), {
     breadcrumbs: () => [],
@@ -15,11 +14,10 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <AppShell variant="header">
+    <AppShell class="flex-col">
         <AppHeader :breadcrumbs="breadcrumbs" />
-        <AppContent variant="header">
+        <AppContent>
             <slot />
         </AppContent>
-        <Toaster />
     </AppShell>
 </template>
