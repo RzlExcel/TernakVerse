@@ -35,25 +35,47 @@ class ImportBanyumasGeoJson extends Command
         $this->info('  TERNAKVERSE: WebGIS Ingestion Engine - Kabupaten Banyumas');
         $this->info('===========================================================');
 
-        $kecamatanFile = $this->option('kecamatan') 
-            ?: base_path('../data/data/banyumas_kecamatan.geojson');
-
-        $desaFile = $this->option('desa') 
-            ?: base_path('../data/data/banyumas_desa.geojson');
-
-        // Normalisasi path jika file tidak ditemukan langsung
-        if (!file_exists($kecamatanFile)) {
-            $altKec = base_path('../data/data/banyumas_kecamatan_web.geojson');
-            if (file_exists($altKec)) {
-                $kecamatanFile = $altKec;
-            } else {
-                $this->error("Berkas GeoJSON Kecamatan tidak ditemukan di: {$kecamatanFile}");
-                return Command::FAILURE;
+        $candidateKecamatan = [
+            $this->option('kecamatan'),
+            database_path('data/banyumas_kecamatan.geojson'),
+            database_path('data/banyumas_kecamatan_web.geojson'),
+            public_path('data/banyumas_kecamatan.geojson'),
+            public_path('data/banyumas_kecamatan_web.geojson'),
+            base_path('../data/data/banyumas_kecamatan.geojson'),
+            base_path('../data/data/banyumas_kecamatan_web.geojson'),
+        ];
+        $kecamatanFile = null;
+        foreach ($candidateKecamatan as $cand) {
+            if ($cand && file_exists($cand)) {
+                $kecamatanFile = $cand;
+                break;
             }
         }
 
-        if (!file_exists($desaFile)) {
-            $this->error("Berkas GeoJSON Desa tidak ditemukan di: {$desaFile}");
+        $candidateDesa = [
+            $this->option('desa'),
+            database_path('data/banyumas_desa.geojson'),
+            database_path('data/banyumas_desa_web.geojson'),
+            public_path('data/banyumas_desa.geojson'),
+            public_path('data/banyumas_desa_web.geojson'),
+            base_path('../data/data/banyumas_desa.geojson'),
+            base_path('../data/data/banyumas_desa_web.geojson'),
+        ];
+        $desaFile = null;
+        foreach ($candidateDesa as $cand) {
+            if ($cand && file_exists($cand)) {
+                $desaFile = $cand;
+                break;
+            }
+        }
+
+        if (!$kecamatanFile) {
+            $this->error("Berkas GeoJSON Kecamatan tidak ditemukan di jalur pencarian.");
+            return Command::FAILURE;
+        }
+
+        if (!$desaFile) {
+            $this->error("Berkas GeoJSON Desa tidak ditemukan di jalur pencarian.");
             return Command::FAILURE;
         }
 

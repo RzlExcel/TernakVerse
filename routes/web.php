@@ -15,10 +15,23 @@ use App\Http\Middleware\EnsureUserRole;
 |--------------------------------------------------------------------------
 */
 
+<<<<<<< Updated upstream
 // 1. PORTAL PUBLIK WEBGIS (Bab 11.1 Design Rule: Zero Data Leakage)
 Route::get('/', function () {
     return Inertia::render('Public/Portal');
 })->name('public.portal');
+=======
+// 1. PORTAL PUBLIK (Landing Page — WebGIS Peta Banyumas)
+Route::inertia('/', 'Public/Portal')->name('home');
+Route::inertia('/portal', 'Public/Portal')->name('public.portal');
+
+// 1.b PORTAL INTERNAL & LIVING DESIGN SYSTEM (Frontend Reference)
+Route::inertia('/internal/login', 'Internal/Login')->name('internal.login');
+Route::get('/internal', fn () => redirect()->route('internal.login'));
+Route::inertia('/internal/dinas', 'Internal/DinasPortal')->name('internal.dinas');
+Route::inertia('/internal/admin', 'Internal/AdminPortal')->name('internal.admin');
+Route::inertia('/design-rule', 'DesignRule')->name('design.rule');
+>>>>>>> Stashed changes
 
 Route::get('/welcome', function () {
     return Inertia::render('Welcome');

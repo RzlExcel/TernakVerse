@@ -9,6 +9,7 @@ import { initializeTheme } from './composables/useAppearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'TERNAKVERSE WebGIS Banyumas';
 
+<<<<<<< Updated upstream
 const getInitialPage = () => {
     if (typeof window === 'undefined') return undefined;
     const el = document.getElementById('app');
@@ -17,6 +18,23 @@ const getInitialPage = () => {
             return JSON.parse(el.dataset.page);
         } catch {
             // ignore
+=======
+void createInertiaApp({
+    title: (title) => (title ? `${title} - ${appName}` : appName),
+    layout: (name) => {
+        switch (true) {
+            case name === 'Welcome':
+            case name.startsWith('Public/'):
+            case name.startsWith('Internal/'):
+            case name === 'DesignRule':
+                return null;
+            case name.startsWith('auth/'):
+                return AuthLayout;
+            case name.startsWith('settings/'):
+                return [AppLayout, SettingsLayout];
+            default:
+                return AppLayout;
+>>>>>>> Stashed changes
         }
     }
     const script = document.querySelector('script[data-page="app"]');

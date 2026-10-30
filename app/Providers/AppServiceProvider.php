@@ -19,6 +19,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if (class_exists(\Illuminate\Foundation\Console\ServeCommand::class)) {
+            \Illuminate\Foundation\Console\ServeCommand::$passthroughVariables = array_merge(
+                \Illuminate\Foundation\Console\ServeCommand::$passthroughVariables,
+                [
+                    'SystemRoot',
+                    'SystemDrive',
+                    'windir',
+                    'WINDIR',
+                    'ComSpec',
+                    'COMSPEC',
+                    'TEMP',
+                    'TMP',
+                    'APPDATA',
+                    'LOCALAPPDATA',
+                    'USERPROFILE',
+                    'COMPUTERNAME',
+                ]
+            );
+        }
     }
 }

@@ -7,12 +7,18 @@ import { usePage } from '@inertiajs/vue3';
 import { ChevronsUpDown } from 'lucide-vue-next';
 import UserMenuContent from './UserMenuContent.vue';
 
+<<<<<<< Updated upstream
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
+=======
+const page = usePage();
+const user = computed(() => page.props.auth?.user ?? null);
+const { isMobile, state } = useSidebar();
+>>>>>>> Stashed changes
 </script>
 
 <template>
-    <SidebarMenu>
+    <SidebarMenu v-if="user">
         <SidebarMenuItem>
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>

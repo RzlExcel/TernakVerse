@@ -5,9 +5,19 @@ import type { User } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { LogOut, Settings } from 'lucide-vue-next';
 
+<<<<<<< Updated upstream
 interface Props {
     user: User;
 }
+=======
+type Props = {
+    user?: User | null;
+};
+
+const handleLogout = () => {
+    router.flushAll();
+};
+>>>>>>> Stashed changes
 
 defineProps<Props>();
 </script>
