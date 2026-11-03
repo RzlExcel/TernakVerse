@@ -1,255 +1,629 @@
 <template>
-  <div class="admin-layout">
-    <!-- TOP NAVIGATION -->
-    <header class="top-nav">
-      <div class="brand">
-        <span class="brand-badge admin">ADMIN GEOSPASIAL & RBAC</span>
-        <h1 class="brand-title">TERNAK<span>VERSE</span> <small class="text-xs text-lime font-mono">PANEL KELOLA DATA</small></h1>
-      </div>
-      <div class="user-meta">
-        <div class="role-pill admin">
-          ROLE: {{ auth?.user?.role?.toUpperCase() || 'ADMIN' }}
+  <div class="min-h-screen bg-[#FFFFFF] dark:bg-[#090909] text-slate-900 dark:text-[#F5F5F5] font-sans antialiased">
+    <!-- ENTERPRISE ADMIN HEADER BAR -->
+    <header class="sticky top-0 z-30 bg-white/95 dark:bg-[#111111]/95 backdrop-blur border-b border-slate-200 dark:border-[#1E1E1E] shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex items-start sm:items-center gap-3.5">
+          <div class="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <ShieldCheck class="w-6 h-6" />
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                ADMIN GEOSPASIAL &amp; RBAC
+              </span>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold bg-slate-100 dark:bg-[#181818] text-slate-600 dark:text-[#F5F5F5] border border-slate-200 dark:border-[#1E1E1E]">
+                ROLE: {{ auth?.user?.role?.toUpperCase() || 'ADMIN' }}
+              </span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+              <span>TERNAK<span class="text-emerald-600 dark:text-emerald-400">VERSE</span></span>
+              <span class="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">
+                PANEL KELOLA DATA
+              </span>
+            </h1>
+          </div>
         </div>
-        <div class="user-info">
-          <span class="user-name">{{ auth?.user?.nama || 'Administrator WebGIS' }}</span>
-          <span class="user-email font-mono">{{ auth?.user?.email || 'admin@banyumaskab.go.id' }}</span>
+
+        <!-- Navigation & User Meta -->
+        <div class="flex flex-wrap items-center justify-between lg:justify-end gap-3">
+          <nav class="flex flex-wrap items-center gap-1.5" aria-label="Navigasi Admin">
+            <a
+              href="/internal/admin"
+              class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-colors"
+            >
+              <LayoutDashboard class="w-3.5 h-3.5" />
+              <span>Portal Operasional Admin</span>
+            </a>
+            <a
+              href="/admin/audit-logs"
+              class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-[#181818] dark:hover:bg-[#1E1E1E] text-slate-700 dark:text-[#F5F5F5] border border-slate-200 dark:border-[#1E1E1E] transition-colors"
+            >
+              <FileSpreadsheet class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+              <span>Audit Trail Forensik</span>
+            </a>
+            <a
+              href="/dinas/dashboard"
+              class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-[#181818] dark:hover:bg-[#1E1E1E] text-slate-700 dark:text-[#F5F5F5] border border-slate-200 dark:border-[#1E1E1E] transition-colors"
+            >
+              <Activity class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Dashboard Dinas</span>
+            </a>
+            <a
+              href="/"
+              class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-[#181818] dark:hover:bg-[#1E1E1E] text-slate-700 dark:text-[#F5F5F5] border border-slate-200 dark:border-[#1E1E1E] transition-colors"
+            >
+              <Globe class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              <span>WebGIS Publik</span>
+            </a>
+          </nav>
+
+          <ThemeToggle size="sm" compact />
+
+          <div class="pl-3 border-l border-slate-200 dark:border-[#1E1E1E] text-right hidden sm:block">
+            <div class="text-xs font-bold text-slate-900 dark:text-slate-100">
+              {{ auth?.user?.nama || 'Administrator WebGIS' }}
+            </div>
+            <div class="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+              {{ auth?.user?.email || 'admin@banyumaskab.go.id' }}
+            </div>
+          </div>
         </div>
       </div>
     </header>
 
-    <!-- MAIN BODY -->
-    <main class="content-body">
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       <!-- FLASH NOTIFICATIONS -->
-      <div v-if="flash?.success" class="alert alert-success">
-        ✓ {{ flash.success }}
+      <div
+        v-if="flash?.success"
+        class="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-sm font-medium shadow-sm"
+      >
+        <CheckCircle2 class="w-4 h-4 shrink-0 text-emerald-500" />
+        <span>{{ flash.success }}</span>
       </div>
-      <div v-if="flash?.error" class="alert alert-error">
-        ⚠ {{ flash.error }}
+      <div
+        v-if="flash?.error"
+        class="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-sm font-medium shadow-sm"
+      >
+        <AlertTriangle class="w-4 h-4 shrink-0 text-rose-500" />
+        <span>{{ flash.error }}</span>
       </div>
 
-      <!-- MASTER OPTIONS OVERVIEW -->
-      <section class="master-bar">
-        <div class="master-item">
-          <span class="m-label">KECAMATAN</span>
-          <span class="m-val">{{ masterOptions?.kecamatan?.length || 27 }} Wilayah</span>
+      <!-- 4 MASTER OPTIONS KPI SUMMARY CARDS -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+              KECAMATAN
+            </span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-extrabold font-mono tabular-nums text-slate-900 dark:text-white">
+                {{ masterOptions?.kecamatan?.length || 27 }}
+              </span>
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Wilayah</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <MapPin class="w-5 h-5" />
+          </div>
         </div>
-        <div class="master-item">
-          <span class="m-label">KOMODITAS</span>
-          <span class="m-val">{{ masterOptions?.komoditas?.length || 6 }} Jenis</span>
+
+        <div class="bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+              KOMODITAS
+            </span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-extrabold font-mono tabular-nums text-slate-900 dark:text-white">
+                {{ masterOptions?.komoditas?.length || 6 }}
+              </span>
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Jenis</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+            <Layers class="w-5 h-5" />
+          </div>
         </div>
-        <div class="master-item">
-          <span class="m-label">KATEGORI PRODUKSI</span>
-          <span class="m-val">{{ masterOptions?.kategori_produksi?.length || 3 }} Jenis</span>
+
+        <div class="bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+              KATEGORI PRODUKSI
+            </span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-extrabold font-mono tabular-nums text-slate-900 dark:text-white">
+                {{ masterOptions?.kategori_produksi?.length || 3 }}
+              </span>
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Jenis</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
+            <Database class="w-5 h-5" />
+          </div>
         </div>
-        <div class="master-item">
-          <span class="m-label">PENYAKIT TEREGISTRASI</span>
-          <span class="m-val">{{ masterOptions?.penyakit?.length || 2 }} Wabah</span>
+
+        <div class="bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm flex items-center justify-between">
+          <div>
+            <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+              PENYAKIT TEREGISTRASI
+            </span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-extrabold font-mono tabular-nums text-rose-600 dark:text-rose-400">
+                {{ masterOptions?.penyakit?.length || 2 }}
+              </span>
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Wabah</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-600 dark:text-rose-400">
+            <AlertTriangle class="w-5 h-5" />
+          </div>
         </div>
       </section>
 
-      <!-- DYNAMIC BIOLOGICAL RELATIONS HANDSHAKE PREVIEW -->
-      <section class="rules-card">
-        <div class="rules-header">
-          <span class="label-tech">KAMUS ATURAN BIOLOGIS & VALIDASI MODAL DINAMIS</span>
-          <span class="badge-enforced">ACTIVE ENFORCEMENT</span>
+      <!-- BIOLOGICAL VALIDATION RULE MATRIX (allowedRelations) -->
+      <section class="bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#1E1E1E] rounded-xl p-5 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+          <div class="flex items-center gap-2">
+            <FlaskConical class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+              KAMUS ATURAN BIOLOGIS &amp; VALIDASI MODAL DINAMIS
+            </h2>
+          </div>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 w-fit">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            ACTIVE ENFORCEMENT
+          </span>
         </div>
-        <p class="rules-desc">
-          Frontend developer dapat menggunakan kamus <code>allowedRelations</code> ini untuk memfilter opsi dropdown pada modal input tanpa perlu hardcode logic di frontend.
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+          Kamus <code class="font-mono text-emerald-600 dark:text-emerald-400 bg-slate-100 dark:bg-[#181818] px-1.5 py-0.5 rounded">allowedRelations</code> memvalidasi kecocokan komoditas ternak terhadap kategori hasil produksi dan kerentanan inang penyakit secara biologis.
         </p>
 
-        <div class="rules-grid">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- SUSU RULE -->
-          <div class="rule-box">
-            <div class="rule-title text-cyan">PRODUKSI SUSU</div>
-            <div class="rule-compat">
-              Komoditas Diizinkan:
-              <div class="compat-tags">
-                <span v-for="k in allowedRelations.susu" :key="k" class="compat-tag">{{ k }}</span>
+          <div class="bg-slate-50 dark:bg-[#181818] border border-slate-200 dark:border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-teal-600 dark:text-teal-400">PRODUKSI SUSU</span>
+                <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">
+                  {{ allowedRelations?.susu?.length || 0 }} Komoditas
+                </span>
+              </div>
+              <div class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
+                Komoditas Diizinkan:
+              </div>
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                <span
+                  v-for="k in allowedRelations.susu"
+                  :key="k"
+                  class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/30"
+                >
+                  {{ k }}
+                </span>
               </div>
             </div>
-            <div class="rule-note">Ayam Potong & Telur otomatis di-disable.</div>
+            <div class="text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/70 dark:border-[#1E1E1E]">
+              Ayam Potong &amp; Telur otomatis di-disable.
+            </div>
           </div>
 
           <!-- TELUR RULE -->
-          <div class="rule-box">
-            <div class="rule-title text-amber">PRODUKSI TELUR</div>
-            <div class="rule-compat">
-              Komoditas Diizinkan:
-              <div class="compat-tags">
-                <span v-for="k in allowedRelations.telur" :key="k" class="compat-tag active-amber">{{ k }}</span>
+          <div class="bg-slate-50 dark:bg-[#181818] border border-slate-200 dark:border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-amber-600 dark:text-amber-400">PRODUKSI TELUR</span>
+                <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                  {{ allowedRelations?.telur?.length || 0 }} Komoditas
+                </span>
+              </div>
+              <div class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
+                Komoditas Diizinkan:
+              </div>
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                <span
+                  v-for="k in allowedRelations.telur"
+                  :key="k"
+                  class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                >
+                  {{ k }}
+                </span>
               </div>
             </div>
-            <div class="rule-note">Hanya berlaku untuk Ayam Ras Petelur.</div>
+            <div class="text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/70 dark:border-[#1E1E1E]">
+              Hanya berlaku untuk Ayam Ras Petelur.
+            </div>
           </div>
 
           <!-- LSD RULE -->
-          <div class="rule-box">
-            <div class="rule-title text-rose">WABAH PENYAKIT LSD</div>
-            <div class="rule-compat">
-              Inang Rentan:
-              <div class="compat-tags">
-                <span v-for="k in allowedRelations.lsd" :key="k" class="compat-tag active-rose">{{ k }}</span>
+          <div class="bg-slate-50 dark:bg-[#181818] border border-slate-200 dark:border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-rose-600 dark:text-rose-400">WABAH PENYAKIT LSD</span>
+                <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20">
+                  {{ allowedRelations?.lsd?.length || 0 }} Inang
+                </span>
+              </div>
+              <div class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
+                Inang Rentan:
+              </div>
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                <span
+                  v-for="k in allowedRelations.lsd"
+                  :key="k"
+                  class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30"
+                >
+                  {{ k }}
+                </span>
               </div>
             </div>
-            <div class="rule-note">Secara biologis HANYA menyerang sapi (Bovine).</div>
+            <div class="text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/70 dark:border-[#1E1E1E]">
+              Secara biologis HANYA menyerang sapi (Bovine).
+            </div>
           </div>
 
           <!-- PMK RULE -->
-          <div class="rule-box">
-            <div class="rule-title text-lime">WABAH PENYAKIT PMK</div>
-            <div class="rule-compat">
-              Inang Rentan:
-              <div class="compat-tags">
-                <span v-for="k in allowedRelations.pmk" :key="k" class="compat-tag active-lime">{{ k }}</span>
+          <div class="bg-slate-50 dark:bg-[#181818] border border-slate-200 dark:border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">WABAH PENYAKIT PMK</span>
+                <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                  {{ allowedRelations?.pmk?.length || 0 }} Inang
+                </span>
+              </div>
+              <div class="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
+                Inang Rentan:
+              </div>
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                <span
+                  v-for="k in allowedRelations.pmk"
+                  :key="k"
+                  class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                >
+                  {{ k }}
+                </span>
               </div>
             </div>
-            <div class="rule-note">Menyerang hewan berkuku belah (Artiodactyla).</div>
+            <div class="text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/70 dark:border-[#1E1E1E]">
+              Menyerang hewan berkuku belah (Artiodactyla).
+            </div>
           </div>
         </div>
       </section>
 
       <!-- TABBED RESOURCE DATA TABLES -->
-      <section class="tables-section">
-        <div class="tab-header">
-          <button 
-            v-for="t in [
-              { key: 'populasi', label: 'Populasi Ternak (' + (tables?.populasi?.total ?? 0) + ')' },
-              { key: 'produksi', label: 'Hasil Produksi (' + (tables?.produksi?.total ?? 0) + ')' },
-              { key: 'kasus_penyakit', label: 'Kasus Penyakit (' + (tables?.kasus_penyakit?.total ?? 0) + ')' },
-              { key: 'fasilitas_rph', label: 'Fasilitas RPH (' + (tables?.fasilitas_rph?.total ?? 0) + ')' }
-            ]" 
-            :key="t.key"
-            @click="activeTab = t.key"
-            class="tab-btn"
-            :class="{ active: activeTab === t.key }"
-          >
-            {{ t.label }}
-          </button>
+      <section class="bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#1E1E1E] rounded-xl p-5 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-200 dark:border-[#1E1E1E]">
+          <!-- Tab Pills -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0">
+            <button
+              v-for="t in tabDefinitions"
+              :key="t.key"
+              type="button"
+              @click="activeTab = t.key"
+              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-colors border"
+              :class="
+                activeTab === t.key
+                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/40'
+                  : 'bg-slate-50 dark:bg-[#181818] text-slate-600 dark:text-[#B3B3B3] border-transparent hover:text-slate-900 dark:hover:text-[#F5F5F5] hover:bg-slate-100 dark:hover:bg-[#1E1E1E]'
+              "
+            >
+              <span>{{ t.label }}</span>
+              <span
+                class="px-1.5 py-0.5 rounded text-[11px] font-mono tabular-nums"
+                :class="
+                  activeTab === t.key
+                    ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-slate-200/70 dark:bg-[#1E1E1E] text-slate-600 dark:text-[#B3B3B3]'
+                "
+              >
+                {{ t.total }}
+              </span>
+            </button>
+          </div>
+
+          <!-- Search Filter Input -->
+          <div class="relative w-full lg:w-72">
+            <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Cari desa, kecamatan, komoditas..."
+              class="w-full h-9 pl-9 pr-3 rounded-lg text-xs bg-slate-50 dark:bg-[#181818] border border-slate-200 dark:border-[#1E1E1E] text-slate-900 dark:text-[#F5F5F5] placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+            />
+          </div>
         </div>
 
-        <div class="tab-content">
-          <!-- TAB POPULASI -->
-          <div v-if="activeTab === 'populasi'" class="table-wrap">
-            <table class="data-table">
-              <thead>
+        <!-- TAB POPULASI -->
+        <div v-if="activeTab === 'populasi'">
+          <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-[#1E1E1E]">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-slate-100/80 dark:bg-[#181818] text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3] border-b border-slate-200 dark:border-[#1E1E1E]">
                 <tr>
-                  <th>DESA / KECAMATAN</th>
-                  <th>KOMODITAS</th>
-                  <th>PERIODE</th>
-                  <th>JANTAN</th>
-                  <th>BETINA</th>
-                  <th>TOTAL</th>
+                  <th class="py-3 px-4">DESA / KECAMATAN</th>
+                  <th class="py-3 px-4">KOMODITAS</th>
+                  <th class="py-3 px-4">PERIODE</th>
+                  <th class="py-3 px-4 text-right">JANTAN</th>
+                  <th class="py-3 px-4 text-right">BETINA</th>
+                  <th class="py-3 px-4 text-right">TOTAL</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="item in tables.populasi?.data?.slice(0, 10)" :key="item.id">
-                  <td>{{ item.desa?.nama_desa }} <small class="text-gray-500">({{ item.desa?.kecamatan?.nama_kecamatan }})</small></td>
-                  <td><span class="badge-kod">{{ item.komoditas?.nama }}</span></td>
-                  <td class="font-mono">{{ item.tahun }} TW{{ item.triwulan }}</td>
-                  <td class="font-mono text-cyan">{{ item.jumlah_jantan?.toLocaleString('id-ID') }}</td>
-                  <td class="font-mono text-amber">{{ item.jumlah_betina?.toLocaleString('id-ID') }}</td>
-                  <td class="font-mono font-bold text-lime">{{ item.jumlah_total?.toLocaleString('id-ID') }}</td>
+              <tbody class="divide-y divide-slate-200 dark:divide-[#1E1E1E]">
+                <tr
+                  v-for="item in filteredPopulasi"
+                  :key="item.id"
+                  class="hover:bg-slate-50 dark:hover:bg-[#181818] transition-colors"
+                >
+                  <td class="py-3 px-4 font-semibold text-slate-900 dark:text-[#F5F5F5]">
+                    {{ item.desa?.nama_desa || '-' }}
+                    <span class="text-slate-500 dark:text-slate-400 font-normal ml-1">
+                      ({{ item.desa?.kecamatan?.nama_kecamatan || '-' }})
+                    </span>
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">
+                      {{ item.komoditas?.nama || '-' }}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4 font-mono tabular-nums text-slate-600 dark:text-slate-300">
+                    {{ item.tahun }} TW{{ item.triwulan }}
+                  </td>
+                  <td class="py-3 px-4 text-right font-mono tabular-nums text-teal-600 dark:text-teal-400">
+                    {{ item.jumlah_jantan?.toLocaleString('id-ID') ?? 0 }}
+                  </td>
+                  <td class="py-3 px-4 text-right font-mono tabular-nums text-amber-600 dark:text-amber-400">
+                    {{ item.jumlah_betina?.toLocaleString('id-ID') ?? 0 }}
+                  </td>
+                  <td class="py-3 px-4 text-right font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                    {{ item.jumlah_total?.toLocaleString('id-ID') ?? 0 }}
+                  </td>
+                </tr>
+                <tr v-if="filteredPopulasi.length === 0">
+                  <td colspan="6" class="py-8 text-center text-slate-500 dark:text-slate-400">
+                    Tidak ada data populasi ternak yang cocok dengan filter pencarian.
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <!-- Pagination Metadata -->
+          <div class="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 font-mono tabular-nums">
+            <span>
+              Menampilkan {{ tables?.populasi?.from ?? 0 }}–{{ tables?.populasi?.to ?? 0 }} dari {{ tables?.populasi?.total ?? 0 }} rekaman
+            </span>
+            <span>
+              Halaman {{ tables?.populasi?.current_page ?? 1 }} dari {{ tables?.populasi?.last_page ?? 1 }}
+            </span>
+          </div>
+        </div>
 
-          <!-- TAB PRODUKSI -->
-          <div v-else-if="activeTab === 'produksi'" class="table-wrap">
-            <table class="data-table">
-              <thead>
+        <!-- TAB PRODUKSI -->
+        <div v-else-if="activeTab === 'produksi'">
+          <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-[#1E1E1E]">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-slate-100/80 dark:bg-[#181818] text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3] border-b border-slate-200 dark:border-[#1E1E1E]">
                 <tr>
-                  <th>DESA / KECAMATAN</th>
-                  <th>KOMODITAS</th>
-                  <th>KATEGORI</th>
-                  <th>PERIODE</th>
-                  <th>JUMLAH PRODUKSI</th>
+                  <th class="py-3 px-4">DESA / KECAMATAN</th>
+                  <th class="py-3 px-4">KOMODITAS</th>
+                  <th class="py-3 px-4">KATEGORI</th>
+                  <th class="py-3 px-4">PERIODE</th>
+                  <th class="py-3 px-4 text-right">JUMLAH PRODUKSI</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="item in tables.produksi?.data?.slice(0, 10)" :key="item.id">
-                  <td>{{ item.desa?.nama_desa }}</td>
-                  <td>{{ item.komoditas?.nama }}</td>
-                  <td><span class="badge-kod">{{ item.kategori_produksi?.nama }}</span></td>
-                  <td class="font-mono">{{ item.tahun }} TW{{ item.triwulan }}</td>
-                  <td class="font-mono font-bold text-lime">{{ item.jumlah_produksi }} {{ item.kategori_produksi?.satuan }}</td>
+              <tbody class="divide-y divide-slate-200 dark:divide-[#1E1E1E]">
+                <tr
+                  v-for="item in filteredProduksi"
+                  :key="item.id"
+                  class="hover:bg-slate-50 dark:hover:bg-[#181818] transition-colors"
+                >
+                  <td class="py-3 px-4 font-semibold text-slate-900 dark:text-[#F5F5F5]">
+                    {{ item.desa?.nama_desa || '-' }}
+                  </td>
+                  <td class="py-3 px-4 text-slate-700 dark:text-[#B3B3B3]">
+                    {{ item.komoditas?.nama || '-' }}
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">
+                      {{ item.kategori_produksi?.nama || '-' }}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4 font-mono tabular-nums text-slate-600 dark:text-[#B3B3B3]">
+                    {{ item.tahun }} TW{{ item.triwulan }}
+                  </td>
+                  <td class="py-3 px-4 text-right font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                    {{ item.jumlah_produksi }} {{ item.kategori_produksi?.satuan }}
+                  </td>
+                </tr>
+                <tr v-if="filteredProduksi.length === 0">
+                  <td colspan="5" class="py-8 text-center text-slate-500 dark:text-[#B3B3B3]">
+                    Tidak ada data hasil produksi yang cocok dengan filter pencarian.
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <div class="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 dark:text-[#B3B3B3] font-mono tabular-nums">
+            <span>
+              Menampilkan {{ tables?.produksi?.from ?? 0 }}–{{ tables?.produksi?.to ?? 0 }} dari {{ tables?.produksi?.total ?? 0 }} rekaman
+            </span>
+            <span>
+              Halaman {{ tables?.produksi?.current_page ?? 1 }} dari {{ tables?.produksi?.last_page ?? 1 }}
+            </span>
+          </div>
+        </div>
 
-          <!-- TAB KASUS -->
-          <div v-else-if="activeTab === 'kasus_penyakit'" class="table-wrap">
-            <table class="data-table">
-              <thead>
+        <!-- TAB KASUS PENYAKIT -->
+        <div v-else-if="activeTab === 'kasus_penyakit'">
+          <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-[#1E1E1E]">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-slate-100/80 dark:bg-[#181818] text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3] border-b border-slate-200 dark:border-[#1E1E1E]">
                 <tr>
-                  <th>TANGGAL</th>
-                  <th>LOKASI</th>
-                  <th>PENYAKIT</th>
-                  <th>KOMODITAS</th>
-                  <th>POSITIF</th>
-                  <th>AKTIF</th>
-                  <th>STATUS</th>
+                  <th class="py-3 px-4">TANGGAL</th>
+                  <th class="py-3 px-4">LOKASI</th>
+                  <th class="py-3 px-4">PENYAKIT</th>
+                  <th class="py-3 px-4">KOMODITAS</th>
+                  <th class="py-3 px-4 text-right">POSITIF</th>
+                  <th class="py-3 px-4 text-right">AKTIF</th>
+                  <th class="py-3 px-4">STATUS</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="item in tables.kasus_penyakit?.data?.slice(0, 10)" :key="item.id">
-                  <td class="font-mono text-xs">{{ item.tanggal_laporan }}</td>
-                  <td>{{ item.desa?.nama_desa }}</td>
-                  <td><span class="badge-danger">{{ item.penyakit?.nama }}</span></td>
-                  <td>{{ item.komoditas?.nama }}</td>
-                  <td class="font-mono text-rose">{{ item.kasus_positif }}</td>
-                  <td class="font-mono font-bold text-rose">{{ item.kasus_aktif }}</td>
-                  <td><span class="badge-status">{{ item.status_kasus || 'Terkonfirmasi' }}</span></td>
+              <tbody class="divide-y divide-slate-200 dark:divide-[#1E1E1E]">
+                <tr
+                  v-for="item in filteredKasus"
+                  :key="item.id"
+                  class="hover:bg-slate-50 dark:hover:bg-[#181818] transition-colors"
+                >
+                  <td class="py-3 px-4 font-mono tabular-nums text-slate-600 dark:text-[#B3B3B3]">
+                    {{ item.tanggal_laporan }}
+                  </td>
+                  <td class="py-3 px-4 font-semibold text-slate-900 dark:text-[#F5F5F5]">
+                    {{ item.desa?.nama_desa || '-' }}
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20">
+                      {{ item.penyakit?.nama || '-' }}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4 text-slate-700 dark:text-[#B3B3B3]">
+                    {{ item.komoditas?.nama || '-' }}
+                  </td>
+                  <td class="py-3 px-4 text-right font-mono tabular-nums text-rose-600 dark:text-rose-400">
+                    {{ item.kasus_positif }}
+                  </td>
+                  <td class="py-3 px-4 text-right font-mono tabular-nums font-bold text-rose-600 dark:text-rose-400">
+                    {{ item.kasus_aktif }}
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                      {{ item.status_kasus || 'Terkonfirmasi' }}
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="filteredKasus.length === 0">
+                  <td colspan="7" class="py-8 text-center text-slate-500 dark:text-[#B3B3B3]">
+                    Tidak ada rekaman kasus penyakit yang cocok dengan filter pencarian.
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <div class="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 dark:text-[#B3B3B3] font-mono tabular-nums">
+            <span>
+              Menampilkan {{ tables?.kasus_penyakit?.from ?? 0 }}–{{ tables?.kasus_penyakit?.to ?? 0 }} dari {{ tables?.kasus_penyakit?.total ?? 0 }} rekaman
+            </span>
+            <span>
+              Halaman {{ tables?.kasus_penyakit?.current_page ?? 1 }} dari {{ tables?.kasus_penyakit?.last_page ?? 1 }}
+            </span>
+          </div>
+        </div>
 
-          <!-- TAB RPH -->
-          <div v-else-if="activeTab === 'fasilitas_rph'" class="table-wrap">
-            <table class="data-table">
-              <thead>
+        <!-- TAB FASILITAS RPH -->
+        <div v-else-if="activeTab === 'fasilitas_rph'">
+          <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-[#1E1E1E]">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-slate-100/80 dark:bg-[#181818] text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3] border-b border-slate-200 dark:border-[#1E1E1E]">
                 <tr>
-                  <th>NAMA RPH</th>
-                  <th>KECAMATAN</th>
-                  <th>PENGELOLA</th>
-                  <th>HEWAN POTONG</th>
-                  <th>KAPASITAS</th>
-                  <th>STATUS</th>
+                  <th class="py-3 px-4">NAMA RPH</th>
+                  <th class="py-3 px-4">KECAMATAN</th>
+                  <th class="py-3 px-4">PENGELOLA</th>
+                  <th class="py-3 px-4">HEWAN POTONG</th>
+                  <th class="py-3 px-4 text-right">KAPASITAS</th>
+                  <th class="py-3 px-4">STATUS</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="item in tables.fasilitas_rph?.data?.slice(0, 10)" :key="item.id">
-                  <td class="font-bold text-white">{{ item.nama_rph }}</td>
-                  <td>{{ item.kecamatan?.nama_kecamatan }}</td>
-                  <td>{{ item.jenis_pengelola }}</td>
-                  <td>{{ item.jenis_hewan_potong }}</td>
-                  <td class="font-mono">{{ item.kapasitas_potong_ekor_hari }} ekor/hari</td>
-                  <td><span class="badge-success">{{ item.status_operasional }}</span></td>
+              <tbody class="divide-y divide-slate-200 dark:divide-[#1E1E1E]">
+                <tr
+                  v-for="item in filteredRph"
+                  :key="item.id"
+                  class="hover:bg-slate-50 dark:hover:bg-[#181818] transition-colors"
+                >
+                  <td class="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                    {{ item.nama_rph }}
+                  </td>
+                  <td class="py-3 px-4 text-slate-700 dark:text-[#B3B3B3]">
+                    {{ item.kecamatan?.nama_kecamatan || '-' }}
+                  </td>
+                  <td class="py-3 px-4 text-slate-700 dark:text-[#B3B3B3]">
+                    {{ item.jenis_pengelola }}
+                  </td>
+                  <td class="py-3 px-4 text-slate-700 dark:text-[#B3B3B3]">
+                    {{ item.jenis_hewan_potong }}
+                  </td>
+                  <td class="py-3 px-4 text-right font-mono tabular-nums text-teal-600 dark:text-teal-400 font-semibold">
+                    {{ item.kapasitas_potong_ekor_hari }} ekor/hari
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                      {{ item.status_operasional }}
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="filteredRph.length === 0">
+                  <td colspan="6" class="py-8 text-center text-slate-500 dark:text-[#B3B3B3]">
+                    Tidak ada fasilitas RPH yang cocok dengan filter pencarian.
+                  </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 dark:text-[#B3B3B3] font-mono tabular-nums">
+            <span>
+              Menampilkan {{ tables?.fasilitas_rph?.from ?? 0 }}–{{ tables?.fasilitas_rph?.to ?? 0 }} dari {{ tables?.fasilitas_rph?.total ?? 0 }} rekaman
+            </span>
+            <span>
+              Halaman {{ tables?.fasilitas_rph?.current_page ?? 1 }} dari {{ tables?.fasilitas_rph?.last_page ?? 1 }}
+            </span>
           </div>
         </div>
       </section>
 
-      <!-- RAW CONTRACT PROPS INSPECTION -->
-      <section class="raw-inspector">
-        <div class="inspector-head">
-          <span class="inspector-title">TERMINAL HANDSHAKE PROPS PANEL ADMIN</span>
-          <button @click="showRaw = !showRaw" class="btn-toggle">
+      <!-- RAW CONTRACT PROPS INSPECTION (COLLAPSED BY DEFAULT) -->
+      <section class="bg-white dark:bg-[#111111] border border-slate-200 dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <Terminal class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span class="font-mono text-xs font-bold text-slate-700 dark:text-slate-200">
+              TERMINAL HANDSHAKE PROPS PANEL ADMIN
+            </span>
+          </div>
+          <button
+            type="button"
+            @click="showRaw = !showRaw"
+            class="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-[#181818] dark:hover:bg-[#1E1E1E] text-teal-700 dark:text-teal-300 border border-slate-200 dark:border-[#1E1E1E] transition-colors"
+          >
             {{ showRaw ? '[-] Sembunyikan JSON' : '[+] Tampilkan Full JSON Props' }}
           </button>
         </div>
-        <pre v-if="showRaw" class="json-dump">{{ $props }}</pre>
+        <pre
+          v-if="showRaw"
+          class="mt-3 p-4 rounded-lg bg-[#090909] text-sky-300 font-mono text-[11px] leading-relaxed max-h-96 overflow-auto border border-[#1E1E1E]"
+        >{{ $props }}</pre>
       </section>
     </main>
+
+    <!-- Chatbot Drawer FAB -->
+    <ChatbotDrawer />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import ThemeToggle from '@/components/ternakverse/ThemeToggle.vue'
+import ChatbotDrawer from '@/components/ternakverse/ChatbotDrawer.vue'
+import {
+  ShieldCheck,
+  LayoutDashboard,
+  FileSpreadsheet,
+  Activity,
+  Globe,
+  CheckCircle2,
+  AlertTriangle,
+  MapPin,
+  Layers,
+  Database,
+  FlaskConical,
+  Search,
+  Terminal,
+} from 'lucide-vue-next'
 
 // ---------------------------------------------------------------------------
 // KONTRAK DATA PROPS ADMIN (DEFINISI TIPE LENGKAP)
@@ -305,7 +679,7 @@ interface FlashPayload {
 }
 
 // INERTIA PROPS CONTRACT
-defineProps<{
+const props = defineProps<{
   tables: {
     populasi: PaginatedData
     produksi: PaginatedData
@@ -319,300 +693,61 @@ defineProps<{
   appName?: string
 }>()
 
-const activeTab = ref('populasi')
-const showRaw = ref(true)
+const activeTab = ref<'populasi' | 'produksi' | 'kasus_penyakit' | 'fasilitas_rph'>('populasi')
+const searchQuery = ref('')
+const showRaw = ref(false)
+
+const tabDefinitions = computed(() => [
+  { key: 'populasi' as const, label: 'Populasi Ternak', total: props.tables?.populasi?.total ?? 0 },
+  { key: 'produksi' as const, label: 'Hasil Produksi', total: props.tables?.produksi?.total ?? 0 },
+  { key: 'kasus_penyakit' as const, label: 'Kasus Penyakit', total: props.tables?.kasus_penyakit?.total ?? 0 },
+  { key: 'fasilitas_rph' as const, label: 'Fasilitas RPH', total: props.tables?.fasilitas_rph?.total ?? 0 },
+])
+
+const normalizedQuery = computed(() => searchQuery.value.trim().toLowerCase())
+
+const filteredPopulasi = computed(() => {
+  const rows = props.tables?.populasi?.data?.slice(0, 10) ?? []
+  if (!normalizedQuery.value) return rows
+  return rows.filter((item: any) => {
+    const desa = item.desa?.nama_desa?.toLowerCase() ?? ''
+    const kec = item.desa?.kecamatan?.nama_kecamatan?.toLowerCase() ?? ''
+    const kom = item.komoditas?.nama?.toLowerCase() ?? ''
+    return desa.includes(normalizedQuery.value) || kec.includes(normalizedQuery.value) || kom.includes(normalizedQuery.value)
+  })
+})
+
+const filteredProduksi = computed(() => {
+  const rows = props.tables?.produksi?.data?.slice(0, 10) ?? []
+  if (!normalizedQuery.value) return rows
+  return rows.filter((item: any) => {
+    const desa = item.desa?.nama_desa?.toLowerCase() ?? ''
+    const kom = item.komoditas?.nama?.toLowerCase() ?? ''
+    const kat = item.kategori_produksi?.nama?.toLowerCase() ?? ''
+    return desa.includes(normalizedQuery.value) || kom.includes(normalizedQuery.value) || kat.includes(normalizedQuery.value)
+  })
+})
+
+const filteredKasus = computed(() => {
+  const rows = props.tables?.kasus_penyakit?.data?.slice(0, 10) ?? []
+  if (!normalizedQuery.value) return rows
+  return rows.filter((item: any) => {
+    const desa = item.desa?.nama_desa?.toLowerCase() ?? ''
+    const penyakit = item.penyakit?.nama?.toLowerCase() ?? ''
+    const kom = item.komoditas?.nama?.toLowerCase() ?? ''
+    return desa.includes(normalizedQuery.value) || penyakit.includes(normalizedQuery.value) || kom.includes(normalizedQuery.value)
+  })
+})
+
+const filteredRph = computed(() => {
+  const rows = props.tables?.fasilitas_rph?.data?.slice(0, 10) ?? []
+  if (!normalizedQuery.value) return rows
+  return rows.filter((item: any) => {
+    const nama = item.nama_rph?.toLowerCase() ?? ''
+    const kec = item.kecamatan?.nama_kecamatan?.toLowerCase() ?? ''
+    const hewan = item.jenis_hewan_potong?.toLowerCase() ?? ''
+    return nama.includes(normalizedQuery.value) || kec.includes(normalizedQuery.value) || hewan.includes(normalizedQuery.value)
+  })
+})
 </script>
 
-<style scoped>
-.admin-layout {
-  min-height: 100vh;
-  background-color: #0A0D0E;
-  color: #F0F6FC;
-  font-family: 'Inter', -apple-system, sans-serif;
-  padding: 24px;
-}
-.top-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  margin-bottom: 24px;
-}
-.brand-badge.admin {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #39FF14;
-  background: rgba(57, 255, 20, 0.1);
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-bottom: 4px;
-}
-.brand-title {
-  font-family: 'Outfit', sans-serif;
-  font-size: 26px;
-  font-weight: 800;
-}
-.brand-title span { color: #39FF14; }
-.user-meta { display: flex; align-items: center; gap: 16px; }
-.role-pill.admin {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(57, 255, 20, 0.15);
-  color: #39FF14;
-  border: 1px solid #39FF14;
-}
-.user-info { display: flex; flex-direction: column; text-align: right; }
-.user-name { font-size: 13px; font-weight: 600; }
-.user-email { font-size: 11px; color: #8B949E; }
-
-.master-bar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-.master-item {
-  background: #12171A;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  padding: 14px 16px;
-}
-.m-label {
-  display: block;
-  font-size: 10px;
-  font-weight: 700;
-  color: #8B949E;
-  letter-spacing: 0.08em;
-  margin-bottom: 4px;
-}
-.m-val {
-  font-family: 'Outfit', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: #00F0FF;
-}
-
-.rules-card {
-  background: #12171A;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 18px 20px;
-  margin-bottom: 24px;
-}
-.rules-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.label-tech {
-  font-size: 11px;
-  color: #8B949E;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-.badge-enforced {
-  font-size: 10px;
-  font-weight: 700;
-  color: #39FF14;
-  background: rgba(57, 255, 20, 0.1);
-  padding: 2px 8px;
-  border-radius: 4px;
-  border: 1px solid rgba(57, 255, 20, 0.3);
-}
-.rules-desc {
-  font-size: 12px;
-  color: #8B949E;
-  margin-bottom: 16px;
-}
-.rules-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-}
-.rule-box {
-  background: #182024;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  padding: 14px;
-}
-.rule-title {
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-.rule-compat {
-  font-size: 11px;
-  color: #8B949E;
-  margin-bottom: 6px;
-}
-.compat-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
-}
-.compat-tag {
-  font-size: 10px;
-  font-weight: 600;
-  font-family: 'JetBrains Mono', monospace;
-  background: #202A30;
-  color: #F0F6FC;
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-.compat-tag.active-amber { border-color: #F59E0B; color: #F59E0B; background: rgba(245, 158, 11, 0.1); }
-.compat-tag.active-rose { border-color: #F43F5E; color: #F43F5E; background: rgba(244, 63, 94, 0.1); }
-.compat-tag.active-lime { border-color: #39FF14; color: #39FF14; background: rgba(57, 255, 20, 0.1); }
-.rule-note {
-  font-size: 10px;
-  color: #6E7681;
-}
-
-.tables-section {
-  background: #12171A;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 18px 20px;
-  margin-bottom: 24px;
-}
-.tab-header {
-  display: flex;
-  gap: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding-bottom: 12px;
-  margin-bottom: 16px;
-  overflow-x: auto;
-}
-.tab-btn {
-  background: transparent;
-  color: #8B949E;
-  border: 1px solid transparent;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-.tab-btn:hover {
-  color: #F0F6FC;
-  background: #182024;
-}
-.tab-btn.active {
-  background: rgba(57, 255, 20, 0.1);
-  color: #39FF14;
-  border-color: #39FF14;
-}
-.table-wrap {
-  overflow-x: auto;
-}
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-.data-table th {
-  text-align: left;
-  font-size: 10px;
-  font-weight: 700;
-  color: #8B949E;
-  letter-spacing: 0.08em;
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: #161D21;
-}
-.data-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-.data-table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
-}
-.badge-kod {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: #1B2227;
-  color: #00F0FF;
-  border: 1px solid rgba(0, 240, 255, 0.2);
-}
-.badge-danger {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: rgba(244, 63, 94, 0.15);
-  color: #F43F5E;
-}
-.badge-success {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10B981;
-}
-.badge-status {
-  font-size: 11px;
-  color: #8B949E;
-}
-
-.text-lime { color: #39FF14; }
-.text-cyan { color: #00F0FF; }
-.text-amber { color: #F59E0B; }
-.text-rose { color: #F43F5E; }
-
-.raw-inspector {
-  background: #0D1113;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 16px;
-}
-.inspector-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.inspector-title {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: #39FF14;
-  font-weight: 700;
-}
-.btn-toggle {
-  background: #1B2227;
-  color: #00F0FF;
-  border: 1px solid rgba(0, 240, 255, 0.3);
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 11px;
-  cursor: pointer;
-}
-.json-dump {
-  background: #07090A;
-  color: #A5D6FF;
-  padding: 16px;
-  border-radius: 8px;
-  max-height: 400px;
-  overflow: auto;
-  font-size: 11px;
-  line-height: 1.4;
-}
-.alert {
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 13px;
-}
-.alert-success { background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; color: #10B981; }
-.alert-error { background: rgba(244, 63, 94, 0.1); border: 1px solid #F43F5E; color: #F43F5E; }
-</style>

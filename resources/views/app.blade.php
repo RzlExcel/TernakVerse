@@ -22,7 +22,7 @@
     {{-- Fallback warna dasar antarmuka --}}
     <style>
         html {
-            background-color: #0A0D0E;
+            background-color: #090D16;
         }
         html:not(.dark) {
             background-color: #F8FAFC;
@@ -45,7 +45,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.ts'])
     @inertiaHead
 </head>
-<body class="bg-[#0A0D0E] text-[#F4F7F5] antialiased selection:bg-[#39FF14] selection:text-[#04110A]" style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif;">
+<body class="bg-slate-50 dark:bg-[#090D16] text-slate-900 dark:text-slate-100 antialiased selection:bg-emerald-500 selection:text-slate-950" style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif;">
     @inertia
 </body>
 </html>

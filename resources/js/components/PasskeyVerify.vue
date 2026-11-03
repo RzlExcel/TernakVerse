@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { UrlMethodPair } from '@inertiajs/core';
 import { router } from '@inertiajs/vue3';
 import { usePasskeyVerify } from '@laravel/passkeys/vue';
 import { KeyRound } from '@lucide/vue';
@@ -7,6 +6,11 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+
+type UrlMethodPair = {
+    url: string;
+    method: string;
+};
 
 type Props = {
     routes?: {

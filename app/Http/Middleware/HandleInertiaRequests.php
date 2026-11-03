@@ -48,6 +48,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'role' => $user->role,
                     'roles' => method_exists($user, 'getRoleNames') ? $user->getRoleNames() : [$user->role],
+                    'permissions' => $user ? (method_exists($user, 'getPermissionSlugs') ? $user->getPermissionSlugs() : []) : [],
                     'is_admin' => $user->role === 'admin',
                     'is_stakeholder' => $user->role === 'stakeholder',
                 ] : null,

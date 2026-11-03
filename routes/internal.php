@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Internal\DinasDashboardController;
 use App\Http\Controllers\Internal\AdminDataController;
+use App\Http\Controllers\Internal\RbacManagementController;
 use App\Http\Middleware\EnsureUserRole;
 use App\Models\AuditLog;
 
@@ -40,7 +41,7 @@ Route::middleware([EnsureUserRole::class])->group(function () {
     // =========================================================================
     // 2. ADMIN DATA CONTROLLER (CRUD RESOURCE & AUDIT TRAIL)
     // =========================================================================
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware(EnsureUserRole::class . ':admin')->group(function () {
         
         // CRUD Populasi Ternak
         Route::get('/populasi', [AdminDataController::class, 'indexPopulasi']);
@@ -93,6 +94,17 @@ Route::middleware([EnsureUserRole::class])->group(function () {
                     ->orderByDesc('created_at')
                     ->paginate(50)
             );
+        });
+
+        // Dynamic RBAC Management Routes
+        Route::prefix('rbac')->group(function () {
+            Route::get('/roles', [RbacManagementController::class, 'indexRoles']);
+            Route::post('/roles', [RbacManagementController::class, 'storeRole']);
+            Route::put('/roles/{id}', [RbacManagementController::class, 'updateRole']);
+            Route::delete('/roles/{id}', [RbacManagementController::class, 'destroyRole']);
+            Route::get('/permissions', [RbacManagementController::class, 'indexPermissions']);
+            Route::get('/matrix', [RbacManagementController::class, 'matrix']);
+            Route::post('/assign', [RbacManagementController::class, 'assignPermissions']);
         });
     });
 

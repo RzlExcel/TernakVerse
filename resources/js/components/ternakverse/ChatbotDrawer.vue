@@ -1,15 +1,63 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { KecamatanData, formatAngka } from '../../data/banyumasData';
-import { X, Send, Bot, User, Sparkles } from 'lucide-vue-next';
+import { ref, watch, nextTick } from 'vue';
+import { KECAMATAN_LIST, type KecamatanData, formatAngka } from '../../data/banyumasData';
+import { X, Send, MessageSquareText } from 'lucide-vue-next';
 
-const props = defineProps<{
-    kecamatanList: KecamatanData[];
-}>();
+const props = withDefaults(defineProps<{
+    kecamatanList?: KecamatanData[];
+    isOpen?: boolean;
+}>(), {
+    kecamatanList: () => [],
+    isOpen: false
+});
 
 const emit = defineEmits<{
     (e: 'close'): void;
+    (e: 'open'): void;
 }>();
+
+const isChatOpen = ref(props.isOpen ?? false);
+const chatContainerRef = ref<HTMLDivElement | null>(null);
+
+watch(() => props.isOpen, (newVal) => {
+    if (newVal !== undefined) {
+        isChatOpen.value = newVal;
+        if (newVal) scrollToBottom();
+    }
+});
+
+function toggleChat() {
+    isChatOpen.value = !isChatOpen.value;
+    if (isChatOpen.value) {
+        emit('open');
+        scrollToBottom();
+    } else {
+        emit('close');
+    }
+}
+
+function closeChat() {
+    isChatOpen.value = false;
+    emit('close');
+}
+
+function scrollToBottom() {
+    nextTick(() => {
+        if (chatContainerRef.value) {
+            chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight;
+        }
+    });
+}
+
+function formatMessage(text: string): string {
+    const escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    return escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+}
 
 const inputQuestion = ref('');
 const messages = ref<{ sender: 'bot' | 'user'; text: string; time: string }[]>([
@@ -37,22 +85,34 @@ function handleSend(question?: string) {
         time: 'Baru saja'
     });
     inputQuestion.value = '';
+    scrollToBottom();
 
     // Respons AI interaktif cerdas
     setTimeout(() => {
         let answer = '';
         const lowerQ = q.toLowerCase();
+        const activeList = (props.kecamatanList && props.kecamatanList.length > 0) ? props.kecamatanList : KECAMATAN_LIST;
 
         if (lowerQ.includes('terbanyak') || lowerQ.includes('paling banyak')) {
-            const top = [...props.kecamatanList].sort((a, b) => b.sapi_potong - a.sapi_potong)[0];
-            answer = `Kecamatan dengan populasi sapi potong terbanyak saat ini adalah **${top.nama}** dengan total **${formatAngka(top.sapi_potong)} ekor**. Posisi kedua ditempati oleh Cilongok dengan 2.890 ekor.`;
+            const top = activeList.length ? [...activeList].sort((a, b) => b.sapi_potong - a.sapi_potong)[0] : null;
+            if (!top) {
+                answer = 'Data kecamatan belum tersedia saat ini.';
+            } else {
+                answer = `Kecamatan dengan populasi sapi potong terbanyak saat ini adalah **${top.nama}** dengan total **${formatAngka(top.sapi_potong)} ekor**. Posisi kedua ditempati oleh Cilongok dengan 2.890 ekor.`;
+            }
         } else if (lowerQ.includes('total') || lowerQ.includes('populasi')) {
-            const total = props.kecamatanList.reduce((acc, k) => acc + k.sapi_potong, 0);
-            answer = `Total populasi sapi potong di seluruh 27 kecamatan Kabupaten Banyumas mencapai **${formatAngka(total)} ekor**. Populasi ternak kambing juga tinggi dengan total 59.870 ekor.`;
+            if (!activeList.length) {
+                answer = 'Data kecamatan belum tersedia saat ini.';
+            } else {
+                const total = activeList.reduce((acc, k) => acc + k.sapi_potong, 0);
+                answer = `Total populasi sapi potong di seluruh 27 kecamatan Kabupaten Banyumas mencapai **${formatAngka(total)} ekor**. Populasi ternak kambing juga tinggi dengan total 59.870 ekor.`;
+            }
         } else if (lowerQ.includes('pmk') || lowerQ.includes('zona merah') || lowerQ.includes('penyakit')) {
-            const bahayaKec = props.kecamatanList.filter(k => k.zona === 'bahaya');
+            const bahayaKec = activeList.filter(k => k.zona === 'bahaya');
             const names = bahayaKec.map(k => k.nama).join(', ');
-            answer = `Saat ini ada **${bahayaKec.length} kecamatan** dalam zona merah bahaya PMK aktif: **${names}**. Disarankan pengawasan lalu lintas ternak ketat dan desinfeksi kandang rutin.`;
+            answer = bahayaKec.length > 0
+                ? `Saat ini ada **${bahayaKec.length} kecamatan** dalam zona merah bahaya PMK aktif: **${names}**. Disarankan pengawasan lalu lintas ternak ketat dan desinfeksi kandang rutin.`
+                : 'Saat ini tidak ada kecamatan dalam zona merah bahaya PMK aktif di Kabupaten Banyumas.';
         } else if (lowerQ.includes('perah') || lowerQ.includes('susu')) {
             answer = `Sentra utama sapi perah dan produksi susu segar di Banyumas terpusat di lereng Gunung Slamet, khususnya di **Kecamatan Baturraden** (2.850 ekor) dan **Cilongok** (890 ekor).`;
         } else {
@@ -64,89 +124,116 @@ function handleSend(question?: string) {
             text: answer,
             time: 'Baru saja'
         });
+        scrollToBottom();
     }, 400);
 }
 </script>
 
 <template>
-    <!-- Overlay with Backdrop Blur -->
-    <div
-        class="fixed inset-0 z-50 bg-[#080C0E]/80 backdrop-blur-md flex items-center justify-center p-4"
-        @click.self="$emit('close')"
-    >
-        <!-- Modal Drawer -->
-        <div class="glass-card border border-emerald-500/30 rounded-20 w-full max-w-lg h-[540px] flex flex-col shadow-2xl overflow-hidden select-none animate-in zoom-in-95 duration-150">
+    <div>
+        <!-- 1. SLEEK CIRCULAR FLOATING ACTION BUTTON (FAB) - NON-AI-SLOP (BOTTOM-RIGHT) -->
+        <!-- Tanya TERNAKVERSE AI FAB Launcher -->
+        <button
+            type="button"
+            @click="toggleChat"
+            class="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 cursor-pointer bg-white border border-[#E0E4DD] hover:border-[#171B17] text-[#171B17] shadow-lg dark:bg-[#111111] dark:border dark:border-[#1E1E1E] dark:hover:border-[#00D084]/60 dark:text-[#F5F5F5] hover:dark:text-[#00D084]"
+            :class="{ 'border-[#00D084] text-[#00D084] dark:bg-[#181818]': isChatOpen }"
+            :title="isChatOpen ? 'Tutup Asisten' : 'Buka Asisten Data TERNAKVERSE AI'"
+            :aria-label="isChatOpen ? 'Tutup Asisten' : 'Buka Asisten Data TERNAKVERSE AI'"
+            data-widget="Tanya TERNAKVERSE AI"
+        >
+            <X v-if="isChatOpen" class="w-5 h-5 transition-transform duration-200" />
+            <MessageSquareText v-else class="w-5 h-5 transition-transform duration-200" />
+        </button>
+
+        <!-- 2. FLOATING CHAT DRAWER WINDOW (WHEN OPEN) -->
+        <div
+            v-if="isChatOpen"
+            class="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[520px] bg-[#090909] border border-[#1E1E1E] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 select-none backdrop-blur-xl"
+        >
             <!-- Header Chat -->
-            <div class="p-4 bg-[#080C0E]/70 border-b border-white/10 flex items-center justify-between">
+            <div class="p-3.5 bg-[#111111] border-b border-[#1E1E1E] flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                        <Bot class="w-5 h-5 stroke-[2.2]" />
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-[#00D084] shrink-0">
+                        <MessageSquareText class="w-4 h-4 stroke-[2.2]" />
                     </div>
                     <div>
-                        <h3 class="font-display font-extrabold text-base text-[#F4F7F5]">Asisten Data Ternakverse</h3>
-                        <p class="text-[11px] text-slate-400">Tanya jawab cerdas seputar data peternakan Banyumas</p>
+                        <h3 class="font-display font-bold text-sm text-[#F5F5F5] flex items-center gap-1.5 leading-tight">
+                            <span>TERNAKVERSE AI</span>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded bg-[#103F3A] border border-[#159B78] text-[#39D6C0] font-mono">
+                                v1.0
+                            </span>
+                        </h3>
+                        <p class="text-[10px] text-[#B3B3B3] leading-tight mt-0.5">Asisten Data & Pengetahuan Spasial</p>
                     </div>
                 </div>
                 <button
-                    @click="$emit('close')"
-                    class="w-8 h-8 rounded-full bg-[#080C0E]/50 border border-white/10 text-slate-400 hover:text-[#F4F7F5] hover:border-rose-400/50 flex items-center justify-center transition-colors"
+                    type="button"
+                    @click="closeChat"
+                    class="w-7 h-7 rounded-lg bg-[#181818] border border-[#1E1E1E] text-[#B3B3B3] hover:text-rose-400 hover:border-rose-500/40 flex items-center justify-center transition-colors cursor-pointer"
+                    aria-label="Tutup Asisten Data"
+                    title="Tutup Chatbot (Esc)"
                 >
-                    <X class="w-4 h-4" />
+                    <X class="w-3.5 h-3.5" />
                 </button>
             </div>
 
             <!-- Area Percakapan -->
-            <div class="flex-1 p-4 overflow-y-auto space-y-3">
+            <div ref="chatContainerRef" class="flex-1 p-3.5 overflow-y-auto space-y-3 custom-chat-scroll">
                 <div
                     v-for="(msg, idx) in messages"
                     :key="idx"
-                    class="flex items-start gap-2.5"
+                    class="flex items-start gap-2"
                     :class="{ 'flex-row-reverse': msg.sender === 'user' }"
                 >
                     <div
-                        class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold"
-                        :class="msg.sender === 'bot' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-teal-500/20 text-teal-300 border border-teal-500/30'"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-[10px] font-bold"
+                        :class="msg.sender === 'bot' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-teal-500/15 text-teal-300 border border-teal-500/30'"
                     >
                         {{ msg.sender === 'bot' ? 'AI' : 'Kamu' }}
                     </div>
                     <div
-                        class="max-w-[80%] p-3 rounded-16 text-xs leading-relaxed"
-                        :class="msg.sender === 'bot' 
-                            ? 'bg-[#080C0E]/70 border border-white/10 text-[#F4F7F5]' 
-                            : 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-100 font-medium'"
+                        class="max-w-[82%] p-3 rounded-2xl text-xs leading-relaxed tabular-nums"
+                        :class="msg.sender === 'bot'
+                            ? 'bg-[#181818] border border-[#1E1E1E] text-[#F5F5F5] shadow-sm'
+                            : 'bg-emerald-600/20 border border-emerald-500/40 text-emerald-100 font-medium'"
                     >
-                        <div v-html="msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')"></div>
-                        <span class="block text-[10px] mt-1 opacity-60 text-right">{{ msg.time }}</span>
+                        <div v-if="msg.sender === 'bot'" v-html="formatMessage(msg.text)"></div>
+                        <div v-else>{{ msg.text }}</div>
+                        <span class="block text-[9px] mt-1 text-[#B3B3B3] text-right tabular-nums">{{ msg.time }}</span>
                     </div>
                 </div>
             </div>
 
             <!-- Pertanyaan Cepat (Chips) -->
-            <div class="px-4 py-2 border-t border-white/10 bg-[#080C0E]/50 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <div class="px-3 py-2 border-t border-[#1E1E1E] bg-[#111111]/70 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
                 <button
                     v-for="(prompt, idx) in quickPrompts"
                     :key="idx"
+                    type="button"
                     @click="handleSend(prompt)"
-                    class="px-2.5 py-1 rounded-full bg-[#080C0E]/60 border border-white/10 hover:border-emerald-500/40 text-[11px] text-slate-400 hover:text-emerald-300 whitespace-nowrap transition-colors flex-shrink-0"
+                    class="h-7 px-2.5 rounded-lg bg-[#181818] border border-[#1E1E1E] hover:border-emerald-500/50 text-[10px] text-[#B3B3B3] hover:text-emerald-300 whitespace-nowrap transition-colors flex-shrink-0 cursor-pointer"
                 >
                     {{ prompt }}
                 </button>
             </div>
 
             <!-- Input Bar -->
-            <div class="p-3 bg-[#080C0E]/80 border-t border-white/10 flex items-center gap-2">
+            <div class="p-3 bg-[#111111] border-t border-[#1E1E1E] flex items-center gap-2">
                 <input
                     v-model="inputQuestion"
                     @keydown.enter="handleSend()"
                     type="text"
-                    placeholder="Ketik pertanyaanmu di sini..."
-                    class="input-tactile flex-1 text-xs"
+                    placeholder="Tanyakan data peternakan..."
+                    class="h-9 px-3 rounded-xl bg-[#181818] border border-[#1E1E1E] focus:border-emerald-500 text-[#F5F5F5] placeholder:text-[#B3B3B3] outline-none flex-1 text-xs"
                 />
                 <button
+                    type="button"
                     @click="handleSend()"
-                    class="btn-primary-tactile h-10 w-10 p-0 flex items-center justify-center flex-shrink-0"
+                    class="h-9 w-9 rounded-xl bg-[#159B78] hover:bg-[#1BB18A] text-white flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer shadow-sm active:scale-95"
+                    aria-label="Kirim Pertanyaan"
                 >
-                    <Send class="w-4 h-4 stroke-[2.5]" />
+                    <Send class="w-3.5 h-3.5 stroke-[2.2]" />
                 </button>
             </div>
         </div>
@@ -161,4 +248,19 @@ function handleSend(question?: string) {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+.custom-chat-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+.custom-chat-scroll::-webkit-scrollbar-track {
+    background: #090909;
+    border-radius: 4px;
+}
+.custom-chat-scroll::-webkit-scrollbar-thumb {
+    background: #1E1E1E;
+    border-radius: 4px;
+}
+.custom-chat-scroll::-webkit-scrollbar-thumb:hover {
+    background: #159B78;
+}
 </style>
+

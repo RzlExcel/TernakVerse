@@ -9332,3 +9332,23 @@ export function getDesaByKecamatan(kecamatanId: string): DesaData[] {
 export function getAllDesa(): DesaData[] {
     return BANYUMAS_DESA_LIST;
 }
+
+export type DesaStatus = 'bahaya' | 'waspada' | 'aman';
+
+export function getDesaStatus(desa: DesaData): DesaStatus {
+    const pmk = desa.pmk || 0;
+    const lsd = desa.lsd || 0;
+    if (pmk > 5 || lsd > 5) return 'bahaya';
+    if (pmk > 0 || lsd > 0) return 'waspada';
+    return 'aman';
+}
+
+export function getDesaStatusCounts(desaList: DesaData[]): { bahaya: number; waspada: number; aman: number } {
+    const counts = { bahaya: 0, waspada: 0, aman: 0 };
+    for (const d of desaList) {
+        const status = getDesaStatus(d);
+        counts[status]++;
+    }
+    return counts;
+}
+

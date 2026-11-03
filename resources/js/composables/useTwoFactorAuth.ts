@@ -1,4 +1,3 @@
-import { useHttp } from '@inertiajs/vue3';
 import type { ComputedRef, Ref } from 'vue';
 import { computed, ref } from 'vue';
 import { qrCode, recoveryCodes, secretKey } from '@/routes/two-factor';
@@ -27,15 +26,29 @@ const hasSetupData = computed<boolean>(
     () => qrCodeSvg.value !== null && manualSetupKey.value !== null,
 );
 
-export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
-    const http = useHttp();
+async function getJson<T>(routeDef: { url: string; method: string }): Promise<T> {
+    const res = await fetch(routeDef.url, {
+        method: routeDef.method.toUpperCase(),
+        headers: {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'same-origin',
+    });
 
+    if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+    }
+
+    return (await res.json()) as T;
+}
+
+export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
     const fetchQrCode = async (): Promise<void> => {
         try {
-            const { svg } = (await http.submit(qrCode())) as {
-                svg: string;
-                url: string;
-            };
+            const { svg } = await getJson<{ svg: string; url: string }>(
+                qrCode(),
+            );
 
             qrCodeSvg.value = svg;
         } catch {
@@ -46,9 +59,9 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
 
     const fetchSetupKey = async (): Promise<void> => {
         try {
-            const { secretKey: key } = (await http.submit(secretKey())) as {
-                secretKey: string;
-            };
+            const { secretKey: key } = await getJson<{ secretKey: string }>(
+                secretKey(),
+            );
 
             manualSetupKey.value = key;
         } catch {
@@ -76,9 +89,7 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
     const fetchRecoveryCodes = async (): Promise<void> => {
         try {
             clearErrors();
-            recoveryCodesList.value = (await http.submit(
-                recoveryCodes(),
-            )) as string[];
+            recoveryCodesList.value = await getJson<string[]>(recoveryCodes());
         } catch {
             errors.value.push('Failed to fetch recovery codes');
             recoveryCodesList.value = [];

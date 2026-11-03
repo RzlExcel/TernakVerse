@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import AppLogo from '@/components/AppLogo.vue';
+import ThemeToggle from '@/components/ternakverse/ThemeToggle.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@inertiajs/vue3';
+import { ArrowLeft, ShieldCheck } from 'lucide-vue-next';
 
 defineProps<{
     title?: string;
@@ -10,26 +12,47 @@ defineProps<{
 </script>
 
 <template>
-    <div class="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+    <div class="flex min-h-svh flex-col items-center justify-center gap-6 bg-slate-50 p-6 md:p-10 dark:bg-[#090909] relative transition-colors">
+        <!-- Floating ThemeToggle Top Right -->
+        <div class="absolute top-4 right-4 z-20">
+            <ThemeToggle size="sm" compact />
+        </div>
+
         <div class="flex w-full max-w-md flex-col gap-6">
-            <Link :href="route('home')" class="flex items-center gap-2 self-center font-medium">
-                <div class="flex h-9 w-9 items-center justify-center">
-                    <AppLogoIcon class="size-9 fill-current text-black dark:text-white" />
+            <div class="flex flex-col items-center gap-3 text-center">
+                <Link href="/" class="flex items-center gap-2 font-medium transition-opacity hover:opacity-90">
+                    <AppLogo />
+                </Link>
+                <div
+                    class="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-[#00D084]"
+                >
+                    <ShieldCheck class="size-3.5 shrink-0" />
+                    <span>Dinas Perikanan dan Peternakan Kabupaten Banyumas</span>
                 </div>
-            </Link>
+            </div>
 
             <div class="flex flex-col gap-6">
-                <Card class="rounded-xl">
-                    <CardHeader class="px-10 pb-0 pt-8 text-center">
-                        <CardTitle class="text-xl">{{ title }}</CardTitle>
-                        <CardDescription>
+                <Card class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-[#1E1E1E] dark:bg-[#111111]">
+                    <CardHeader class="p-0 pb-6 text-center">
+                        <CardTitle class="text-xl font-bold tracking-tight text-slate-900 dark:text-[#F5F5F5]">{{ title }}</CardTitle>
+                        <CardDescription class="text-sm text-slate-500 dark:text-[#B3B3B3]">
                             {{ description }}
                         </CardDescription>
                     </CardHeader>
-                    <CardContent class="px-10 py-8">
+                    <CardContent class="p-0">
                         <slot />
                     </CardContent>
                 </Card>
+            </div>
+
+            <div class="flex items-center justify-center">
+                <Link
+                    href="/"
+                    class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 transition-colors hover:text-emerald-600 dark:text-[#B3B3B3] dark:hover:text-[#00D084]"
+                >
+                    <ArrowLeft class="size-3.5" />
+                    <span>Kembali ke Portal Publik WebGIS</span>
+                </Link>
             </div>
         </div>
     </div>

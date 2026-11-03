@@ -143,16 +143,29 @@ function saveFormData() {
         list.push({
             id: newId,
             nama: form.value.nama,
+            kode_kec: `33.02.${String(list.length + 1).padStart(2, '0')}`,
             zona: form.value.zona,
+            ayam_potong: 15000,
+            ayam_petelur: 5000,
             sapi_potong: Number(form.value.sapi_potong),
             sapi_perah: Number(form.value.sapi_perah),
             kambing: Number(form.value.kambing),
             domba: Number(form.value.domba),
             ayam_broiler: 15000,
+            telur_ayam: 12000,
+            daging_ayam: 18000,
+            daging_sapi: 4500,
+            daging_kambing: 1200,
+            daging_domba: 800,
+            susu_sapi: 6000,
+            susu_kambing: 400,
+            susu_domba: 100,
+            susu_liter: 6500,
             pmk: Number(form.value.pmk),
             lsd: Number(form.value.lsd),
-            center: [400, 300],
-            path: 'M 350 250 L 450 250 L 450 350 L 350 350 Z',
+            poskeswan: 1,
+            lat: -7.4314,
+            lng: 109.2478,
             last_updated: 'Baru saja'
         });
         showToast(`Kecamatan ${form.value.nama} berhasil ditambahkan.`);
@@ -185,17 +198,17 @@ function executeDelete() {
 </script>
 
 <template>
-    <!-- CONTAINER SATU KOLOM (Maksimal 1160px, Bab 4.2) -->
-    <div class="w-full max-w-[1160px] mx-auto px-4 py-8 space-y-6 select-none font-ui">
+    <!-- CONTAINER SATU KOLOM (Maksimal 1160px) -->
+    <div class="w-full max-w-[1160px] mx-auto px-4 py-8 space-y-6 select-none font-ui text-[#171B17] dark:text-[#F5F5F5]">
         
-        <!-- 1. HEADER (Judul + Tombol Cari, Impor CSV/Excel, Tambah Data, Bab 4.2) -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b-2 border-[#243034]">
+        <!-- 1. HEADER (Judul + Tombol Cari, Impor CSV/Excel, Tambah Data) -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
             <div>
-                <h1 class="font-display font-extrabold text-3xl sm:text-4xl text-[#F4F7F5] tracking-tight">
+                <h1 class="font-display font-extrabold text-3xl sm:text-4xl text-[#171B17] dark:text-[#F5F5F5] tracking-tight">
                     Kelola Data Peternakan
                 </h1>
-                <p class="text-sm text-[#8FA1A0] mt-1">
-                    Panel kendali data statistik peternakan & kewaspadaan wabah Kabupaten Banyumas.
+                <p class="text-sm text-[#6E776D] dark:text-[#B3B3B3] mt-1">
+                    Panel kendali data statistik peternakan &amp; kewaspadaan wabah Kabupaten Banyumas.
                 </p>
             </div>
 
@@ -204,143 +217,143 @@ function executeDelete() {
                     @click="showToast('Fitur impor CSV: format data Banyumas valid.')"
                     class="btn-secondary-tactile text-xs font-bold gap-2"
                 >
-                    <Upload class="w-4 h-4 text-[#19F5D4]" />
+                    <Upload class="w-4 h-4 text-teal-600 dark:text-teal-400" />
                     <span>Impor CSV / Excel</span>
                 </button>
                 <button
                     @click="openAddModal"
                     class="btn-primary-tactile text-xs font-bold gap-2"
                 >
-                    <Plus class="w-4 h-4 stroke-[3]" />
+                    <Plus class="w-4 h-4 stroke-[2.5]" />
                     <span>+ Tambah Data</span>
                 </button>
             </div>
         </div>
 
-        <!-- 2. ANALITIK (Bab 7: 4 Kartu KPI + Bar Chart + Line Chart + Donut + Activity) -->
+        <!-- 2. ANALITIK (4 Kartu KPI + Bar Chart + Line Chart + Donut + Activity) -->
         <section class="space-y-4">
             <!-- 2.1 Empat Kartu KPI Statistik Full Width -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- KPI 1: Sapi Potong -->
-                <div class="bg-[#10171A] border-2 border-[#243034] rounded-20 p-4 relative overflow-hidden flex flex-col justify-between">
+                <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs font-bold text-[#8FA1A0]">Total Sapi Potong</span>
-                            <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#39FF14]/20 text-[#39FF14] border border-[#39FF14]">
+                            <span class="text-xs font-bold text-[#6E776D] dark:text-[#B3B3B3]">Total Sapi Potong</span>
+                            <span class="text-[11px] font-mono tabular-nums font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                                 +4,2%
                             </span>
                         </div>
                         <div class="flex items-baseline gap-1.5 mt-2">
-                            <span class="font-display font-extrabold text-3xl text-[#F4F7F5]">
+                            <span class="font-display font-extrabold text-3xl tabular-nums text-[#171B17] dark:text-[#F5F5F5]">
                                 {{ formatAngka(kpiStats.totalSapi) }}
                             </span>
-                            <span class="text-xs text-[#8FA1A0]">ekor</span>
+                            <span class="text-xs text-[#6E776D] dark:text-[#B3B3B3]">ekor</span>
                         </div>
                     </div>
-                    <!-- Sparkline SVG (Garis 2px aksen + area 12% opacity, Bab 7.1) -->
+                    <!-- Sparkline SVG -->
                     <div class="h-10 w-full mt-3">
                         <svg class="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
                             <defs>
                                 <linearGradient id="spark-sapi" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="#39FF14" stop-opacity="0.25" />
-                                    <stop offset="100%" stop-color="#39FF14" stop-opacity="0" />
+                                    <stop offset="0%" stop-color="#10B981" stop-opacity="0.25" />
+                                    <stop offset="100%" stop-color="#10B981" stop-opacity="0" />
                                 </linearGradient>
                             </defs>
                             <path d="M 0 25 Q 25 15 50 18 T 100 5 L 100 30 L 0 30 Z" fill="url(#spark-sapi)" />
-                            <path d="M 0 25 Q 25 15 50 18 T 100 5" fill="none" stroke="#39FF14" stroke-width="2.5" />
+                            <path d="M 0 25 Q 25 15 50 18 T 100 5" fill="none" stroke="#10B981" stroke-width="2.5" />
                         </svg>
                     </div>
                 </div>
 
                 <!-- KPI 2: Total Kambing -->
-                <div class="bg-[#10171A] border-2 border-[#243034] rounded-20 p-4 relative overflow-hidden flex flex-col justify-between">
+                <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs font-bold text-[#8FA1A0]">Total Ternak Kambing</span>
-                            <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#39FF14]/20 text-[#39FF14] border border-[#39FF14]">
+                            <span class="text-xs font-bold text-[#6E776D] dark:text-[#B3B3B3]">Total Ternak Kambing</span>
+                            <span class="text-[11px] font-mono tabular-nums font-bold px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/30">
                                 +6,1%
                             </span>
                         </div>
                         <div class="flex items-baseline gap-1.5 mt-2">
-                            <span class="font-display font-extrabold text-3xl text-[#F4F7F5]">
+                            <span class="font-display font-extrabold text-3xl tabular-nums text-[#171B17] dark:text-[#F5F5F5]">
                                 {{ formatAngka(kpiStats.totalKambing) }}
                             </span>
-                            <span class="text-xs text-[#8FA1A0]">ekor</span>
+                            <span class="text-xs text-[#6E776D] dark:text-[#B3B3B3]">ekor</span>
                         </div>
                     </div>
                     <div class="h-10 w-full mt-3">
                         <svg class="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
                             <defs>
                                 <linearGradient id="spark-kambing" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="#19F5D4" stop-opacity="0.25" />
-                                    <stop offset="100%" stop-color="#19F5D4" stop-opacity="0" />
+                                    <stop offset="0%" stop-color="#14B8A6" stop-opacity="0.25" />
+                                    <stop offset="100%" stop-color="#14B8A6" stop-opacity="0" />
                                 </linearGradient>
                             </defs>
                             <path d="M 0 20 Q 30 25 60 10 T 100 4 L 100 30 L 0 30 Z" fill="url(#spark-kambing)" />
-                            <path d="M 0 20 Q 30 25 60 10 T 100 4" fill="none" stroke="#19F5D4" stroke-width="2.5" />
+                            <path d="M 0 20 Q 30 25 60 10 T 100 4" fill="none" stroke="#14B8A6" stroke-width="2.5" />
                         </svg>
                     </div>
                 </div>
 
                 <!-- KPI 3: Kasus PMK Aktif -->
-                <div class="bg-[#10171A] border-2 border-[#243034] rounded-20 p-4 relative overflow-hidden flex flex-col justify-between">
+                <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs font-bold text-[#8FA1A0]">Kasus Aktif PMK</span>
-                            <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#39FF14]/20 text-[#39FF14] border border-[#39FF14]">
+                            <span class="text-xs font-bold text-[#6E776D] dark:text-[#B3B3B3]">Kasus Aktif PMK</span>
+                            <span class="text-[11px] font-mono tabular-nums font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                                 -18,5% (Membaik)
                             </span>
                         </div>
                         <div class="flex items-baseline gap-1.5 mt-2">
-                            <span class="font-display font-extrabold text-3xl text-[#FF5C5C]">
+                            <span class="font-display font-extrabold text-3xl tabular-nums text-rose-500 dark:text-rose-400">
                                 {{ kpiStats.totalPmk }}
                             </span>
-                            <span class="text-xs text-[#8FA1A0]">kasus aktif</span>
+                            <span class="text-xs text-[#6E776D] dark:text-[#B3B3B3]">kasus aktif</span>
                         </div>
                     </div>
                     <div class="h-10 w-full mt-3">
                         <svg class="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
-                            <path d="M 0 5 Q 35 10 70 20 T 100 26 L 100 30 L 0 30 Z" fill="rgba(255, 92, 92, 0.15)" />
-                            <path d="M 0 5 Q 35 10 70 20 T 100 26" fill="none" stroke="#FF5C5C" stroke-width="2.5" />
+                            <path d="M 0 5 Q 35 10 70 20 T 100 26 L 100 30 L 0 30 Z" fill="rgba(244, 63, 94, 0.15)" />
+                            <path d="M 0 5 Q 35 10 70 20 T 100 26" fill="none" stroke="#F43F5E" stroke-width="2.5" />
                         </svg>
                     </div>
                 </div>
 
                 <!-- KPI 4: Kasus LSD Aktif -->
-                <div class="bg-[#10171A] border-2 border-[#243034] rounded-20 p-4 relative overflow-hidden flex flex-col justify-between">
+                <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs font-bold text-[#8FA1A0]">Kasus Aktif LSD</span>
-                            <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FFC53D]/20 text-[#FFC53D] border border-[#FFC53D]">
+                            <span class="text-xs font-bold text-[#6E776D] dark:text-[#B3B3B3]">Kasus Aktif LSD</span>
+                            <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
                                 Stabil Waspada
                             </span>
                         </div>
                         <div class="flex items-baseline gap-1.5 mt-2">
-                            <span class="font-display font-extrabold text-3xl text-[#FFC53D]">
+                            <span class="font-display font-extrabold text-3xl tabular-nums text-amber-500 dark:text-amber-400">
                                 {{ kpiStats.totalLsd }}
                             </span>
-                            <span class="text-xs text-[#8FA1A0]">kasus aktif</span>
+                            <span class="text-xs text-[#6E776D] dark:text-[#B3B3B3]">kasus aktif</span>
                         </div>
                     </div>
                     <div class="h-10 w-full mt-3">
                         <svg class="w-full h-full" viewBox="0 0 100 30" preserveAspectRatio="none">
-                            <path d="M 0 15 Q 40 18 70 14 T 100 12 L 100 30 L 0 30 Z" fill="rgba(255, 197, 61, 0.15)" />
-                            <path d="M 0 15 Q 40 18 70 14 T 100 12" fill="none" stroke="#FFC53D" stroke-width="2.5" />
+                            <path d="M 0 15 Q 40 18 70 14 T 100 12 L 100 30 L 0 30 Z" fill="rgba(245, 158, 11, 0.15)" />
+                            <path d="M 0 15 Q 40 18 70 14 T 100 12" fill="none" stroke="#F59E0B" stroke-width="2.5" />
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <!-- 2.2 Baris Chart Atas: Bar Chart Top-5 (Cyan->Neon) & Line Chart Penyakit (PMK Merah vs LSD Kuning) -->
+            <!-- 2.2 Baris Chart Atas: Bar Chart Top-5 & Line Chart Penyakit -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <!-- Bar Chart: Populasi Sapi Potong Top-5 -->
-                <div class="bg-[#10171A] border-2 border-[#243034] rounded-20 p-5">
+                <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h3 class="font-display font-bold text-lg text-[#F4F7F5]">Top 5 Kecamatan (Sapi Potong)</h3>
-                            <p class="text-xs text-[#8FA1A0]">Komparasi populasi tertinggi di Banyumas</p>
+                            <h3 class="font-display font-bold text-lg text-[#171B17] dark:text-[#F5F5F5]">Top 5 Kecamatan (Sapi Potong)</h3>
+                            <p class="text-xs text-[#6E776D] dark:text-[#B3B3B3]">Komparasi populasi tertinggi di Banyumas</p>
                         </div>
-                        <span class="text-xs font-mono text-[#39FF14] bg-[#0A0D0E] px-2.5 py-1 rounded-full border border-[#243034]">
+                        <span class="text-xs font-mono text-emerald-600 dark:text-emerald-400 bg-[#F4F5F2] dark:bg-[#181818] px-2.5 py-1 rounded-full border border-[#E0E4DD] dark:border-[#1E1E1E]">
                             Live SVG
                         </span>
                     </div>
@@ -349,16 +362,15 @@ function executeDelete() {
                     <div class="h-56 w-full">
                         <svg class="w-full h-full" viewBox="0 0 450 200">
                             <defs>
-                                <!-- Gradien cyan -> neon vertikal (satu-satunya gradien yg diizinkan Bab 2) -->
                                 <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="#39FF14" />
-                                    <stop offset="100%" stop-color="#19F5D4" />
+                                    <stop offset="0%" stop-color="#10B981" />
+                                    <stop offset="100%" stop-color="#14B8A6" />
                                 </linearGradient>
                             </defs>
-                            <!-- Grid Putus-putus Opacity 0.28 (Bab 7) -->
-                            <line x1="50" y1="40" x2="430" y2="40" stroke="#3A4A4F" stroke-dasharray="3 6" opacity="0.3" />
-                            <line x1="50" y1="90" x2="430" y2="90" stroke="#3A4A4F" stroke-dasharray="3 6" opacity="0.3" />
-                            <line x1="50" y1="140" x2="430" y2="140" stroke="#3A4A4F" stroke-dasharray="3 6" opacity="0.3" />
+                            <!-- Grid Putus-putus -->
+                            <line x1="50" y1="40" x2="430" y2="40" class="stroke-[#E0E4DD] dark:stroke-[#282828]" stroke-dasharray="3 6" opacity="0.4" />
+                            <line x1="50" y1="90" x2="430" y2="90" class="stroke-[#E0E4DD] dark:stroke-[#282828]" stroke-dasharray="3 6" opacity="0.4" />
+                            <line x1="50" y1="140" x2="430" y2="140" class="stroke-[#E0E4DD] dark:stroke-[#282828]" stroke-dasharray="3 6" opacity="0.4" />
 
                             <!-- 5 Batang -->
                             <g v-for="(item, idx) in top5BarData" :key="item.id">
@@ -369,15 +381,15 @@ function executeDelete() {
                                     :height="(item.sapi_potong / 3500) * 120"
                                     rx="6"
                                     fill="url(#barGradient)"
-                                    stroke="#F4F7F5"
-                                    stroke-width="1.5"
+                                    stroke="#34D399"
+                                    stroke-width="1"
                                 />
-                                <!-- Nilai di atas batang (Bab 7) -->
+                                <!-- Nilai di atas batang -->
                                 <text
                                     :x="75 + idx * 72 + 21"
                                     :y="150 - (item.sapi_potong / 3500) * 120"
                                     text-anchor="middle"
-                                    class="fill-[#19F5D4] font-display font-extrabold text-[12px]"
+                                    class="fill-teal-600 dark:fill-teal-400 font-mono tabular-nums font-extrabold text-[12px]"
                                 >
                                     {{ formatAngka(item.sapi_potong) }}
                                 </text>
@@ -386,7 +398,7 @@ function executeDelete() {
                                     :x="75 + idx * 72 + 21"
                                     y="180"
                                     text-anchor="middle"
-                                    class="fill-[#8FA1A0] font-ui font-bold text-[11px]"
+                                    class="fill-[#6E776D] dark:fill-[#B3B3B3] font-ui font-bold text-[11px]"
                                 >
                                     {{ item.nama }}
                                 </text>
@@ -395,19 +407,19 @@ function executeDelete() {
                     </div>
                 </div>
 
-                <!-- Line Chart: Tren Kasus Penyakit PMK Merah vs LSD Kuning -->
-                <div class="bg-[#10171A] border-2 border-[#243034] rounded-20 p-5">
+                <!-- Line Chart: Tren Kasus Penyakit PMK vs LSD -->
+                <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h3 class="font-display font-bold text-lg text-[#F4F7F5]">Tren Kasus Penyakit (6 Bulan)</h3>
-                            <p class="text-xs text-[#8FA1A0]">Perkembangan kasus PMK vs LSD</p>
+                            <h3 class="font-display font-bold text-lg text-[#171B17] dark:text-[#F5F5F5]">Tren Kasus Penyakit (6 Bulan)</h3>
+                            <p class="text-xs text-[#6E776D] dark:text-[#B3B3B3]">Perkembangan kasus PMK vs LSD</p>
                         </div>
                         <div class="flex items-center gap-3 text-xs">
-                            <span class="flex items-center gap-1.5 text-[#FF5C5C] font-bold">
-                                <span class="w-3 h-0.5 bg-[#FF5C5C]"></span> PMK
+                            <span class="flex items-center gap-1.5 text-rose-500 dark:text-rose-400 font-bold">
+                                <span class="w-3 h-0.5 bg-rose-500"></span> PMK
                             </span>
-                            <span class="flex items-center gap-1.5 text-[#FFC53D] font-bold">
-                                <span class="w-3 h-0.5 bg-[#FFC53D]"></span> LSD
+                            <span class="flex items-center gap-1.5 text-amber-500 dark:text-amber-400 font-bold">
+                                <span class="w-3 h-0.5 bg-amber-500"></span> LSD
                             </span>
                         </div>
                     </div>
@@ -416,145 +428,145 @@ function executeDelete() {
                     <div class="h-56 w-full">
                         <svg class="w-full h-full" viewBox="0 0 450 200">
                             <!-- Grid Putus-putus -->
-                            <line x1="40" y1="40" x2="430" y2="40" stroke="#3A4A4F" stroke-dasharray="3 6" opacity="0.3" />
-                            <line x1="40" y1="90" x2="430" y2="90" stroke="#3A4A4F" stroke-dasharray="3 6" opacity="0.3" />
-                            <line x1="40" y1="140" x2="430" y2="140" stroke="#3A4A4F" stroke-dasharray="3 6" opacity="0.3" />
+                            <line x1="40" y1="40" x2="430" y2="40" class="stroke-[#E0E4DD] dark:stroke-[#282828]" stroke-dasharray="3 6" opacity="0.4" />
+                            <line x1="40" y1="90" x2="430" y2="90" class="stroke-[#E0E4DD] dark:stroke-[#282828]" stroke-dasharray="3 6" opacity="0.4" />
+                            <line x1="40" y1="140" x2="430" y2="140" class="stroke-[#E0E4DD] dark:stroke-[#282828]" stroke-dasharray="3 6" opacity="0.4" />
 
-                            <!-- Line PMK Merah -->
+                            <!-- Line PMK Rose -->
                             <path
                                 d="M 60 70 L 130 50 L 205 90 L 280 120 L 355 135 L 415 145"
                                 fill="none"
-                                stroke="#FF5C5C"
+                                stroke="#F43F5E"
                                 stroke-width="3"
                                 stroke-linecap="round"
                             />
-                            <!-- Line LSD Kuning -->
+                            <!-- Line LSD Amber -->
                             <path
                                 d="M 60 130 L 130 115 L 205 125 L 280 110 L 355 120 L 415 130"
                                 fill="none"
-                                stroke="#FFC53D"
+                                stroke="#F59E0B"
                                 stroke-width="3"
                                 stroke-linecap="round"
                             />
 
                             <!-- Titik Fokus -->
-                            <circle cx="415" cy="145" r="5" fill="#FF5C5C" stroke="#F4F7F5" stroke-width="2" />
-                            <circle cx="415" cy="130" r="5" fill="#FFC53D" stroke="#F4F7F5" stroke-width="2" />
+                            <circle cx="415" cy="145" r="5" fill="#F43F5E" class="stroke-[#171B17] dark:stroke-[#F5F5F5]" stroke-width="2" />
+                            <circle cx="415" cy="130" r="5" fill="#F59E0B" class="stroke-[#171B17] dark:stroke-[#F5F5F5]" stroke-width="2" />
 
                             <!-- Label Bulan -->
-                            <text x="60" y="175" class="fill-[#8FA1A0] text-[11px] font-bold" text-anchor="middle">Mei</text>
-                            <text x="130" y="175" class="fill-[#8FA1A0] text-[11px] font-bold" text-anchor="middle">Jun</text>
-                            <text x="205" y="175" class="fill-[#8FA1A0] text-[11px] font-bold" text-anchor="middle">Jul</text>
-                            <text x="280" y="175" class="fill-[#8FA1A0] text-[11px] font-bold" text-anchor="middle">Agu</text>
-                            <text x="355" y="175" class="fill-[#8FA1A0] text-[11px] font-bold" text-anchor="middle">Sep</text>
-                            <text x="415" y="175" class="fill-[#19F5D4] text-[11px] font-bold" text-anchor="middle">Okt</text>
+                            <text x="60" y="175" class="fill-[#6E776D] dark:fill-[#B3B3B3] text-[11px] font-bold" text-anchor="middle">Mei</text>
+                            <text x="130" y="175" class="fill-[#6E776D] dark:fill-[#B3B3B3] text-[11px] font-bold" text-anchor="middle">Jun</text>
+                            <text x="205" y="175" class="fill-[#6E776D] dark:fill-[#B3B3B3] text-[11px] font-bold" text-anchor="middle">Jul</text>
+                            <text x="280" y="175" class="fill-[#6E776D] dark:fill-[#B3B3B3] text-[11px] font-bold" text-anchor="middle">Agu</text>
+                            <text x="355" y="175" class="fill-[#6E776D] dark:fill-[#B3B3B3] text-[11px] font-bold" text-anchor="middle">Sep</text>
+                            <text x="415" y="175" class="fill-teal-600 dark:fill-teal-400 text-[11px] font-bold" text-anchor="middle">Okt</text>
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <!-- 2.3 Baris Bawah: Donut 210px & Feed Aktivitas Terkini (Audit Trail, Bab 7.3) -->
+            <!-- 2.3 Baris Bawah: Donut & Feed Aktivitas Terkini (Audit Trail) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <!-- Donut Chart Komposisi Komoditas -->
-                <div class="bg-[#10171A] border-2 border-[#243034] rounded-20 p-5 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6">
                     <div class="relative w-48 h-48 flex-shrink-0 flex items-center justify-center">
                         <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
                             <!-- Sapi Potong (42%) -->
-                            <circle cx="50" cy="50" r="38" fill="none" stroke="#39FF14" stroke-width="14" stroke-dasharray="100 138" stroke-dashoffset="0" />
+                            <circle cx="50" cy="50" r="38" fill="none" stroke="#10B981" stroke-width="14" stroke-dasharray="100 138" stroke-dashoffset="0" />
                             <!-- Kambing (38%) -->
-                            <circle cx="50" cy="50" r="38" fill="none" stroke="#19F5D4" stroke-width="14" stroke-dasharray="90 148" stroke-dashoffset="-100" />
+                            <circle cx="50" cy="50" r="38" fill="none" stroke="#14B8A6" stroke-width="14" stroke-dasharray="90 148" stroke-dashoffset="-100" />
                             <!-- Domba (12%) -->
-                            <circle cx="50" cy="50" r="38" fill="none" stroke="#FFC53D" stroke-width="14" stroke-dasharray="30 208" stroke-dashoffset="-190" />
+                            <circle cx="50" cy="50" r="38" fill="none" stroke="#F59E0B" stroke-width="14" stroke-dasharray="30 208" stroke-dashoffset="-190" />
                             <!-- Sapi Perah (8%) -->
-                            <circle cx="50" cy="50" r="38" fill="none" stroke="#16BDB8" stroke-width="14" stroke-dasharray="18 220" stroke-dashoffset="-220" />
+                            <circle cx="50" cy="50" r="38" fill="none" stroke="#0EA5E9" stroke-width="14" stroke-dasharray="18 220" stroke-dashoffset="-220" />
                         </svg>
                         <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                            <span class="text-[10px] text-[#8FA1A0] font-bold uppercase tracking-wider">Total Hewan</span>
-                            <span class="font-display font-extrabold text-xl text-[#F4F7F5]">122.4K</span>
+                            <span class="text-[10px] text-[#6E776D] dark:text-[#B3B3B3] font-bold uppercase tracking-wider">Total Hewan</span>
+                            <span class="font-display font-extrabold text-xl tabular-nums text-[#171B17] dark:text-[#F5F5F5]">122.4K</span>
                         </div>
                     </div>
 
                     <!-- Legenda Donut -->
-                    <div class="space-y-2 text-xs flex-1">
+                    <div class="space-y-2 text-xs flex-1 w-full">
                         <div class="flex items-center justify-between">
-                            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#39FF14]"></span> Sapi Potong</span>
-                            <span class="font-bold text-[#F4F7F5]">48.970 (40%)</span>
+                            <span class="flex items-center gap-2 text-[#6E776D] dark:text-[#B3B3B3]"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Sapi Potong</span>
+                            <span class="font-mono tabular-nums font-bold text-[#171B17] dark:text-[#F5F5F5]">48.970 (40%)</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#19F5D4]"></span> Kambing</span>
-                            <span class="font-bold text-[#F4F7F5]">59.870 (48%)</span>
+                            <span class="flex items-center gap-2 text-[#6E776D] dark:text-[#B3B3B3]"><span class="w-3 h-3 rounded-full bg-teal-500"></span> Kambing</span>
+                            <span class="font-mono tabular-nums font-bold text-[#171B17] dark:text-[#F5F5F5]">59.870 (48%)</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#FFC53D]"></span> Domba</span>
-                            <span class="font-bold text-[#F4F7F5]">21.450 (8%)</span>
+                            <span class="flex items-center gap-2 text-[#6E776D] dark:text-[#B3B3B3]"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Domba</span>
+                            <span class="font-mono tabular-nums font-bold text-[#171B17] dark:text-[#F5F5F5]">21.450 (8%)</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#16BDB8]"></span> Sapi Perah</span>
-                            <span class="font-bold text-[#F4F7F5]">5.650 (4%)</span>
+                            <span class="flex items-center gap-2 text-[#6E776D] dark:text-[#B3B3B3]"><span class="w-3 h-3 rounded-full bg-sky-500"></span> Sapi Perah</span>
+                            <span class="font-mono tabular-nums font-bold text-[#171B17] dark:text-[#F5F5F5]">5.650 (4%)</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Feed Aktivitas Terkini (Audit Trail) -->
-                <div class="bg-[#10171A] border-2 border-[#243034] rounded-20 p-5">
+                <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-display font-bold text-lg text-[#F4F7F5] flex items-center gap-2">
-                            <Activity class="w-4 h-4 text-[#19F5D4]" />
+                        <h3 class="font-display font-bold text-lg text-[#171B17] dark:text-[#F5F5F5] flex items-center gap-2">
+                            <Activity class="w-4 h-4 text-teal-600 dark:text-teal-400" />
                             Log Aktivitas Perubahan Data
                         </h3>
-                        <span class="text-[11px] text-[#8FA1A0]">Real-time</span>
+                        <span class="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">Real-time</span>
                     </div>
 
                     <ul class="space-y-2.5">
                         <li
                             v-for="act in activityFeed.slice(0, 4)"
                             :key="act.id"
-                            class="text-xs p-2.5 rounded-12 bg-[#0A0D0E] border border-[#243034] flex items-start justify-between gap-2"
+                            class="text-xs p-2.5 rounded-lg bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#F5F5F5] flex items-start justify-between gap-2"
                         >
                             <div>
-                                <span class="font-bold text-[#19F5D4]">{{ act.user }}</span>
-                                <span class="text-[#F4F7F5] ml-1">{{ act.desc }}.</span>
+                                <span class="font-bold text-teal-600 dark:text-teal-400">{{ act.user }}</span>
+                                <span class="text-[#171B17] dark:text-[#F5F5F5] ml-1">{{ act.desc }}.</span>
                             </div>
-                            <span class="text-[10px] text-[#8FA1A0] flex-shrink-0 italic mt-0.5">{{ act.time }}</span>
+                            <span class="text-[10px] font-mono tabular-nums text-[#6E776D] dark:text-[#B3B3B3] flex-shrink-0 mt-0.5">{{ act.time }}</span>
                         </li>
                     </ul>
                 </div>
             </div>
         </section>
 
-        <!-- 3. BARIS RINGKASAN RAMPING (Bab 4.2: Satu Panel, Item Dipisah Border Kanan, Angka 24px) -->
-        <div class="bg-[#10171A] border-2 border-[#243034] rounded-20 p-4 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#243034]">
+        <!-- 3. BARIS RINGKASAN RAMPING -->
+        <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#E0E4DD] dark:divide-[#1E1E1E]">
             <div class="px-4 py-2 sm:py-0 flex items-center gap-3">
-                <span class="font-display font-extrabold text-2xl text-[#19F5D4]">{{ kecamatanList.length }}</span>
+                <span class="font-display font-extrabold text-2xl tabular-nums text-teal-600 dark:text-teal-400">{{ kecamatanList.length }}</span>
                 <div>
-                    <div class="text-xs font-bold text-[#F4F7F5]">Catatan Terdata</div>
-                    <div class="text-[11px] text-[#8FA1A0]">Basis data terverifikasi</div>
+                    <div class="text-xs font-bold text-[#171B17] dark:text-[#F5F5F5]">Catatan Terdata</div>
+                    <div class="text-[11px] text-[#6E776D] dark:text-[#B3B3B3]">Basis data terverifikasi</div>
                 </div>
             </div>
             <div class="px-4 py-2 sm:py-0 flex items-center gap-3">
-                <span class="font-display font-extrabold text-2xl text-[#39FF14]">27/27</span>
+                <span class="font-display font-extrabold text-2xl tabular-nums text-emerald-600 dark:text-emerald-400">27/27</span>
                 <div>
-                    <div class="text-xs font-bold text-[#F4F7F5]">Kecamatan Lengkap</div>
-                    <div class="text-[11px] text-[#8FA1A0]">Cakupan wilayah 100%</div>
+                    <div class="text-xs font-bold text-[#171B17] dark:text-[#F5F5F5]">Kecamatan Lengkap</div>
+                    <div class="text-[11px] text-[#6E776D] dark:text-[#B3B3B3]">Cakupan wilayah 100%</div>
                 </div>
             </div>
             <div class="px-4 py-2 sm:py-0 flex items-center gap-3">
-                <span class="font-display font-extrabold text-2xl text-[#FF5C5C]">
+                <span class="font-display font-extrabold text-2xl tabular-nums text-rose-500 dark:text-rose-400">
                     {{ kecamatanList.filter(k => k.zona === 'bahaya').length }}
                 </span>
                 <div>
-                    <div class="text-xs font-bold text-[#F4F7F5]">Zona Merah Aktif</div>
-                    <div class="text-[11px] text-[#8FA1A0]">Prioritas tindakan darurat</div>
+                    <div class="text-xs font-bold text-[#171B17] dark:text-[#F5F5F5]">Zona Merah Aktif</div>
+                    <div class="text-[11px] text-[#6E776D] dark:text-[#B3B3B3]">Prioritas tindakan darurat</div>
                 </div>
             </div>
         </div>
 
-        <!-- 4. TABEL DATA (Panel Penuh, Bab 4.2 & Bab 6) -->
-        <section class="bg-[#10171A] border-2 border-[#243034] rounded-20 p-5">
+        <!-- 4. TABEL DATA -->
+        <section class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-5 shadow-sm">
             <!-- Header Filter Tabel -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
                 <div class="relative w-full sm:w-72">
-                    <Search class="w-4 h-4 absolute left-3 top-3.5 text-[#8FA1A0]" />
+                    <Search class="w-4 h-4 absolute left-3 top-3 text-[#6E776D] dark:text-[#B3B3B3]" />
                     <input
                         v-model="tableSearch"
                         type="text"
@@ -569,19 +581,19 @@ function executeDelete() {
                         v-for="z in (['semua', 'bahaya', 'waspada', 'aman'] as const)"
                         :key="z"
                         @click="selectedZonaFilter = z"
-                        class="px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-all"
-                        :class="selectedZonaFilter === z ? 'bg-[#243034] text-[#19F5D4] border border-[#19F5D4]' : 'text-[#8FA1A0] hover:text-[#F4F7F5]'"
+                        class="px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all border"
+                        :class="selectedZonaFilter === z ? 'bg-[#171B17] text-white border-[#171B17] dark:bg-[#181818] dark:text-[#00D084] dark:border-[#00D084]/40' : 'border-transparent text-[#6E776D] dark:text-[#B3B3B3] hover:text-[#171B17] dark:hover:text-[#F5F5F5] hover:bg-[#F4F5F2] dark:hover:bg-[#181818]'"
                     >
                         {{ z }}
                     </button>
                 </div>
             </div>
 
-            <!-- Tabel Data Tanpa Zebra, Pemisah 1px Garis, Hover Garis Radius 12px (Bab 6) -->
+            <!-- Tabel Data -->
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-[#243034] text-[13px] font-medium text-[#8FA1A0]">
+                        <tr class="border-b border-[#E0E4DD] dark:border-[#1E1E1E] text-xs font-bold uppercase tracking-wider text-[#6E776D] dark:text-[#B3B3B3]">
                             <th class="py-3 px-3">Kecamatan</th>
                             <th class="py-3 px-3">Status Zona</th>
                             <th class="py-3 px-3 text-right">Sapi Potong</th>
@@ -592,52 +604,52 @@ function executeDelete() {
                             <th class="py-3 px-3 text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-[#243034]">
+                    <tbody class="divide-y divide-[#E0E4DD] dark:divide-[#1E1E1E]">
                         <tr
                             v-for="kec in filteredList"
                             :key="kec.id"
-                            class="group hover:bg-[#243034] transition-colors rounded-12"
+                            class="group hover:bg-[#F4F5F2] dark:hover:bg-[#181818] transition-colors"
                         >
-                            <td class="py-3.5 px-3 font-bold text-[#F4F7F5]">{{ kec.nama }}</td>
+                            <td class="py-3.5 px-3 font-bold text-[#171B17] dark:text-[#F5F5F5]">{{ kec.nama }}</td>
                             <td class="py-3.5 px-3">
                                 <span
                                     class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border"
                                     :class="{
-                                        'bg-[#FF5C5C]/20 text-[#FF5C5C] border-[#FF5C5C]': kec.zona === 'bahaya',
-                                        'bg-[#FFC53D]/20 text-[#FFC53D] border-[#FFC53D]': kec.zona === 'waspada',
-                                        'bg-[#39FF14]/20 text-[#39FF14] border-[#39FF14]': kec.zona === 'aman',
+                                        'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30': kec.zona === 'bahaya',
+                                        'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30': kec.zona === 'waspada',
+                                        'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30': kec.zona === 'aman',
                                     }"
                                 >
                                     {{ kec.zona === 'bahaya' ? 'Zona Bahaya' : kec.zona === 'waspada' ? 'Zona Waspada' : 'Aman' }}
                                 </span>
                             </td>
-                            <td class="py-3.5 px-3 text-right font-display font-bold text-[#F4F7F5]">
-                                {{ formatAngka(kec.sapi_potong) }} <span class="text-[11px] text-[#8FA1A0] font-normal">ekor</span>
+                            <td class="py-3.5 px-3 text-right font-mono tabular-nums font-bold text-[#171B17] dark:text-[#F5F5F5]">
+                                {{ formatAngka(kec.sapi_potong) }} <span class="text-[11px] text-[#6E776D] dark:text-[#B3B3B3] font-sans font-normal">ekor</span>
                             </td>
-                            <td class="py-3.5 px-3 text-right font-display font-bold text-[#F4F7F5]">
-                                {{ formatAngka(kec.sapi_perah) }} <span class="text-[11px] text-[#8FA1A0] font-normal">ekor</span>
+                            <td class="py-3.5 px-3 text-right font-mono tabular-nums font-bold text-[#171B17] dark:text-[#F5F5F5]">
+                                {{ formatAngka(kec.sapi_perah) }} <span class="text-[11px] text-[#6E776D] dark:text-[#B3B3B3] font-sans font-normal">ekor</span>
                             </td>
-                            <td class="py-3.5 px-3 text-right font-display font-bold text-[#F4F7F5]">
-                                {{ formatAngka(kec.kambing) }} <span class="text-[11px] text-[#8FA1A0] font-normal">ekor</span>
+                            <td class="py-3.5 px-3 text-right font-mono tabular-nums font-bold text-[#171B17] dark:text-[#F5F5F5]">
+                                {{ formatAngka(kec.kambing) }} <span class="text-[11px] text-[#6E776D] dark:text-[#B3B3B3] font-sans font-normal">ekor</span>
                             </td>
-                            <td class="py-3.5 px-3 text-right font-display font-extrabold" :class="kec.pmk > 0 ? 'text-[#FF5C5C]' : 'text-[#8FA1A0]'">
+                            <td class="py-3.5 px-3 text-right font-mono tabular-nums font-extrabold" :class="kec.pmk > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-[#6E776D] dark:text-[#B3B3B3]'">
                                 {{ kec.pmk }}
                             </td>
-                            <td class="py-3.5 px-3 text-right font-display font-extrabold" :class="kec.lsd > 0 ? 'text-[#FFC53D]' : 'text-[#8FA1A0]'">
+                            <td class="py-3.5 px-3 text-right font-mono tabular-nums font-extrabold" :class="kec.lsd > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-[#6E776D] dark:text-[#B3B3B3]'">
                                 {{ kec.lsd }}
                             </td>
                             <td class="py-3.5 px-3 text-center">
                                 <div class="flex items-center justify-center gap-1.5">
                                     <button
                                         @click="openEditModal(kec)"
-                                        class="w-8 h-8 rounded-10 bg-[#0A0D0E] border border-[#243034] text-[#8FA1A0] hover:text-[#19F5D4] hover:border-[#19F5D4] flex items-center justify-center transition-all"
+                                        class="w-8 h-8 rounded-lg bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#6E776D] dark:text-[#B3B3B3] hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-500/50 flex items-center justify-center transition-all cursor-pointer"
                                         title="Ubah Data"
                                     >
                                         <Edit2 class="w-3.5 h-3.5" />
                                     </button>
                                     <button
                                         @click="confirmDelete(kec)"
-                                        class="w-8 h-8 rounded-10 bg-[#0A0D0E] border border-[#243034] text-[#8FA1A0] hover:text-[#FF5C5C] hover:border-[#FF5C5C] flex items-center justify-center transition-all"
+                                        class="w-8 h-8 rounded-lg bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#6E776D] dark:text-[#B3B3B3] hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-500/50 flex items-center justify-center transition-all cursor-pointer"
                                         title="Hapus Data"
                                     >
                                         <Trash2 class="w-3.5 h-3.5" />
@@ -650,11 +662,11 @@ function executeDelete() {
             </div>
         </section>
 
-        <!-- 5. PANEL PETA WILAYAH HORIZONTAL (Bab 4.2) -->
-        <section class="bg-[#10171A] border-2 border-[#243034] rounded-20 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <!-- 5. PANEL PETA WILAYAH HORIZONTAL -->
+        <section class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-                <h3 class="font-display font-bold text-lg text-[#F4F7F5]">Tinjau Peta Persebaran Wilayah</h3>
-                <p class="text-xs text-[#8FA1A0] mt-0.5">
+                <h3 class="font-display font-bold text-lg text-[#171B17] dark:text-[#F5F5F5]">Tinjau Peta Persebaran Wilayah</h3>
+                <p class="text-xs text-[#6E776D] dark:text-[#B3B3B3] mt-0.5">
                     Lihat hasil pembaruan data secara visual spasial pada kanvas WebGIS tematik 27 kecamatan.
                 </p>
             </div>
@@ -668,68 +680,69 @@ function executeDelete() {
             </button>
         </section>
 
-        <!-- MODAL FORM TAMBAH / UBAH DATA (Bab 6) -->
+        <!-- MODAL FORM TAMBAH / UBAH DATA -->
         <div
             v-if="isModalOpen"
-            class="fixed inset-0 z-50 bg-[#0A0D0E]/80 backdrop-blur-none flex items-center justify-center p-4"
+            class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 select-none"
+            @click.self="isModalOpen = false"
         >
-            <div class="bg-[#10171A] border-2 border-[#F4F7F5] rounded-24 p-6 w-full max-w-lg shadow-[4px_4px_0_#19F5D4] animate-in zoom-in-95 duration-150">
-                <h3 class="font-display font-extrabold text-xl text-[#F4F7F5] mb-1">
+            <div class="bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#292929] rounded-2xl p-6 w-full max-w-lg shadow-2xl text-[#171B17] dark:text-[#F5F5F5] animate-in zoom-in-95 duration-150">
+                <h3 class="font-display font-extrabold text-xl text-[#171B17] dark:text-[#F5F5F5] mb-1">
                     {{ editingKecamatan ? `Ubah Data ${editingKecamatan.nama}` : 'Tambah Data Wilayah Baru' }}
                 </h3>
-                <p class="text-xs text-[#8FA1A0] mb-4">Masukkan data atribut kuantitatif resmi peternakan.</p>
+                <p class="text-xs text-[#6E776D] dark:text-[#B3B3B3] mb-4">Masukkan data atribut kuantitatif resmi peternakan.</p>
 
                 <div class="space-y-3 text-xs">
                     <div>
-                        <label class="block font-bold text-[#F4F7F5] mb-1">Nama Kecamatan</label>
+                        <label class="block font-bold text-[#171B17] dark:text-[#F5F5F5] mb-1">Nama Kecamatan</label>
                         <input v-model="form.nama" type="text" placeholder="Contoh: Wangon" class="input-tactile w-full text-xs" />
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block font-bold text-[#F4F7F5] mb-1">Sapi Potong (ekor)</label>
-                            <input v-model="form.sapi_potong" type="number" class="input-tactile w-full text-xs" />
+                            <label class="block font-bold text-[#171B17] dark:text-[#F5F5F5] mb-1">Sapi Potong (ekor)</label>
+                            <input v-model="form.sapi_potong" type="number" class="input-tactile w-full text-xs font-mono tabular-nums" />
                         </div>
                         <div>
-                            <label class="block font-bold text-[#F4F7F5] mb-1">Sapi Perah (ekor)</label>
-                            <input v-model="form.sapi_perah" type="number" class="input-tactile w-full text-xs" />
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block font-bold text-[#F4F7F5] mb-1">Kambing (ekor)</label>
-                            <input v-model="form.kambing" type="number" class="input-tactile w-full text-xs" />
-                        </div>
-                        <div>
-                            <label class="block font-bold text-[#F4F7F5] mb-1">Domba (ekor)</label>
-                            <input v-model="form.domba" type="number" class="input-tactile w-full text-xs" />
+                            <label class="block font-bold text-[#171B17] dark:text-[#F5F5F5] mb-1">Sapi Perah (ekor)</label>
+                            <input v-model="form.sapi_perah" type="number" class="input-tactile w-full text-xs font-mono tabular-nums" />
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block font-bold text-[#FF5C5C] mb-1">Kasus PMK Aktif</label>
-                            <input v-model="form.pmk" type="number" class="input-tactile w-full text-xs border-[#FF5C5C]/50" />
+                            <label class="block font-bold text-[#171B17] dark:text-[#F5F5F5] mb-1">Kambing (ekor)</label>
+                            <input v-model="form.kambing" type="number" class="input-tactile w-full text-xs font-mono tabular-nums" />
                         </div>
                         <div>
-                            <label class="block font-bold text-[#FFC53D] mb-1">Kasus LSD Aktif</label>
-                            <input v-model="form.lsd" type="number" class="input-tactile w-full text-xs border-[#FFC53D]/50" />
+                            <label class="block font-bold text-[#171B17] dark:text-[#F5F5F5] mb-1">Domba (ekor)</label>
+                            <input v-model="form.domba" type="number" class="input-tactile w-full text-xs font-mono tabular-nums" />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-rose-500 dark:text-rose-400 mb-1">Kasus PMK Aktif</label>
+                            <input v-model="form.pmk" type="number" class="input-tactile w-full text-xs font-mono tabular-nums border-rose-500/40" />
+                        </div>
+                        <div>
+                            <label class="block font-bold text-amber-500 dark:text-amber-400 mb-1">Kasus LSD Aktif</label>
+                            <input v-model="form.lsd" type="number" class="input-tactile w-full text-xs font-mono tabular-nums border-amber-500/40" />
                         </div>
                     </div>
 
                     <div>
-                        <label class="block font-bold text-[#F4F7F5] mb-1">Status Zona</label>
+                        <label class="block font-bold text-[#171B17] dark:text-[#F5F5F5] mb-1">Status Zona</label>
                         <select v-model="form.zona" class="input-tactile w-full text-xs">
-                            <option value="aman">Zona Aman (Hijau)</option>
-                            <option value="waspada">Zona Waspada (Kuning)</option>
-                            <option value="bahaya">Zona Bahaya (Merah Garis)</option>
+                            <option value="aman" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Zona Aman (Hijau)</option>
+                            <option value="waspada" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Zona Waspada (Kuning)</option>
+                            <option value="bahaya" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Zona Bahaya (Merah Garis)</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- Tombol Aksi Dialog (Batal Kiri, Simpan Kanan, Bab 6) -->
-                <div class="flex items-center justify-between gap-3 mt-6 pt-4 border-t border-[#243034]">
+                <!-- Tombol Aksi Dialog -->
+                <div class="flex items-center justify-between gap-3 mt-6 pt-4 border-t border-[#E0E4DD] dark:border-[#1E1E1E]">
                     <button @click="isModalOpen = false" class="btn-secondary-tactile text-xs">
                         Batal
                     </button>
@@ -740,16 +753,17 @@ function executeDelete() {
             </div>
         </div>
 
-        <!-- MODAL KONFIRMASI HAPUS DATA SPESIFIK (Bab 6: Pertanyaan Spesifik) -->
+        <!-- MODAL KONFIRMASI HAPUS DATA SPESIFIK -->
         <div
             v-if="isDeleteOpen && deletingKecamatan"
-            class="fixed inset-0 z-50 bg-[#0A0D0E]/80 backdrop-blur-none flex items-center justify-center p-4"
+            class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 select-none"
+            @click.self="isDeleteOpen = false"
         >
-            <div class="bg-[#10171A] border-2 border-[#FF5C5C] rounded-24 p-6 w-full max-w-md shadow-[4px_4px_0_#FF5C5C] animate-in zoom-in-95 duration-150">
-                <h3 class="font-display font-extrabold text-lg text-[#F4F7F5] mb-2">
+            <div class="bg-white dark:bg-[#181818] border border-rose-500/50 rounded-2xl p-6 w-full max-w-md shadow-2xl text-[#171B17] dark:text-[#F5F5F5] animate-in zoom-in-95 duration-150">
+                <h3 class="font-display font-extrabold text-lg text-[#171B17] dark:text-[#F5F5F5] mb-2">
                     Hapus data {{ deletingKecamatan.nama }}?
                 </h3>
-                <p class="text-xs text-[#8FA1A0] mb-5 leading-relaxed">
+                <p class="text-xs text-[#6E776D] dark:text-[#B3B3B3] mb-5 leading-relaxed">
                     Data populasi ({{ formatAngka(deletingKecamatan.sapi_potong) }} sapi potong, {{ deletingKecamatan.pmk }} kasus PMK) akan dihapus dari sistem analitik. Aksi ini tidak dapat dibatalkan.
                 </p>
                 <div class="flex items-center justify-between gap-3">
@@ -763,12 +777,12 @@ function executeDelete() {
             </div>
         </div>
 
-        <!-- TOAST NOTIFICATION (Bab 6: Pil Tengah Bawah) -->
+        <!-- TOAST NOTIFICATION -->
         <div
             v-if="toastMsg"
-            class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#10171A] border-2 border-[#19F5D4] rounded-full px-5 py-2.5 text-xs font-bold text-[#F4F7F5] shadow-[3px_3px_0_#19F5D4] flex items-center gap-2 animate-in slide-in-from-bottom-3 duration-200"
+            class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white/95 dark:bg-[#181818]/95 border border-emerald-500/40 rounded-full px-5 py-2.5 text-xs font-bold text-[#171B17] dark:text-[#F5F5F5] shadow-lg flex items-center gap-2 animate-in slide-in-from-bottom-3 duration-200"
         >
-            <Check class="w-4 h-4 text-[#39FF14]" />
+            <Check class="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
             <span>{{ toastMsg }}</span>
         </div>
     </div>

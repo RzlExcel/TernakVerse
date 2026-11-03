@@ -868,12 +868,54 @@ export function formatAngka(num: number): string {
 }
 
 export const COLOR_CLASSES: Record<number, string> = {
-    1: '#14535E',
-    2: '#1A7C86',
-    3: '#16BDB8',
-    4: '#19F5D4',
-    5: '#39FF14',
+    1: '#3B82A0', // Sangat Rendah
+    2: '#38A69A', // Rendah
+    3: '#86A65A', // Sedang
+    4: '#D4A34E', // Tinggi
+    5: '#D9784D', // Sangat Tinggi
 };
+
+export const CHOROPLETH_DARK_CLASSES = COLOR_CLASSES;
+
+// Additive legacy quantile tokens preserved for backward compatibility
+export const LEGACY_QUANTILE_PALETTE = {
+    1: '#134E4A',
+    2: '#0F766E',
+    3: '#059669',
+    4: '#10B981',
+    5: '#34D399',
+};
+
+export const GIS_TOKENS = {
+    bg: '#080808',
+    surface: '#111111',
+    surfaceRaised: '#181818',
+    surfaceHover: '#1E1E1E',
+    border: '#1E1E1E',
+    borderStrong: '#282828',
+    primary: '#00D084',
+    primaryHover: '#00F0A0',
+    primarySoft: '#063D2D',
+    accent: '#39D6C0',
+    accentSoft: '#123D43',
+    text: '#F5F5F5',
+    textSecondary: '#B3B3B3',
+    textMuted: '#737373',
+    success: '#20B88A',
+    warning: '#E8B84C',
+    danger: '#DC625F',
+    info: '#60A5FA',
+    dark: {
+        bg: '#080808',
+        surface: '#111111',
+        surfaceRaised: '#181818',
+        surfaceHover: '#1E1E1E',
+        border: '#1E1E1E',
+        borderStrong: '#282828',
+        text: '#F5F5F5',
+        textSecondary: '#B3B3B3',
+    },
+} as const;
 
 export const BANYUMAS_KECAMATAN_DATA = KECAMATAN_LIST;
 

@@ -2,41 +2,45 @@
 import { Head, router } from '@inertiajs/vue3';
 import DesignRuleInspector from '../components/ternakverse/DesignRuleInspector.vue';
 import DiagnosticBox from '../components/ternakverse/DiagnosticBox.vue';
-import { Compass, ArrowLeft, Shield, Map } from 'lucide-vue-next';
+import ThemeToggle from '../components/ternakverse/ThemeToggle.vue';
+import { Compass, Shield, Map } from 'lucide-vue-next';
 </script>
 
 <template>
     <Head title="Living Design System - Aturan Desain Ternakverse" />
 
-    <div class="min-h-screen bg-[#0A0D0E] text-[#F4F7F5] flex flex-col font-ui antialiased selection:bg-[#39FF14] selection:text-[#04110A]">
+    <div class="min-h-screen dark:bg-[#090909] bg-[#FFFFFF] dark:text-[#F5F5F5] text-[#171B17] flex flex-col font-ui antialiased selection:bg-emerald-500 selection:text-slate-950">
         <!-- Header -->
-        <header class="h-16 w-full bg-[#10171A] border-b-2 border-[#243034] px-4 md:px-8 flex items-center justify-between sticky top-0 z-40 select-none">
+        <header class="h-16 w-full dark:bg-[#111111]/95 bg-white/95 backdrop-blur-md border-b dark:border-[#1E1E1E] border-[#E0E4DD] px-4 md:px-8 flex items-center justify-between sticky top-0 z-40 select-none">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-12 bg-[#0A0D0E] border-2 border-[#FFC53D] flex items-center justify-center text-[#FFC53D] shadow-[3px_3px_0_#FFC53D]">
-                    <Compass class="w-6 h-6 stroke-[2.5]" />
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-sm">
+                    <Compass class="w-5 h-5 stroke-[2.2]" />
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="font-display font-extrabold text-xl tracking-tight text-[#F4F7F5]">TERNAKVERSE</span>
-                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FFC53D]/20 text-[#FFC53D] border border-[#FFC53D]">
+                        <span class="font-display font-extrabold text-xl tracking-tight dark:text-[#F5F5F5] text-[#171B17]">TERNAKVERSE</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
                             DESIGN SYSTEM
                         </span>
                     </div>
-                    <p class="text-[12px] text-[#8FA1A0] hidden sm:block leading-none mt-0.5">Spesifikasi & Kepatuhan Visual Sesuai DESIGN_RULE.md</p>
+                    <p class="text-xs dark:text-[#B3B3B3] text-[#444C43] hidden sm:block leading-none mt-1">Spesifikasi &amp; Kepatuhan Visual Forest Intelligence GIS</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2.5">
+                <ThemeToggle size="sm" compact />
                 <button
+                    type="button"
                     @click="router.visit('/')"
-                    class="btn-secondary-tactile h-9 px-3 text-xs gap-1.5 text-[#19F5D4]"
+                    class="h-10 px-3.5 rounded-xl dark:bg-[#181818] hover:dark:bg-[#1E1E1E] bg-white hover:bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] text-xs font-semibold flex items-center gap-1.5 dark:text-[#00D084] text-[#00A86B] transition-colors cursor-pointer"
                 >
                     <Map class="w-3.5 h-3.5" />
                     <span>Portal Publik</span>
                 </button>
                 <button
+                    type="button"
                     @click="router.visit('/internal/login')"
-                    class="btn-secondary-tactile h-9 px-3 text-xs gap-1.5 text-[#39FF14]"
+                    class="h-10 px-3.5 rounded-xl bg-[#00D084] hover:bg-[#00B975] text-[#090909] font-bold text-xs flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
                 >
                     <Shield class="w-3.5 h-3.5" />
                     <span>Portal Internal</span>

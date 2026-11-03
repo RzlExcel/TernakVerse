@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
+import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { edit } from '@/routes/security';
 import type { Props as ManagePasskeysProps } from '@/components/ManagePasskeys.vue';
 import ManagePasskeys from '@/components/ManagePasskeys.vue';
 import type { Props as ManageTwoFactorProps } from '@/components/ManageTwoFactor.vue';
 import ManageTwoFactor from '@/components/ManageTwoFactor.vue';
+import type { BreadcrumbItem } from '@/types';
 
-// oxfmt-ignore
 type Props = {
     passwordRules: string;
 } & ManagePasskeysProps &
@@ -20,101 +22,112 @@ type Props = {
 
 const props = defineProps<Props>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Security settings',
-                href: edit(),
-            },
-        ],
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Security settings',
+        href: edit().url,
     },
+];
+
+const form = useForm({
+    current_password: '',
+    password: '',
+    password_confirmation: '',
 });
+
+const submitPasswordUpdate = (): void => {
+    form.put(SecurityController.update.url(), {
+        preserveScroll: true,
+        onSuccess: () => form.reset(),
+        onError: () =>
+            form.reset('password', 'password_confirmation', 'current_password'),
+    });
+};
 </script>
 
 <template>
-    <Head title="Security settings" />
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <Head title="Security settings" />
 
-    <h1 class="sr-only">Security settings</h1>
+        <h1 class="sr-only">Security settings</h1>
 
-    <div class="space-y-6">
-        <Heading
-            variant="small"
-            title="Update password"
-            description="Ensure your account is using a long, random password to stay secure"
-        />
-
-        <Form
-            v-bind="SecurityController.update.form()"
-            :options="{
-                preserveScroll: true,
-            }"
-            reset-on-success
-            :reset-on-error="[
-                'password',
-                'password_confirmation',
-                'current_password',
-            ]"
-            class="space-y-6"
-            v-slot="{ errors, processing }"
-        >
-            <div class="grid gap-2">
-                <Label for="current_password">Current password</Label>
-                <PasswordInput
-                    id="current_password"
-                    name="current_password"
-                    class="mt-1 block w-full"
-                    autocomplete="current-password"
-                    placeholder="Current password"
+        <SettingsLayout>
+            <div class="space-y-6">
+                <Heading
+                    variant="small"
+                    title="Update password"
+                    description="Ensure your account is using a long, random password to stay secure"
                 />
-                <InputError :message="errors.current_password" />
-            </div>
 
-            <div class="grid gap-2">
-                <Label for="password">New password</Label>
-                <PasswordInput
-                    id="password"
-                    name="password"
-                    class="mt-1 block w-full"
-                    autocomplete="new-password"
-                    placeholder="New password"
-                    :passwordrules="props.passwordRules"
-                />
-                <InputError :message="errors.password" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="password_confirmation">Confirm password</Label>
-                <PasswordInput
-                    id="password_confirmation"
-                    name="password_confirmation"
-                    class="mt-1 block w-full"
-                    autocomplete="new-password"
-                    placeholder="Confirm password"
-                    :passwordrules="props.passwordRules"
-                />
-                <InputError :message="errors.password_confirmation" />
-            </div>
-
-            <div class="flex items-center gap-4">
-                <Button
-                    :disabled="processing"
-                    data-test="update-password-button"
+                <form
+                    @submit.prevent="submitPasswordUpdate"
+                    class="space-y-6"
                 >
-                    Save
-                </Button>
+                    <div class="grid gap-2">
+                        <Label for="current_password">Current password</Label>
+                        <PasswordInput
+                            id="current_password"
+                            name="current_password"
+                            :value="form.current_password"
+                            @input="(e: Event) => (form.current_password = (e.target as HTMLInputElement).value)"
+                            class="mt-1 block w-full"
+                            autocomplete="current-password"
+                            placeholder="Current password"
+                        />
+                        <InputError :message="form.errors.current_password" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="password">New password</Label>
+                        <PasswordInput
+                            id="password"
+                            name="password"
+                            :value="form.password"
+                            @input="(e: Event) => (form.password = (e.target as HTMLInputElement).value)"
+                            class="mt-1 block w-full"
+                            autocomplete="new-password"
+                            placeholder="New password"
+                            :passwordrules="props.passwordRules"
+                        />
+                        <InputError :message="form.errors.password" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="password_confirmation">Confirm password</Label>
+                        <PasswordInput
+                            id="password_confirmation"
+                            name="password_confirmation"
+                            :value="form.password_confirmation"
+                            @input="(e: Event) => (form.password_confirmation = (e.target as HTMLInputElement).value)"
+                            class="mt-1 block w-full"
+                            autocomplete="new-password"
+                            placeholder="Confirm password"
+                            :passwordrules="props.passwordRules"
+                        />
+                        <InputError :message="form.errors.password_confirmation" />
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <Button
+                            :disabled="form.processing"
+                            data-test="update-password-button"
+                        >
+                            Save
+                        </Button>
+                    </div>
+                </form>
             </div>
-        </Form>
-    </div>
 
-    <ManageTwoFactor
-        :canManageTwoFactor="canManageTwoFactor"
-        :requiresConfirmation="requiresConfirmation"
-        :twoFactorEnabled="twoFactorEnabled"
-    />
+            <ManageTwoFactor
+                :canManageTwoFactor="canManageTwoFactor"
+                :requiresConfirmation="requiresConfirmation"
+                :twoFactorEnabled="twoFactorEnabled"
+            />
 
-    <ManagePasskeys
-        :canManagePasskeys="canManagePasskeys"
-        :passkeys="passkeys"
-    />
+            <ManagePasskeys
+                :canManagePasskeys="canManagePasskeys"
+                :passkeys="passkeys"
+            />
+        </SettingsLayout>
+    </AppLayout>
 </template>

@@ -20,6 +20,10 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
+        if (app()->environment('production')) {
+            abort(403, 'Pendaftaran mandiri dinonaktifkan di lingkungan produksi. Akun baru hanya dapat dibuat oleh Super Admin.');
+        }
+
         return Inertia::render('auth/Register');
     }
 
@@ -30,6 +34,10 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if (app()->environment('production')) {
+            abort(403, 'Pendaftaran mandiri dinonaktifkan di lingkungan produksi. Akun baru hanya dapat dibuat oleh Super Admin.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,

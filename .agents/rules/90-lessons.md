@@ -10,7 +10,7 @@ Promoted from `.agents/memory/lessons.md` (helpful >= 2 and harmful 0, or a veri
 - None recorded yet.
 
 ## Project
-- None recorded yet.
+- Define new CSS variables and Tailwind keys additively alongside legacy tokens when evolving design systems, preventing regressions in existing component styles and test assertions. (L-0004)
 
 ## Tooling (this machine)
 - None recorded yet.

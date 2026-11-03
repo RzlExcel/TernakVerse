@@ -1,11 +1,15 @@
 <?php
 
+use App\Http\Controllers\AdminAuditLogController;
+use App\Http\Controllers\AdminPanelController;
+use App\Http\Controllers\DinasDashboardController;
+use App\Http\Middleware\EnsureUserRole;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\DinasDashboardController;
-use App\Http\Controllers\AdminPanelController;
-use App\Http\Controllers\AdminAuditLogController;
-use App\Http\Middleware\EnsureUserRole;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,23 +19,30 @@ use App\Http\Middleware\EnsureUserRole;
 |--------------------------------------------------------------------------
 */
 
-<<<<<<< Updated upstream
-// 1. PORTAL PUBLIK WEBGIS (Bab 11.1 Design Rule: Zero Data Leakage)
-Route::get('/', function () {
-    return Inertia::render('Public/Portal');
-})->name('public.portal');
-=======
 // 1. PORTAL PUBLIK (Landing Page — WebGIS Peta Banyumas)
-Route::inertia('/', 'Public/Portal')->name('home');
-Route::inertia('/portal', 'Public/Portal')->name('public.portal');
+$publicPortalHandler = function (Request $request) {
+    // Parameter preview eksplisit (e.g. ?preview=1) mengizinkan staf internal melihat tampilan publik
+    $isPreview = $request->query('preview') === '1' || $request->boolean('preview');
 
-// 1.b PORTAL INTERNAL & LIVING DESIGN SYSTEM (Frontend Reference)
-Route::inertia('/internal/login', 'Internal/Login')->name('internal.login');
-Route::get('/internal', fn () => redirect()->route('internal.login'));
-Route::inertia('/internal/dinas', 'Internal/DinasPortal')->name('internal.dinas');
-Route::inertia('/internal/admin', 'Internal/AdminPortal')->name('internal.admin');
-Route::inertia('/design-rule', 'DesignRule')->name('design.rule');
->>>>>>> Stashed changes
+    if (! $isPreview) {
+        $user = Auth::user() ?? $request->user();
+        $role = $user?->role ?? ($request->hasSession() ? $request->session()->get('authenticated_role') : null);
+
+        if ($role === 'admin') {
+            return redirect()->route('internal.admin');
+        }
+
+        if ($role === 'stakeholder' || $role === 'dinas') {
+            return redirect()->route('internal.dinas');
+        }
+    }
+
+    return Inertia::render('Public/Portal');
+};
+
+Route::get('/', $publicPortalHandler)->name('home');
+
+Route::get('/portal', $publicPortalHandler)->name('public.portal');
 
 Route::get('/welcome', function () {
     return Inertia::render('Welcome');
@@ -46,38 +57,119 @@ Route::get('/internal', function () {
     return redirect()->route('internal.login');
 });
 
+Route::post('/internal/login', function (Request $request) {
+    $roleInput = (string) $request->input('role', 'dinas');
+    $roleSlug = ($roleInput === 'admin') ? 'admin' : 'stakeholder';
+    $email = (string) $request->input('email', $roleSlug === 'admin' ? 'admin.diskanak@banyumaskab.go.id' : 'drh.sulistyo@banyumaskab.go.id');
+    $password = (string) $request->input('password', '');
+
+    $authenticatedUser = null;
+    $dbOffline = false;
+
+    // Coba autentikasi via database jika koneksi aktif
+    try {
+        DB::connection()->getPdo();
+    } catch (Throwable) {
+        $dbOffline = true;
+    }
+
+    if (! $dbOffline) {
+        try {
+            if (Auth::attempt(['email' => $email, 'password' => $password])) {
+                $authenticatedUser = Auth::user();
+            } else {
+                return back()->withErrors([
+                    'email' => 'Kredensial yang diberikan tidak cocok dengan data kami.',
+                ]);
+            }
+        } catch (Throwable) {
+            $dbOffline = true;
+        }
+    }
+
+    // Fallback akun in-memory HANYA jika DB offline DAN environment local / testing
+    if (! $authenticatedUser) {
+        if ($dbOffline && app()->environment('local', 'testing')) {
+            $authenticatedUser = new User([
+                'id' => $roleSlug === 'admin' ? 1 : 2,
+                'nama' => $roleSlug === 'admin' ? 'Super Administrator' : 'drh. Sulistyo (Petugas Dinas)',
+                'name' => $roleSlug === 'admin' ? 'Super Administrator' : 'drh. Sulistyo (Petugas Dinas)',
+                'email' => $email,
+                'role' => $roleSlug,
+                'aktif' => true,
+            ]);
+            Auth::login($authenticatedUser);
+        } else {
+            return back()->withErrors([
+                'email' => 'Kredensial yang diberikan tidak cocok dengan data kami.',
+            ]);
+        }
+    }
+
+    // Simpan penanda sesi otorisasi
+    $request->session()->put('authenticated_user_id', $authenticatedUser->id);
+    $request->session()->put('authenticated_role', $authenticatedUser->role);
+    $request->session()->put('authenticated_email', $authenticatedUser->email);
+    $request->session()->put('authenticated_name', $authenticatedUser->nama ?? $authenticatedUser->name);
+
+    $request->session()->regenerate();
+
+    if ($authenticatedUser->role === 'admin') {
+        return redirect()->route('internal.admin');
+    }
+
+    return redirect()->route('internal.dinas');
+})->middleware('throttle:10,1')->name('internal.login.submit');
+
+Route::match(['get', 'post'], '/internal/logout', function (Request $request) {
+    Auth::logout();
+    $request->session()->forget([
+        'authenticated_user_id',
+        'authenticated_role',
+        'authenticated_email',
+        'authenticated_name',
+    ]);
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()->route('internal.login');
+})->name('internal.logout');
+
 // 3. LIVING DESIGN SYSTEM & TOKEN INSPECTOR
 Route::get('/design-rule', function () {
     return Inertia::render('DesignRule');
 })->name('design.rule');
 
 // 4. PORTAL DINAS (Analisis Kuantitatif & Kewaspadaan Wabah)
-Route::get('/internal/dinas', function () {
-    return Inertia::render('Internal/DinasPortal');
-})->name('internal.dinas');
+Route::middleware([EnsureUserRole::class.':stakeholder,admin'])->group(function () {
+    Route::get('/internal/dinas', function () {
+        return Inertia::render('Internal/DinasPortal');
+    })->name('internal.dinas');
 
-// Route Dinas Dashboard Handshake Data (DinasAnalyticsService + ZoningEngineService)
-Route::middleware([EnsureUserRole::class . ':stakeholder,admin'])->group(function () {
+    // Route Dinas Dashboard Handshake Data (DinasAnalyticsService + ZoningEngineService)
     Route::get('/dinas/dashboard', [DinasDashboardController::class, 'index'])->name('dinas.dashboard');
 });
 
 // 5. PANEL ADMIN TEKNIS (Staf Teknis - Tata Letak 1160px & CRUD Data)
-Route::get('/internal/admin', function () {
-    return Inertia::render('Internal/AdminPortal');
-})->name('internal.admin');
+Route::middleware([EnsureUserRole::class.':admin'])->group(function () {
+    Route::get('/internal/admin', function () {
+        return Inertia::render('Internal/AdminPortal');
+    })->name('internal.admin');
 
-// Panel Admin Proteksi Penuh & Audit Logs
-Route::middleware([EnsureUserRole::class . ':admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/panel', [AdminPanelController::class, 'index'])->name('panel');
-    Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs');
+    // Panel Admin Proteksi Penuh & Audit Logs
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/panel', [AdminPanelController::class, 'index'])->name('panel');
+        Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs');
+    });
 });
 
 // 6. DISPATCHER DASHBOARD (Redirect cerdas sesuai peran pengguna setelah autentikasi)
-Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
+Route::get('/dashboard', function (Request $request) {
     $user = $request->user();
     if ($user && $user->role === 'admin') {
         return redirect()->route('internal.admin');
     }
+
     return redirect()->route('internal.dinas');
 })->name('dashboard');
 

@@ -141,7 +141,7 @@ function handleKecamatanLeave() {
 // Menentukan warna isi poligon
 function getPolygonFill(kec: KecamatanData): string {
     if (props.selectedMetric.kategori === 'Penyakit') {
-        return '#243034'; // Neutral fill untuk peta penyakit, pola zona dan simbol proporsional dipakai
+        return '#1E293B'; // Neutral fill untuk peta penyakit, pola zona dan simbol proporsional dipakai
     }
     const val = Number(kec[props.selectedMetric.id as keyof KecamatanData]) || 0;
     const lvl = getClassLevel(val, props.quantiles);
@@ -150,10 +150,10 @@ function getPolygonFill(kec: KecamatanData): string {
 
 // Menentukan warna teks label nama kecamatan
 function getLabelColor(kec: KecamatanData): string {
-    if (props.selectedMetric.kategori === 'Penyakit') return '#F4F7F5';
+    if (props.selectedMetric.kategori === 'Penyakit') return '#F8FAFC';
     const val = Number(kec[props.selectedMetric.id as keyof KecamatanData]) || 0;
     const lvl = getClassLevel(val, props.quantiles);
-    return lvl >= 4 ? '#04110A' : '#F4F7F5';
+    return lvl >= 4 ? '#022C22' : '#F8FAFC';
 }
 
 // Radius simbol proporsional PMK/LSD
@@ -164,14 +164,14 @@ function getSymbolRadius(val: number): number {
 </script>
 
 <template>
-    <div class="relative w-full h-[620px] lg:h-[700px] bg-[#0A0D0E] border-2 border-[#243034] rounded-24 overflow-hidden select-none flex flex-col">
+    <div class="relative w-full h-[620px] lg:h-[720px] bg-[#090D16] border border-slate-800 rounded-2xl overflow-hidden select-none flex flex-col shadow-xl">
         <!-- HEADER DI ATAS PETA (Judul & Subjudul Bab 4.1 & 9) -->
-        <div class="p-4 sm:p-5 pb-2 z-10 bg-gradient-to-b from-[#0A0D0E] via-[#0A0D0E]/90 to-transparent flex items-start justify-between">
+        <div class="p-4 sm:p-5 pb-2 z-10 bg-gradient-to-b from-[#090D16] via-[#090D16]/90 to-transparent flex items-start justify-between">
             <div>
-                <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-[#F4F7F5] tracking-tight">
+                <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-slate-50 tracking-tight">
                     Peta Persebaran {{ selectedMetric.label }}
                 </h1>
-                <p class="text-xs sm:text-sm text-[#8FA1A0] mt-1">
+                <p class="text-xs sm:text-sm text-slate-400 mt-1">
                     <template v-if="selectedMetric.kategori === 'Penyakit'">
                         Makin besar simbolnya, makin banyak kasusnya. Pola menunjukkan status zona.
                     </template>
@@ -184,20 +184,22 @@ function getSymbolRadius(val: number): number {
                 </p>
             </div>
 
-            <!-- Stiker Sorotan Tunggal di Sudut (Maks 1 per layar, Simetris) -->
+            <!-- Badge Sorotan Tunggal di Sudut (Maks 1 per layar, Simetris) -->
             <div v-if="topRankKecamatan" class="hidden sm:flex items-center">
                 <button
                     type="button"
                     @click="$emit('selectKecamatan', topRankKecamatan.id, $event)"
-                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full border-2 border-[#F4F7F5] font-extrabold text-xs shadow-[0_2px_8px_rgba(0,0,0,0.5)] transition-all select-none hover:scale-105 active:scale-95 cursor-pointer"
-                    :class="selectedMetric.kategori === 'Penyakit' ? 'bg-[#FFC53D] text-[#04110A]' : 'bg-[#39FF14] text-[#04110A]'"
+                    class="h-10 inline-flex items-center justify-center gap-2 px-4 rounded-xl border font-bold text-xs shadow-lg transition-all select-none hover:scale-[1.02] active:scale-[0.98] cursor-pointer tabular-nums"
+                    :class="selectedMetric.kategori === 'Penyakit'
+                        ? 'bg-amber-950/90 border-amber-500/50 text-amber-300'
+                        : 'bg-[#0F172A]/95 border-emerald-500/50 text-emerald-400'"
                     :title="`Klik untuk memilih Kecamatan ${topRankKecamatan.nama}`"
                 >
-                    <span class="text-xs leading-none select-none">⭐</span>
+                    <span class="w-2 h-2 rounded-full" :class="selectedMetric.kategori === 'Penyakit' ? 'bg-amber-400' : 'bg-emerald-400'"></span>
                     <span class="leading-none tracking-normal">
                         {{ selectedMetric.kategori === 'Penyakit' ? 'Zona Terkritis: ' : 'Terbanyak: ' }}
-                        <span class="font-black">{{ topRankKecamatan.nama }}</span>
-                        <span> ({{ topRankValueFormatted }})</span>
+                        <span class="font-extrabold text-slate-100">{{ topRankKecamatan.nama }}</span>
+                        <span class="font-mono tabular-nums"> ({{ topRankValueFormatted }})</span>
                     </span>
                 </button>
             </div>
@@ -219,11 +221,11 @@ function getSymbolRadius(val: number): number {
                 <defs>
                     <!-- Pola Garis Diagonal untuk Zona Bahaya (Bab 5.2) -->
                     <pattern id="diag-merah" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-                        <line x1="0" y1="0" x2="0" y2="10" stroke="#FF5C5C" stroke-width="3" stroke-opacity="0.8" />
+                        <line x1="0" y1="0" x2="0" y2="10" stroke="#E11D48" stroke-width="3" stroke-opacity="0.8" />
                     </pattern>
                     <!-- Pola Titik Kuning untuk Zona Waspada (Bab 5.2) -->
                     <pattern id="dots-kuning" width="10" height="10" patternUnits="userSpaceOnUse">
-                        <circle cx="4" cy="4" r="2" fill="#FFC53D" fill-opacity="0.9" />
+                        <circle cx="4" cy="4" r="2" fill="#F59E0B" fill-opacity="0.9" />
                     </pattern>
                 </defs>
 
@@ -231,10 +233,10 @@ function getSymbolRadius(val: number): number {
                 <g :transform="`translate(${panX}, ${panY}) scale(${zoomLevel})`" class="transition-transform duration-75">
                     
                     <!-- Label Kabupaten Tetangga di Luar Batas (Bab 5.1) -->
-                    <text x="310" y="55" class="fill-[#8FA1A0] text-sm italic font-ui font-medium pointer-events-none">Kab. Tegal & Brebes</text>
-                    <text x="660" y="240" class="fill-[#8FA1A0] text-sm italic font-ui font-medium pointer-events-none">Kab. Purbalingga</text>
-                    <text x="680" y="560" class="fill-[#8FA1A0] text-sm italic font-ui font-medium pointer-events-none">Kab. Kebumen</text>
-                    <text x="50" y="470" class="fill-[#8FA1A0] text-sm italic font-ui font-medium pointer-events-none">Kab. Cilacap</text>
+                    <text x="310" y="55" class="fill-slate-500 text-sm italic font-ui font-medium pointer-events-none">Kab. Tegal & Brebes</text>
+                    <text x="660" y="240" class="fill-slate-500 text-sm italic font-ui font-medium pointer-events-none">Kab. Purbalingga</text>
+                    <text x="680" y="560" class="fill-slate-500 text-sm italic font-ui font-medium pointer-events-none">Kab. Kebumen</text>
+                    <text x="50" y="470" class="fill-slate-500 text-sm italic font-ui font-medium pointer-events-none">Kab. Cilacap</text>
 
                     <!-- Poligon 27 Kecamatan -->
                     <g id="layer-poligon">
@@ -250,12 +252,12 @@ function getSymbolRadius(val: number): number {
                             <path
                                 :d="getKecPath(kec)"
                                 :fill="getPolygonFill(kec)"
-                                stroke="#0A0D0E"
+                                stroke="#090D16"
                                 stroke-width="2.5"
                                 stroke-linejoin="round"
                                 class="transition-all duration-200 group-hover:scale-[1.015] origin-center"
                                 :class="[
-                                    selectedKecamatanId === kec.id ? 'stroke-[#39FF14] stroke-[3.5] z-30' : 'group-hover:stroke-[#F4F7F5] group-hover:stroke-[2.5]'
+                                    selectedKecamatanId === kec.id ? 'stroke-emerald-400 stroke-[3.5] z-30' : 'group-hover:stroke-slate-100 group-hover:stroke-[2.5]'
                                 ]"
                             />
 
@@ -281,9 +283,9 @@ function getSymbolRadius(val: number): number {
                                     :cx="getKecCenter(kec)[0]"
                                     :cy="getKecCenter(kec)[1]"
                                     :r="getSymbolRadius(kec.pmk)"
-                                    fill="#FF5C5C"
+                                    fill="#E11D48"
                                     fill-opacity="0.65"
-                                    stroke="#FF5C5C"
+                                    stroke="#E11D48"
                                     stroke-width="2"
                                     class="pointer-events-none"
                                 />
@@ -296,9 +298,9 @@ function getSymbolRadius(val: number): number {
                                         ${getKecCenter(kec)[0]},${getKecCenter(kec)[1] + getSymbolRadius(kec.lsd)} 
                                         ${getKecCenter(kec)[0] - getSymbolRadius(kec.lsd)},${getKecCenter(kec)[1]}
                                     `"
-                                    fill="#FF5C5C"
+                                    fill="#E11D48"
                                     fill-opacity="0.65"
-                                    stroke="#FF5C5C"
+                                    stroke="#E11D48"
                                     stroke-width="2"
                                     class="pointer-events-none"
                                 />
@@ -322,7 +324,7 @@ function getSymbolRadius(val: number): number {
                                     :x="getKecCenter(kec)[0]"
                                     :y="selectedMetric.kategori === 'Penyakit' ? getKecCenter(kec)[1] + 16 : getKecCenter(kec)[1] + 13"
                                     text-anchor="middle"
-                                    class="font-display font-extrabold select-none text-[11px]"
+                                    class="font-display font-extrabold select-none text-[11px] tabular-nums"
                                     :fill="getLabelColor(kec)"
                                 >
                                     {{ formatAngka(Number(kec[selectedMetric.id as keyof KecamatanData])) }}
@@ -334,77 +336,84 @@ function getSymbolRadius(val: number): number {
             </svg>
 
             <!-- KONTROL ZOOM MELAYANG (Kanan Atas, Bab 5.5) -->
-            <div class="absolute top-4 right-4 z-20 flex flex-col gap-1.5 bg-[#10171A] border-2 border-[#3A4A4F] rounded-16 p-1.5 shadow-[3px_3px_0_#243034]">
+            <div class="absolute top-4 right-4 z-20 flex flex-col gap-1.5 bg-[#0F172A]/95 backdrop-blur-md border border-slate-800 rounded-xl p-1.5 shadow-lg">
                 <button
+                    type="button"
                     @click="zoomIn"
-                    class="w-10 h-10 rounded-12 bg-[#0A0D0E] border border-[#243034] text-[#F4F7F5] flex items-center justify-center hover:bg-[#243034] hover:text-[#19F5D4] transition-colors"
+                    class="w-10 h-10 rounded-lg bg-[#090D16] border border-slate-800 text-slate-200 flex items-center justify-center hover:bg-slate-800 hover:text-emerald-400 transition-colors cursor-pointer"
                     title="Perbesar Peta"
+                    aria-label="Perbesar Peta"
                 >
-                    <Plus class="w-5 h-5 stroke-[2.5]" />
+                    <Plus class="w-5 h-5 stroke-[2.2]" />
                 </button>
                 <button
+                    type="button"
                     @click="zoomOut"
-                    class="w-10 h-10 rounded-12 bg-[#0A0D0E] border border-[#243034] text-[#F4F7F5] flex items-center justify-center hover:bg-[#243034] hover:text-[#19F5D4] transition-colors"
+                    class="w-10 h-10 rounded-lg bg-[#090D16] border border-slate-800 text-slate-200 flex items-center justify-center hover:bg-slate-800 hover:text-emerald-400 transition-colors cursor-pointer"
                     title="Perkecil Peta"
+                    aria-label="Perkecil Peta"
                 >
-                    <Minus class="w-5 h-5 stroke-[2.5]" />
+                    <Minus class="w-5 h-5 stroke-[2.2]" />
                 </button>
                 <button
+                    type="button"
                     @click="resetZoom"
-                    class="w-10 h-10 rounded-12 bg-[#0A0D0E] border border-[#243034] text-[#F4F7F5] flex items-center justify-center hover:bg-[#243034] hover:text-[#39FF14] transition-colors"
+                    class="w-10 h-10 rounded-lg bg-[#090D16] border border-slate-800 text-slate-200 flex items-center justify-center hover:bg-slate-800 hover:text-emerald-400 transition-colors cursor-pointer"
                     title="Pas Layar"
+                    aria-label="Reset Ukuran Peta"
                 >
-                    <Maximize2 class="w-4 h-4 stroke-[2.5]" />
+                    <Maximize2 class="w-4 h-4 stroke-[2.2]" />
                 </button>
             </div>
 
             <!-- INDIKATOR SPASIAL (Kiri Bawah Dalam Bingkai, Bab 5.5) -->
-            <div class="absolute bottom-4 left-4 z-20 flex items-center gap-3 bg-[#10171A]/90 border border-[#243034] px-3 py-1.5 rounded-full backdrop-blur-none text-xs text-[#8FA1A0] font-ui">
+            <div class="absolute bottom-4 left-4 z-20 flex items-center gap-3 bg-[#0F172A]/95 backdrop-blur-md border border-slate-800 px-3.5 py-2 rounded-xl text-xs text-slate-400 font-ui shadow-lg">
                 <!-- Arah Utara -->
-                <div class="flex items-center gap-1 text-[#19F5D4] font-bold">
+                <div class="flex items-center gap-1 text-emerald-400 font-bold">
                     <Compass class="w-3.5 h-3.5" />
                     <span>U</span>
                 </div>
-                <div class="h-3 w-[1px] bg-[#243034]"></div>
+                <div class="h-3 w-[1px] bg-slate-800"></div>
                 <!-- Skala Batang -->
                 <div class="flex items-center gap-1.5">
-                    <div class="w-10 h-1.5 bg-[#243034] border border-[#3A4A4F] relative">
-                        <div class="w-1/2 h-full bg-[#19F5D4]"></div>
+                    <div class="w-10 h-1.5 bg-slate-800 border border-slate-700 relative rounded-full overflow-hidden">
+                        <div class="w-1/2 h-full bg-emerald-400"></div>
                     </div>
-                    <span class="text-[11px] font-mono">5 km</span>
+                    <span class="text-[11px] font-mono tabular-nums">5 km</span>
                 </div>
-                <div class="h-3 w-[1px] bg-[#243034]"></div>
+                <div class="h-3 w-[1px] bg-slate-800"></div>
                 <!-- Koordinat Kursor -->
-                <span class="font-mono text-[11px] text-[#F4F7F5]">{{ cursorCoord.bt }}, {{ cursorCoord.ls }}</span>
+                <span class="font-mono tabular-nums text-[11px] text-slate-100">{{ cursorCoord.bt }}, {{ cursorCoord.ls }}</span>
             </div>
 
             <!-- TOMBOL SUMBER DATA (Kanan Bawah -> Popover, Bab 5.5) -->
             <div class="absolute bottom-4 right-4 z-20">
                 <button
+                    type="button"
                     @click="showDataSource = !showDataSource"
-                    class="px-3 py-1.5 bg-[#10171A] border border-[#3A4A4F] text-[#8FA1A0] hover:text-[#19F5D4] hover:border-[#19F5D4] rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all shadow-[2px_2px_0_#243034]"
+                    class="h-9 px-3.5 bg-[#0F172A]/95 backdrop-blur-md border border-slate-800 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/40 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-lg cursor-pointer"
                 >
-                    <Info class="w-3.5 h-3.5" />
+                    <Info class="w-3.5 h-3.5 text-emerald-400" />
                     <span>Sumber data</span>
                 </button>
 
                 <!-- Popover Sumber Data -->
                 <div
                     v-if="showDataSource"
-                    class="absolute bottom-10 right-0 w-72 bg-[#10171A] border-2 border-[#19F5D4] rounded-16 p-4 text-xs shadow-[3px_3px_0_#19F5D4] z-50 animate-in fade-in"
+                    class="absolute bottom-11 right-0 w-72 bg-[#0F172A] border border-slate-800 rounded-2xl p-4 text-xs shadow-2xl z-50 animate-in fade-in"
                 >
                     <div class="flex items-center justify-between mb-2">
-                        <span class="font-bold text-[#F4F7F5]">Sumber & Glosarium Data</span>
-                        <button @click="showDataSource = false" class="text-[#8FA1A0] hover:text-[#F4F7F5]">
+                        <span class="font-bold text-slate-100">Sumber & Glosarium Data</span>
+                        <button type="button" @click="showDataSource = false" class="text-slate-400 hover:text-slate-100 cursor-pointer" aria-label="Tutup Sumber Data">
                             <X class="w-4 h-4" />
                         </button>
                     </div>
-                    <p class="text-[#8FA1A0] mb-2 leading-relaxed">
-                        Data resmi dihimpun oleh <strong class="text-[#F4F7F5]">Dinas Perikanan dan Peternakan Kabupaten Banyumas</strong> periode sinkronisasi Oktober 2026.
+                    <p class="text-slate-400 mb-2 leading-relaxed">
+                        Data resmi dihimpun oleh <strong class="text-slate-100">Dinas Perikanan dan Peternakan Kabupaten Banyumas</strong> periode sinkronisasi Oktober 2026.
                     </p>
-                    <div class="space-y-1.5 border-t border-[#243034] pt-2 text-[11px]">
-                        <div><strong class="text-[#FF5C5C]">PMK:</strong> Penyakit Mulut dan Kuku (Aphtae epizooticae).</div>
-                        <div><strong class="text-[#FFC53D]">LSD:</strong> Lumpy Skin Disease (Cacar Sapi Berbenjol).</div>
+                    <div class="space-y-1.5 border-t border-slate-800 pt-2 text-[11px]">
+                        <div><strong class="text-rose-400">PMK:</strong> Penyakit Mulut dan Kuku (Aphtae epizooticae).</div>
+                        <div><strong class="text-amber-400">LSD:</strong> Lumpy Skin Disease (Cacar Sapi Berbenjol).</div>
                     </div>
                 </div>
             </div>

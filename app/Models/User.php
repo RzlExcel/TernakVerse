@@ -6,6 +6,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Services\PermissionService;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\PasskeyAuthenticatable;
@@ -81,5 +83,41 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function isStakeholder(): bool
     {
         return $this->role === 'stakeholder';
+    }
+
+    /**
+     * Get the role model record associated with the user.
+     */
+    public function roleRecord(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role', 'slug');
+    }
+
+    /**
+     * Check if user has specific permission slug.
+     */
+    public function hasPermission(string $permissionSlug): bool
+    {
+        return app(PermissionService::class)->hasPermission($this, $permissionSlug);
+    }
+
+    /**
+     * Get all permission slugs available to this user.
+     *
+     * @return list<string>
+     */
+    public function getPermissionSlugs(): array
+    {
+        return app(PermissionService::class)->getPermissionsForUser($this);
+    }
+
+    /**
+     * Get user role names/slugs list.
+     *
+     * @return list<string>
+     */
+    public function getRoleNames(): array
+    {
+        return [$this->role];
     }
 }

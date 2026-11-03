@@ -1,38 +1,135 @@
 <script setup lang="ts">
-import NavFooter from '@/components/NavFooter.vue';
-import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import {
+    BarChart3,
+    BookOpen,
+    Compass,
+    Database,
+    FolderKanban,
+    LayoutGrid,
+    Map,
+    Settings,
+    ShieldCheck,
+} from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
+interface NavGroup {
+    label: string;
+    items: NavItem[];
+}
+
+const page = usePage();
+const user = computed(() => (page.props.auth as { user?: { role?: string } } | undefined)?.user);
+
+const overviewNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
     },
+    {
+        title: 'Portal Publik WebGIS',
+        href: '/',
+        icon: Map,
+    },
 ];
+
+const dinasNavItems: NavItem[] = [
+    {
+        title: 'Analitik Eksekutif Dinas',
+        href: '/dinas/dashboard',
+        icon: BarChart3,
+    },
+    {
+        title: 'WebGIS Kuantitatif Dinas',
+        href: '/internal/dinas',
+        icon: Compass,
+    },
+];
+
+const adminNavItems: NavItem[] = [
+    {
+        title: 'Panel Kelola Data',
+        href: '/admin/panel',
+        icon: Database,
+    },
+    {
+        title: 'Portal Operasional Admin',
+        href: '/internal/admin',
+        icon: FolderKanban,
+    },
+    {
+        title: 'Audit Trail Forensik',
+        href: '/admin/audit-logs',
+        icon: ShieldCheck,
+    },
+];
+
+const navGroups = computed<NavGroup[]>(() => {
+    const groups: NavGroup[] = [
+        {
+            label: 'Overview & Geospatial',
+            items: overviewNavItems,
+        },
+        {
+            label: 'Operasional Dinas',
+            items: dinasNavItems,
+        },
+    ];
+
+    if (!user.value?.role || user.value?.role === 'admin') {
+        groups.push({
+            label: 'Administrasi & Forensik',
+            items: adminNavItems,
+        });
+    }
+
+    return groups;
+});
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
+        title: 'Pengaturan Akun',
+        href: '/settings/profile',
+        icon: Settings,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits',
+        title: 'Panduan Sistem',
+        href: '/design-rule',
         icon: BookOpen,
     },
 ];
+
+const isActiveRoute = (href: string): boolean => {
+    const currentUrl = page.url.split('?')[0];
+    if (href === '/') {
+        return currentUrl === '/';
+    }
+    if (href === '/settings/profile') {
+        return currentUrl.startsWith('/settings');
+    }
+    return currentUrl === href || currentUrl.startsWith(`${href}/`);
+};
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset">
-        <SidebarHeader>
+    <Sidebar collapsible="icon" variant="inset" class="border-r border-border dark:border-[#1E1E1E] bg-white dark:bg-[#0C0C0C]">
+        <SidebarHeader class="border-b border-border p-2">
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
@@ -44,12 +141,89 @@ const footerNavItems: NavItem[] = [
             </SidebarMenu>
         </SidebarHeader>
 
-        <SidebarContent>
-            <NavMain :items="mainNavItems" />
+        <SidebarContent class="gap-4 p-2">
+            <SidebarGroup v-for="group in navGroups" :key="group.label" class="p-0">
+                <SidebarGroupLabel class="px-2 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    {{ group.label }}
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu class="gap-1">
+                        <SidebarMenuItem v-for="item in group.items" :key="item.href">
+                            <SidebarMenuButton
+                                as-child
+                                :is-active="isActiveRoute(item.href)"
+                                :tooltip="item.title"
+                                :class="
+                                    isActiveRoute(item.href)
+                                        ? 'bg-[#171B17] text-white font-semibold shadow-xs dark:bg-[#181818] dark:text-white'
+                                        : 'border border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100'
+                                "
+                            >
+                                <Link :href="item.href" class="flex items-center gap-2.5">
+                                    <component
+                                        :is="item.icon"
+                                        v-if="item.icon"
+                                        :class="[
+                                            'size-4 shrink-0',
+                                            isActiveRoute(item.href)
+                                                ? 'text-[#00D084]'
+                                                : 'text-slate-400 dark:text-slate-500',
+                                        ]"
+                                    />
+                                    <span class="truncate">{{ item.title }}</span>
+                                    <span
+                                        v-if="isActiveRoute(item.href)"
+                                        class="ml-auto bg-[#063D2D] text-[#00D084] text-[10px] px-1.5 py-0.5 rounded font-medium group-data-[collapsible=icon]:hidden"
+                                    >
+                                        Aktif
+                                    </span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
+        <SidebarFooter class="gap-2 border-t border-border p-2">
+            <SidebarGroup class="p-0 group-data-[collapsible=icon]:p-0">
+                <SidebarGroupContent>
+                    <SidebarMenu class="gap-1">
+                        <SidebarMenuItem v-for="item in footerNavItems" :key="item.href">
+                            <SidebarMenuButton
+                                as-child
+                                :is-active="isActiveRoute(item.href)"
+                                :tooltip="item.title"
+                                :class="
+                                    isActiveRoute(item.href)
+                                        ? 'bg-[#171B17] text-white font-semibold shadow-xs dark:bg-[#181818] dark:text-white'
+                                        : 'border border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100'
+                                "
+                            >
+                                <Link :href="item.href" class="flex items-center gap-2.5">
+                                    <component
+                                        :is="item.icon"
+                                        v-if="item.icon"
+                                        :class="[
+                                            'size-4 shrink-0',
+                                            isActiveRoute(item.href)
+                                                ? 'text-[#00D084]'
+                                                : 'text-slate-400 dark:text-slate-500',
+                                        ]"
+                                    />
+                                    <span class="truncate">{{ item.title }}</span>
+                                    <span
+                                        v-if="isActiveRoute(item.href)"
+                                        class="ml-auto bg-[#063D2D] text-[#00D084] text-[10px] px-1.5 py-0.5 rounded font-medium group-data-[collapsible=icon]:hidden"
+                                    >
+                                        Aktif
+                                    </span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
             <NavUser />
         </SidebarFooter>
     </Sidebar>
