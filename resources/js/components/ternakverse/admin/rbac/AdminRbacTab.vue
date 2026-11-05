@@ -951,21 +951,21 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="w-full space-y-6 pb-24 text-slate-100 font-ui antialiased">
+    <div class="w-full space-y-6 pb-24 text-[#171B17] dark:text-[#F5F5F5] font-ui antialiased">
         <!-- ================================================================= -->
         <!-- HEADER UTAMA & SUB-TAB SWITCHER                                   -->
         <!-- ================================================================= -->
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#19334A]">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
             <div>
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00B98B]/20 to-[#073D35] border border-[#00B98B]/40 flex items-center justify-center text-[#00B98B] shadow-md shadow-emerald-950/40">
+                    <div class="w-10 h-10 rounded-xl bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] flex items-center justify-center text-[#171B17] dark:text-[#00D084] shadow-xs">
                         <ShieldCheck class="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <div>
-                        <h1 class="font-display font-extrabold text-2xl md:text-3xl tracking-tight text-slate-50">
+                        <h1 class="font-display font-extrabold text-2xl md:text-3xl tracking-tight text-[#171B17] dark:text-[#F5F5F5]">
                             Manajemen Role &amp; Hak Akses (Dynamic RBAC)
                         </h1>
-                        <p class="text-xs text-slate-400 mt-0.5">
+                        <p class="text-xs text-[#737B71] dark:text-[#858585] mt-0.5">
                             Konfigurasi matriks izin akses berbasis peran dan proteksi endpoint operasional
                         </p>
                     </div>
@@ -977,22 +977,22 @@ onMounted(async () => {
                 <button
                     type="button"
                     @click="openAddRoleModal"
-                    class="h-9 px-4 rounded-lg bg-[#00B98B] hover:bg-[#00B98B]/90 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#43E8C2]"
+                    class="h-9 px-4 rounded-lg bg-[#171B17] hover:bg-[#282828] text-white dark:bg-[#00D084] dark:hover:bg-[#00F0A0] dark:text-[#062117] font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#171B17] dark:focus-visible:ring-[#00D084]"
                 >
                     <Plus class="w-4 h-4 stroke-[2.5]" />
                     <span>Tambah Role Baru</span>
                 </button>
 
                 <!-- Sub-tab Selector -->
-                <div class="inline-flex p-1 rounded-xl bg-[#091525] border border-[#19334A]">
+                <div class="inline-flex p-1 rounded-xl bg-[#F4F5F2] dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E]">
                     <button
                         type="button"
                         @click="activeSubTab = 'matrix'"
                         class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer"
                         :class="[
                             activeSubTab === 'matrix'
-                                ? 'bg-[#00B98B] text-slate-950 font-bold shadow-sm'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-[#132A40]/50'
+                                ? 'bg-[#171B17] text-white dark:bg-[#00D084] dark:text-[#062117] font-bold shadow-sm'
+                                : 'text-[#737B71] hover:text-[#171B17] hover:bg-[#E8EBE5] dark:text-[#858585] dark:hover:text-[#F5F5F5] dark:hover:bg-[#1E1E1E]/50'
                         ]"
                     >
                         <ShieldCheck class="w-3.5 h-3.5" />
@@ -1004,8 +1004,8 @@ onMounted(async () => {
                         class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer"
                         :class="[
                             activeSubTab === 'roles'
-                                ? 'bg-[#00B98B] text-slate-950 font-bold shadow-sm'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-[#132A40]/50'
+                                ? 'bg-[#171B17] text-white dark:bg-[#00D084] dark:text-[#062117] font-bold shadow-sm'
+                                : 'text-[#737B71] hover:text-[#171B17] hover:bg-[#E8EBE5] dark:text-[#858585] dark:hover:text-[#F5F5F5] dark:hover:bg-[#1E1E1E]/50'
                         ]"
                     >
                         <Users class="w-3.5 h-3.5" />
@@ -1020,23 +1020,23 @@ onMounted(async () => {
         <!-- ================================================================= -->
         <div v-if="activeSubTab === 'matrix'" class="space-y-6">
             <!-- ROLE SELECTOR CHIPS & FILTER BAR -->
-            <div class="bg-[#091525] border border-[#19334A] rounded-2xl p-4 md:p-5 space-y-4 shadow-xl">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#19334A]/60">
+            <div class="bg-[#F4F5F2] dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-2xl p-4 md:p-5 space-y-4 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
                     <div class="flex items-center gap-2">
-                        <SlidersHorizontal class="w-4 h-4 text-[#00B98B]" />
-                        <span class="text-xs font-bold uppercase tracking-wider text-slate-300">
+                        <SlidersHorizontal class="w-4 h-4 text-[#171B17] dark:text-[#00D084]" />
+                        <span class="text-xs font-bold uppercase tracking-wider text-[#444C43] dark:text-[#B3B3B3]">
                             Pilih Peran Untuk Konfigurasi Matriks:
                         </span>
                     </div>
 
                     <!-- Search Filter Input -->
                     <div class="relative w-full sm:w-72">
-                        <Search class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                        <Search class="w-4 h-4 text-[#737B71] dark:text-[#858585] absolute left-3 top-2.5" />
                         <input
                             v-model="searchQuery"
                             type="text"
                             placeholder="Cari izin atau modul..."
-                            class="w-full h-9 pl-9 pr-3 rounded-lg bg-[#050B14] border border-[#19334A] text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#00B98B]"
+                            class="w-full h-9 pl-9 pr-3 rounded-lg bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] text-xs text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#737B71] dark:placeholder:text-[#858585] focus:outline-none focus:border-[#171B17] dark:focus:border-[#00D084]"
                         />
                     </div>
                 </div>
@@ -1051,8 +1051,8 @@ onMounted(async () => {
                         class="px-4 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center gap-2.5"
                         :class="[
                             selectedRoleSlug === role.slug
-                                ? 'bg-[#073D35] border-[#00B98B] text-emerald-300 shadow-md ring-1 ring-[#00B98B]'
-                                : 'bg-[#0D1D30] border-[#19334A] text-slate-400 hover:text-slate-200 hover:border-slate-600'
+                                ? 'bg-[#171B17] border-[#171B17] text-white shadow-sm dark:bg-[#181818] dark:border-[#00D084] dark:text-[#00D084] dark:ring-1 dark:ring-[#00D084]'
+                                : 'bg-white border-[#E0E4DD] text-[#444C43] hover:text-[#171B17] hover:border-[#CBD2C8] hover:bg-[#E8EBE5] dark:bg-[#111111] dark:border-[#1E1E1E] dark:text-[#B3B3B3] dark:hover:text-[#F5F5F5] dark:hover:border-[#282828] dark:hover:bg-[#181818]'
                         ]"
                     >
                         <span class="font-bold">{{ role.name }}</span>
@@ -1060,8 +1060,8 @@ onMounted(async () => {
                             class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold"
                             :class="
                                 selectedRoleSlug === role.slug
-                                    ? 'bg-[#00B98B] text-slate-950'
-                                    : 'bg-[#19334A] text-slate-400'
+                                    ? 'bg-white text-[#171B17] dark:bg-[#00D084] dark:text-[#062117]'
+                                    : 'bg-[#E8EBE5] text-[#737B71] dark:bg-[#181818] dark:text-[#858585]'
                             "
                         >
                             {{ (permissionMatrix[role.slug] || []).length }}/39
@@ -1071,8 +1071,8 @@ onMounted(async () => {
                             class="text-[9px] px-1.5 py-0.2 rounded border uppercase font-mono tracking-wider"
                             :class="
                                 selectedRoleSlug === role.slug
-                                    ? 'border-emerald-500/50 text-emerald-300'
-                                    : 'border-slate-700 text-slate-400'
+                                    ? 'border-white/40 text-white/90 dark:border-[#00D084]/50 dark:text-[#00D084]'
+                                    : 'border-[#CBD2C8] text-[#737B71] dark:border-[#282828] dark:text-[#858585]'
                             "
                         >
                             Sistem
@@ -1081,21 +1081,21 @@ onMounted(async () => {
                 </div>
 
                 <!-- Active Role Overview Card -->
-                <div v-if="currentRole" class="p-3.5 rounded-xl bg-[#050B14] border border-[#19334A] flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                <div v-if="currentRole" class="p-3.5 rounded-xl bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
                     <div class="space-y-1">
                         <div class="flex items-center gap-2">
-                            <span class="font-extrabold text-sm text-slate-50">{{ currentRole.name }}</span>
-                            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#19334A] text-slate-300">
+                            <span class="font-extrabold text-sm text-[#171B17] dark:text-[#F5F5F5]">{{ currentRole.name }}</span>
+                            <span class="font-mono text-[10px] px-2 py-0.5 rounded bg-[#F4F5F2] dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#444C43] dark:text-[#B3B3B3]">
                                 slug: {{ currentRole.slug }}
                             </span>
                             <span
                                 v-if="currentRole.is_system"
-                                class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-semibold"
+                                class="text-[10px] px-2 py-0.5 rounded bg-[#E8EBE5] dark:bg-[#00D084]/15 border border-[#CBD2C8] dark:border-[#00D084]/30 text-[#171B17] dark:text-[#00D084] font-semibold"
                             >
                                 Peran Sistem Bawaan
                             </span>
                         </div>
-                        <p class="text-slate-400 text-xs">
+                        <p class="text-[#737B71] dark:text-[#858585] text-xs">
                             {{ currentRole.description || 'Tidak ada deskripsi tambahan untuk peran ini.' }}
                         </p>
                     </div>
@@ -1104,16 +1104,16 @@ onMounted(async () => {
                     <div class="flex items-center gap-2 shrink-0">
                         <div
                             v-if="currentRole.slug === 'stakeholder'"
-                            class="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-semibold flex items-center gap-1.5"
+                            class="px-3 py-1.5 rounded-lg bg-[#E8EBE5] dark:bg-amber-500/10 border border-[#CBD2C8] dark:border-amber-500/30 text-[#171B17] dark:text-amber-300 text-[11px] font-semibold flex items-center gap-1.5"
                         >
-                            <Lock class="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                            <Lock class="w-3.5 h-3.5 text-[#171B17] dark:text-amber-400 shrink-0" />
                             <span>Read-Only Policy Aktif (Operasi Mutasi Terkunci)</span>
                         </div>
                         <div
                             v-else-if="currentRole.slug === 'admin'"
-                            class="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold flex items-center gap-1.5"
+                            class="px-3 py-1.5 rounded-lg bg-[#E8EBE5] dark:bg-[#00D084]/10 border border-[#CBD2C8] dark:border-[#00D084]/30 text-[#171B17] dark:text-[#00D084] text-[11px] font-semibold flex items-center gap-1.5"
                         >
-                            <ShieldCheck class="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <ShieldCheck class="w-3.5 h-3.5 text-[#171B17] dark:text-[#00D084] shrink-0" />
                             <span>Full Privileges (Izin Fundamental Terkunci)</span>
                         </div>
                     </div>
@@ -1127,25 +1127,25 @@ onMounted(async () => {
                 <div
                     v-for="mod in filteredModules"
                     :key="mod.id"
-                    class="bg-[#091525] border border-[#19334A] rounded-2xl p-5 shadow-xl flex flex-col justify-between hover:border-emerald-500/30 transition-all duration-200"
+                    class="bg-[#F4F5F2] dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-2xl p-5 shadow-sm flex flex-col justify-between hover:border-[#CBD2C8] dark:hover:border-[#00D084]/30 transition-all duration-200"
                 >
                     <div>
                         <!-- Header Kartu Modul -->
-                        <div class="flex items-start justify-between gap-3 pb-3 border-b border-[#19334A]">
+                        <div class="flex items-start justify-between gap-3 pb-3 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
                             <div class="flex items-start gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-[#0D1D30] border border-[#19334A] text-[#00B98B] flex items-center justify-center shrink-0">
+                                <div class="w-9 h-9 rounded-xl bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#00D084] flex items-center justify-center shrink-0">
                                     <component :is="mod.icon" class="w-4 h-4 stroke-[2.2]" />
                                 </div>
                                 <div>
                                     <div class="flex items-center gap-2">
-                                        <h3 class="font-display font-bold text-sm md:text-base text-slate-100">
+                                        <h3 class="font-display font-bold text-sm md:text-base text-[#171B17] dark:text-[#F5F5F5]">
                                             {{ mod.name }}
                                         </h3>
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#0D1D30] border border-[#19334A] text-slate-300">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#444C43] dark:text-[#B3B3B3]">
                                             {{ mod.activeCount }}/{{ mod.totalCount }} Aktif
                                         </span>
                                     </div>
-                                    <p class="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                                    <p class="text-[11px] text-[#737B71] dark:text-[#858585] mt-0.5 leading-snug">
                                         {{ mod.description }}
                                     </p>
                                 </div>
@@ -1157,7 +1157,7 @@ onMounted(async () => {
                                     type="button"
                                     @click="enableAllInModule(mod.id)"
                                     title="Aktifkan seluruh izin modul ini"
-                                    class="px-2 py-1 rounded bg-[#0D1D30] hover:bg-[#132A40] border border-[#19334A] text-[10px] font-semibold text-emerald-400 transition-colors cursor-pointer"
+                                    class="px-2 py-1 rounded bg-white hover:bg-[#E8EBE5] border border-[#E0E4DD] text-[10px] font-semibold text-[#171B17] dark:bg-[#181818] dark:hover:bg-[#1E1E1E] dark:border-[#1E1E1E] dark:text-[#00D084] transition-colors cursor-pointer"
                                 >
                                     Semua ON
                                 </button>
@@ -1165,7 +1165,7 @@ onMounted(async () => {
                                     type="button"
                                     @click="disableAllInModule(mod.id)"
                                     title="Matikan seluruh izin modul ini (kecuali yang terkunci)"
-                                    class="px-2 py-1 rounded bg-[#0D1D30] hover:bg-[#132A40] border border-[#19334A] text-[10px] font-semibold text-rose-400 transition-colors cursor-pointer"
+                                    class="px-2 py-1 rounded bg-white hover:bg-[#E8EBE5] border border-[#E0E4DD] text-[10px] font-semibold text-[#737B71] hover:text-[#171B17] dark:bg-[#181818] dark:hover:bg-[#1E1E1E] dark:border-[#1E1E1E] dark:text-rose-400 transition-colors cursor-pointer"
                                 >
                                     Semua OFF
                                 </button>
@@ -1173,18 +1173,18 @@ onMounted(async () => {
                         </div>
 
                         <!-- Daftar Izin Dalam Modul -->
-                        <div class="divide-y divide-[#19334A]/50 pt-1">
+                        <div class="divide-y divide-[#E0E4DD] dark:divide-[#1E1E1E] pt-1">
                             <div
                                 v-for="perm in mod.permissions"
                                 :key="perm.slug"
-                                class="py-3 flex items-center justify-between gap-3 group hover:bg-[#0D1D30]/40 px-2 rounded-lg transition-colors"
+                                class="py-3 flex items-center justify-between gap-3 group hover:bg-[#E8EBE5] dark:hover:bg-[#181818]/60 px-2 rounded-lg transition-colors"
                             >
                                 <div class="min-w-0 flex-1 pr-2">
                                     <div class="flex flex-wrap items-center gap-2">
-                                        <span class="text-xs font-bold text-slate-200">
+                                        <span class="text-xs font-bold text-[#171B17] dark:text-[#F5F5F5]">
                                             {{ perm.name }}
                                         </span>
-                                        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#050B14] border border-[#19334A] text-slate-400">
+                                        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#737B71] dark:text-[#858585]">
                                             {{ perm.slug }}
                                         </span>
                                         <!-- Guardrail Lock Badge -->
@@ -1193,14 +1193,14 @@ onMounted(async () => {
                                             class="text-[10px] px-2 py-0.5 rounded font-semibold border flex items-center gap-1"
                                             :class="
                                                 getPermissionLockBadge(selectedRoleSlug, perm.slug)?.isAmber
-                                                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-                                                    : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                                    ? 'bg-[#E8EBE5] border-[#CBD2C8] text-[#171B17] dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-300'
+                                                    : 'bg-[#E8EBE5] border-[#CBD2C8] text-[#171B17] dark:bg-[#00D084]/10 dark:border-[#00D084]/30 dark:text-[#00D084]'
                                             "
                                         >
                                             {{ getPermissionLockBadge(selectedRoleSlug, perm.slug)?.label }}
                                         </span>
                                     </div>
-                                    <p class="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                                    <p class="text-[11px] text-[#737B71] dark:text-[#858585] mt-1 line-clamp-2">
                                         {{ perm.description }}
                                     </p>
                                 </div>
@@ -1217,9 +1217,11 @@ onMounted(async () => {
                                         :aria-label="`Sakelar izin ${perm.name}`"
                                         :disabled="isPermissionLocked(selectedRoleSlug, perm.slug)"
                                         @click="togglePermission(perm.slug)"
-                                        class="relative inline-flex h-7 w-16 flex-shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00B98B] focus-visible:ring-offset-2 focus-visible:ring-offset-[#091525]"
+                                        class="relative inline-flex h-7 w-16 flex-shrink-0 cursor-pointer items-center rounded-full p-0.5 border transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#171B17] dark:focus-visible:ring-[#00D084] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4F5F2] dark:focus-visible:ring-offset-[#111111]"
                                         :class="[
-                                            currentRolePermissions.has(perm.slug) ? 'bg-[#00B98B]' : 'bg-[#19334A]',
+                                            currentRolePermissions.has(perm.slug)
+                                                ? 'bg-[#171B17] border-[#171B17] dark:bg-[#00D084] dark:border-[#00D084]'
+                                                : 'bg-slate-200 border-[#CBD2C8] dark:bg-[#181818] dark:border-[#282828]',
                                             isPermissionLocked(selectedRoleSlug, perm.slug)
                                                 ? 'cursor-not-allowed opacity-60'
                                                 : 'hover:opacity-90'
@@ -1237,8 +1239,8 @@ onMounted(async () => {
                                             class="absolute text-[10px] font-black tracking-wider select-none transition-all duration-200"
                                             :class="
                                                 currentRolePermissions.has(perm.slug)
-                                                    ? 'left-2 text-slate-950 font-extrabold'
-                                                    : 'right-2 text-slate-400 font-bold'
+                                                    ? 'left-2 text-white dark:text-[#062117] font-extrabold'
+                                                    : 'right-2 text-[#737B71] dark:text-[#858585] font-bold'
                                             "
                                         >
                                             {{ currentRolePermissions.has(perm.slug) ? 'ON' : 'OFF' }}
@@ -1252,7 +1254,7 @@ onMounted(async () => {
                                         >
                                             <span
                                                 class="w-1.5 h-1.5 rounded-full"
-                                                :class="currentRolePermissions.has(perm.slug) ? 'bg-[#00B98B]' : 'bg-slate-400'"
+                                                :class="currentRolePermissions.has(perm.slug) ? 'bg-[#171B17] dark:bg-[#00D084]' : 'bg-[#737B71] dark:bg-[#858585]'"
                                             ></span>
                                         </span>
                                     </button>
@@ -1266,19 +1268,19 @@ onMounted(async () => {
             <!-- Empty State bila hasil pencarian nihil -->
             <div
                 v-if="filteredModules.length === 0"
-                class="bg-[#091525] border border-[#19334A] rounded-2xl p-12 text-center space-y-3"
+                class="bg-[#F4F5F2] dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-2xl p-12 text-center space-y-3"
             >
-                <AlertTriangle class="w-10 h-10 text-amber-400 mx-auto" />
-                <h3 class="font-display font-bold text-base text-slate-100">
+                <AlertTriangle class="w-10 h-10 text-[#171B17] dark:text-amber-400 mx-auto" />
+                <h3 class="font-display font-bold text-base text-[#171B17] dark:text-[#F5F5F5]">
                     Tidak Ditemukan Izin yang Cocok
                 </h3>
-                <p class="text-xs text-slate-400 max-w-md mx-auto">
+                <p class="text-xs text-[#737B71] dark:text-[#858585] max-w-md mx-auto">
                     Pencarian dengan kata kunci "{{ searchQuery }}" tidak menemukan izin atau modul yang sesuai.
                 </p>
                 <button
                     type="button"
                     @click="searchQuery = ''"
-                    class="h-8 px-4 rounded-lg bg-[#0D1D30] border border-[#19334A] text-xs font-semibold text-slate-200 hover:bg-[#132A40] transition-colors cursor-pointer"
+                    class="h-8 px-4 rounded-lg bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-xs font-semibold text-[#171B17] dark:text-[#F5F5F5] hover:bg-[#E8EBE5] dark:hover:bg-[#1E1E1E] transition-colors cursor-pointer"
                 >
                     Bersihkan Pencarian
                 </button>
@@ -1289,13 +1291,13 @@ onMounted(async () => {
         <!-- SUB-TAB 2: DAFTAR ROLE & PENGGUNA                                 -->
         <!-- ================================================================= -->
         <div v-else-if="activeSubTab === 'roles'" class="space-y-6">
-            <div class="bg-[#091525] border border-[#19334A] rounded-2xl p-5 shadow-xl space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#19334A]">
+            <div class="bg-[#F4F5F2] dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-2xl p-5 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
                     <div>
-                        <h2 class="font-display font-bold text-base text-slate-50">
+                        <h2 class="font-display font-bold text-base text-[#171B17] dark:text-[#F5F5F5]">
                             Daftar Peran &amp; Akun Terdaftar
                         </h2>
-                        <p class="text-xs text-slate-400 mt-0.5">
+                        <p class="text-xs text-[#737B71] dark:text-[#858585] mt-0.5">
                             Kelola profil peran sistem, peran kustom dinas, serta status aktivasi operasional
                         </p>
                     </div>
@@ -1303,7 +1305,7 @@ onMounted(async () => {
                     <button
                         type="button"
                         @click="openAddRoleModal"
-                        class="h-9 px-4 rounded-lg bg-[#00B98B] hover:bg-[#00B98B]/90 text-slate-950 font-bold text-xs flex items-center gap-2 self-start sm:self-auto cursor-pointer"
+                        class="h-9 px-4 rounded-lg bg-[#171B17] hover:bg-[#282828] text-white dark:bg-[#00D084] dark:hover:bg-[#00F0A0] dark:text-[#062117] font-bold text-xs flex items-center gap-2 self-start sm:self-auto cursor-pointer"
                     >
                         <Plus class="w-4 h-4 stroke-[2.5]" />
                         <span>Tambah Peran Kustom</span>
@@ -1314,7 +1316,7 @@ onMounted(async () => {
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
-                            <tr class="border-b border-[#19334A] text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-[#050B14]">
+                            <tr class="border-b border-[#E0E4DD] dark:border-[#1E1E1E] text-[11px] font-bold text-[#737B71] dark:text-[#858585] uppercase tracking-wider bg-white dark:bg-[#181818]">
                                 <th class="py-3 px-4">Nama Peran</th>
                                 <th class="py-3 px-4">Slug Identifier</th>
                                 <th class="py-3 px-4">Deskripsi</th>
@@ -1325,29 +1327,29 @@ onMounted(async () => {
                                 <th class="py-3 px-4 text-right">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#19334A]/60">
+                        <tbody class="divide-y divide-[#E0E4DD] dark:divide-[#1E1E1E]">
                             <tr
                                 v-for="role in roles"
                                 :key="role.id"
-                                class="hover:bg-[#0D1D30]/60 transition-colors"
+                                class="hover:bg-[#E8EBE5] dark:hover:bg-[#181818]/60 transition-colors"
                             >
-                                <td class="py-3.5 px-4 font-bold text-slate-100 whitespace-nowrap">
+                                <td class="py-3.5 px-4 font-bold text-[#171B17] dark:text-[#F5F5F5] whitespace-nowrap">
                                     {{ role.name }}
                                 </td>
-                                <td class="py-3.5 px-4 font-mono text-[11px] text-emerald-400 whitespace-nowrap">
+                                <td class="py-3.5 px-4 font-mono text-[11px] text-[#171B17] dark:text-[#00D084] whitespace-nowrap">
                                     {{ role.slug }}
                                 </td>
-                                <td class="py-3.5 px-4 text-slate-400 max-w-xs truncate" :title="role.description || ''">
+                                <td class="py-3.5 px-4 text-[#737B71] dark:text-[#858585] max-w-xs truncate" :title="role.description || ''">
                                     {{ role.description || '-' }}
                                 </td>
                                 <td class="py-3.5 px-4 text-center">
-                                    <span class="inline-flex items-center gap-1 font-mono font-semibold px-2 py-0.5 rounded bg-[#0D1D30] border border-[#19334A] text-slate-300">
-                                        <Users class="w-3 h-3 text-slate-400" />
+                                    <span class="inline-flex items-center gap-1 font-mono font-semibold px-2 py-0.5 rounded bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#444C43] dark:text-[#B3B3B3]">
+                                        <Users class="w-3 h-3 text-[#737B71] dark:text-[#858585]" />
                                         {{ role.users_count }}
                                     </span>
                                 </td>
                                 <td class="py-3.5 px-4 text-center">
-                                    <span class="font-mono font-bold px-2 py-0.5 rounded bg-[#073D35] border border-emerald-500/30 text-emerald-300">
+                                    <span class="font-mono font-bold px-2 py-0.5 rounded bg-[#E8EBE5] dark:bg-[#00D084]/15 border border-[#CBD2C8] dark:border-[#00D084]/30 text-[#171B17] dark:text-[#00D084]">
                                         {{ (permissionMatrix[role.slug] || []).length }}/39
                                     </span>
                                 </td>
@@ -1359,16 +1361,18 @@ onMounted(async () => {
                                         :aria-checked="role.is_active"
                                         :disabled="role.is_system"
                                         @click="toggleRoleActiveStatus(role)"
-                                        class="relative inline-flex h-6 w-14 flex-shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-200 ease-in-out focus:outline-none"
+                                        class="relative inline-flex h-6 w-14 flex-shrink-0 cursor-pointer items-center rounded-full p-0.5 border transition-colors duration-200 ease-in-out focus:outline-none"
                                         :class="[
-                                            role.is_active ? 'bg-[#00B98B]' : 'bg-[#19334A]',
+                                            role.is_active
+                                                ? 'bg-[#171B17] border-[#171B17] dark:bg-[#00D084] dark:border-[#00D084]'
+                                                : 'bg-slate-200 border-[#CBD2C8] dark:bg-[#181818] dark:border-[#282828]',
                                             role.is_system ? 'cursor-not-allowed opacity-60' : 'hover:opacity-90'
                                         ]"
                                         :title="role.is_system ? 'Peran sistem tidak dapat dinonaktifkan' : 'Klik untuk mengubah status aktif'"
                                     >
                                         <span
                                             class="absolute text-[9px] font-black tracking-wider select-none"
-                                            :class="role.is_active ? 'left-1.5 text-slate-950' : 'right-1.5 text-slate-400'"
+                                            :class="role.is_active ? 'left-1.5 text-white dark:text-[#062117]' : 'right-1.5 text-[#737B71] dark:text-[#858585]'"
                                         >
                                             {{ role.is_active ? 'ON' : 'OFF' }}
                                         </span>
@@ -1384,8 +1388,8 @@ onMounted(async () => {
                                         class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold border"
                                         :class="
                                             role.is_system
-                                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                                                : 'bg-teal-500/10 border-teal-500/30 text-teal-300'
+                                                ? 'bg-[#E8EBE5] dark:bg-[#00D084]/15 border-[#CBD2C8] dark:border-[#00D084]/30 text-[#171B17] dark:text-[#00D084]'
+                                                : 'bg-white dark:bg-[#181818] border-[#E0E4DD] dark:border-[#1E1E1E] text-[#444C43] dark:text-[#B3B3B3]'
                                         "
                                     >
                                         {{ role.is_system ? 'Sistem' : 'Kustom' }}
@@ -1397,7 +1401,7 @@ onMounted(async () => {
                                         <button
                                             type="button"
                                             @click="selectRoleAndGoToMatrix(role.slug)"
-                                            class="p-1.5 rounded-lg bg-[#0D1D30] hover:bg-[#132A40] border border-[#19334A] text-slate-300 hover:text-emerald-400 transition-colors cursor-pointer"
+                                            class="p-1.5 rounded-lg bg-white dark:bg-[#181818] hover:bg-[#E8EBE5] dark:hover:bg-[#1E1E1E] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#444C43] dark:text-[#B3B3B3] hover:text-[#171B17] dark:hover:text-[#00D084] transition-colors cursor-pointer"
                                             title="Buka Matriks Izin peran ini"
                                         >
                                             <SlidersHorizontal class="w-3.5 h-3.5" />
@@ -1406,7 +1410,7 @@ onMounted(async () => {
                                         <button
                                             type="button"
                                             @click="openEditRoleModal(role)"
-                                            class="p-1.5 rounded-lg bg-[#0D1D30] hover:bg-[#132A40] border border-[#19334A] text-slate-300 hover:text-white transition-colors cursor-pointer"
+                                            class="p-1.5 rounded-lg bg-white dark:bg-[#181818] hover:bg-[#E8EBE5] dark:hover:bg-[#1E1E1E] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#444C43] dark:text-[#B3B3B3] hover:text-[#171B17] dark:hover:text-white transition-colors cursor-pointer"
                                             title="Edit metadata peran"
                                         >
                                             <Edit class="w-3.5 h-3.5" />
@@ -1419,8 +1423,8 @@ onMounted(async () => {
                                             class="p-1.5 rounded-lg border transition-colors cursor-pointer"
                                             :class="
                                                 role.is_system
-                                                    ? 'border-transparent text-slate-600 cursor-not-allowed'
-                                                    : 'bg-[#0D1D30] hover:bg-rose-950/40 border-[#19334A] text-rose-400 hover:border-rose-500/40'
+                                                    ? 'border-transparent text-[#CBD2C8] dark:text-[#282828] cursor-not-allowed'
+                                                    : 'bg-white dark:bg-[#181818] hover:bg-rose-100 dark:hover:bg-rose-950/40 border-[#E0E4DD] dark:border-[#1E1E1E] text-rose-600 dark:text-rose-400 hover:border-rose-400 dark:hover:border-rose-500/40'
                                             "
                                             :title="role.is_system ? 'Peran sistem tidak dapat dihapus' : 'Hapus peran kustom'"
                                         >
@@ -1442,19 +1446,19 @@ onMounted(async () => {
             v-if="activeSubTab === 'matrix'"
             class="fixed bottom-4 left-4 right-4 lg:left-64 z-30 flex justify-center"
         >
-            <div class="w-full max-w-4xl bg-[#091525]/95 backdrop-blur-md border border-[#00B98B]/40 rounded-2xl p-4 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 ring-1 ring-[#00B98B]/20">
+            <div class="w-full max-w-4xl bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md border border-[#171B17]/20 dark:border-[#00D084]/40 rounded-2xl p-4 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 ring-1 ring-[#171B17]/10 dark:ring-[#00D084]/20">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-[#073D35] border border-[#00B98B]/30 flex items-center justify-center text-[#00B98B]">
+                    <div class="w-8 h-8 rounded-lg bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#00D084]/30 flex items-center justify-center text-[#171B17] dark:text-[#00D084]">
                         <Key class="w-4 h-4" />
                     </div>
                     <div class="text-xs">
-                        <div class="font-extrabold text-slate-100 flex items-center gap-2">
+                        <div class="font-extrabold text-[#171B17] dark:text-[#F5F5F5] flex items-center gap-2">
                             <span>Peran: {{ currentRole?.name }}</span>
-                            <span class="px-2 py-0.5 rounded font-mono font-bold bg-[#0D1D30] border border-[#19334A] text-emerald-400">
+                            <span class="px-2 py-0.5 rounded font-mono font-bold bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#00D084]">
                                 {{ (permissionMatrix[selectedRoleSlug] || []).length }}/39 Izin Aktif
                             </span>
                         </div>
-                        <p class="text-[11px] text-slate-400 mt-0.5">
+                        <p class="text-[11px] text-[#737B71] dark:text-[#858585] mt-0.5">
                             {{ hasUnsavedChanges ? '⚠️ Terdapat perubahan izin yang belum disimpan ke database sistem.' : 'Konfigurasi izin tersinkronisasi.' }}
                         </p>
                     </div>
@@ -1465,7 +1469,7 @@ onMounted(async () => {
                         type="button"
                         @click="resetChanges"
                         :disabled="!hasUnsavedChanges"
-                        class="h-9 px-3.5 rounded-lg bg-[#0D1D30] border border-[#19334A] text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        class="h-9 px-3.5 rounded-lg bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#444C43] dark:text-[#B3B3B3] hover:text-[#171B17] dark:hover:text-white hover:bg-[#E8EBE5] dark:hover:bg-[#1E1E1E] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         <RotateCcw class="w-3.5 h-3.5" />
                         <span>Reset</span>
@@ -1474,7 +1478,7 @@ onMounted(async () => {
                         type="button"
                         @click="isConfirmSaveOpen = true"
                         :disabled="isSaving"
-                        class="h-9 px-5 rounded-lg bg-[#00B98B] hover:bg-[#00B98B]/90 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition-all cursor-pointer disabled:opacity-60"
+                        class="h-9 px-5 rounded-lg bg-[#171B17] hover:bg-[#282828] text-white dark:bg-[#00D084] dark:hover:bg-[#00F0A0] dark:text-[#062117] font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer disabled:opacity-60"
                     >
                         <Check class="w-4 h-4 stroke-[2.5]" />
                         <span>{{ isSaving ? 'Menyimpan...' : 'Simpan Perubahan Izin' }}</span>
@@ -1492,48 +1496,48 @@ onMounted(async () => {
             role="dialog"
             aria-modal="true"
         >
-            <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" @click="isConfirmSaveOpen = false"></div>
-            <div class="relative bg-[#091525] border border-[#19334A] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-xs" @click="isConfirmSaveOpen = false"></div>
+            <div class="relative bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#F5F5F5] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
                 <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                    <div class="w-10 h-10 rounded-xl bg-[#F4F5F2] dark:bg-[#00D084]/10 border border-[#E0E4DD] dark:border-[#00D084]/30 flex items-center justify-center text-[#171B17] dark:text-[#00D084] shrink-0">
                         <ShieldCheck class="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <div>
-                        <h3 class="font-display font-extrabold text-base text-slate-50">
+                        <h3 class="font-display font-extrabold text-base text-[#171B17] dark:text-[#F5F5F5]">
                             Konfirmasi Simpan Hak Akses
                         </h3>
-                        <p class="text-xs text-slate-400 mt-1">
+                        <p class="text-xs text-[#737B71] dark:text-[#858585] mt-1">
                             Anda akan memperbarui hak akses operasional untuk peran:
                         </p>
                     </div>
                 </div>
 
-                <div class="p-3.5 rounded-xl bg-[#050B14] border border-[#19334A] space-y-2 text-xs">
+                <div class="p-3.5 rounded-xl bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] space-y-2 text-xs">
                     <div class="flex justify-between">
-                        <span class="text-slate-400 font-semibold">Nama Peran:</span>
-                        <span class="font-bold text-slate-100">{{ currentRole?.name }}</span>
+                        <span class="text-[#737B71] dark:text-[#858585] font-semibold">Nama Peran:</span>
+                        <span class="font-bold text-[#171B17] dark:text-[#F5F5F5]">{{ currentRole?.name }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-slate-400 font-semibold">Slug:</span>
-                        <span class="font-mono text-emerald-400">{{ currentRole?.slug }}</span>
+                        <span class="text-[#737B71] dark:text-[#858585] font-semibold">Slug:</span>
+                        <span class="font-mono text-[#171B17] dark:text-[#00D084]">{{ currentRole?.slug }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-slate-400 font-semibold">Total Izin Ditetapkan:</span>
-                        <span class="font-mono font-bold text-slate-100">
+                        <span class="text-[#737B71] dark:text-[#858585] font-semibold">Total Izin Ditetapkan:</span>
+                        <span class="font-mono font-bold text-[#171B17] dark:text-[#F5F5F5]">
                             {{ (permissionMatrix[selectedRoleSlug] || []).length }} dari 39 Izin
                         </span>
                     </div>
                 </div>
 
-                <p class="text-[11px] text-slate-400 leading-relaxed">
+                <p class="text-[11px] text-[#737B71] dark:text-[#858585] leading-relaxed">
                     Perubahan izin akan langsung berdampak pada akun pengguna yang terhubung ke peran ini secara realtime.
                 </p>
 
-                <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-[#19334A]">
+                <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-[#E0E4DD] dark:border-[#1E1E1E]">
                     <button
                         type="button"
                         @click="isConfirmSaveOpen = false"
-                        class="h-9 px-4 rounded-lg bg-[#0D1D30] hover:bg-[#132A40] border border-[#19334A] text-xs font-semibold text-slate-300 cursor-pointer"
+                        class="h-9 px-4 rounded-lg bg-white dark:bg-[#181818] hover:bg-[#E8EBE5] dark:hover:bg-[#1E1E1E] border border-[#E0E4DD] dark:border-[#1E1E1E] text-xs font-semibold text-[#444C43] dark:text-[#B3B3B3] hover:text-[#171B17] dark:hover:text-white cursor-pointer"
                     >
                         Batal
                     </button>
@@ -1541,7 +1545,7 @@ onMounted(async () => {
                         type="button"
                         @click="confirmSavePermissions"
                         :disabled="isSaving"
-                        class="h-9 px-5 rounded-lg bg-[#00B98B] hover:bg-[#00B98B]/90 text-slate-950 text-xs font-bold flex items-center gap-2 cursor-pointer disabled:opacity-60"
+                        class="h-9 px-5 rounded-lg bg-[#171B17] hover:bg-[#282828] text-white dark:bg-[#00D084] dark:hover:bg-[#00F0A0] dark:text-[#062117] text-xs font-bold flex items-center gap-2 cursor-pointer disabled:opacity-60"
                     >
                         <Check class="w-4 h-4 stroke-[2.5]" />
                         <span>{{ isSaving ? 'Menyimpan...' : 'Konfirmasi Simpan' }}</span>
@@ -1559,21 +1563,21 @@ onMounted(async () => {
             role="dialog"
             aria-modal="true"
         >
-            <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" @click="isAddRoleOpen = false"></div>
-            <div class="relative bg-[#091525] border border-[#19334A] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-                <div class="flex items-center justify-between pb-3 border-b border-[#19334A]">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-xs" @click="isAddRoleOpen = false"></div>
+            <div class="relative bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#F5F5F5] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-[#073D35] text-[#00B98B] flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-lg bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#00D084] flex items-center justify-center">
                             <Plus class="w-4 h-4 stroke-[2.5]" />
                         </div>
-                        <h3 class="font-display font-extrabold text-base text-slate-50">
+                        <h3 class="font-display font-extrabold text-base text-[#171B17] dark:text-[#F5F5F5]">
                             Tambah Peran Kustom Baru
                         </h3>
                     </div>
                     <button
                         type="button"
                         @click="isAddRoleOpen = false"
-                        class="text-slate-400 hover:text-white cursor-pointer"
+                        class="text-[#737B71] dark:text-[#858585] hover:text-[#171B17] dark:hover:text-white cursor-pointer"
                     >
                         <X class="w-4 h-4" />
                     </button>
@@ -1581,56 +1585,60 @@ onMounted(async () => {
 
                 <div class="space-y-3.5 text-xs">
                     <div>
-                        <label class="block font-semibold text-slate-300 mb-1">Nama Peran *</label>
+                        <label class="block font-semibold text-[#444C43] dark:text-[#B3B3B3] mb-1">Nama Peran *</label>
                         <input
                             v-model="roleForm.name"
                             @input="handleNameInput"
                             type="text"
                             placeholder="Contoh: Petugas Lapangan Puskeswan"
-                            class="w-full h-9 px-3 rounded-lg bg-[#050B14] border border-[#19334A] text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#00B98B]"
+                            class="w-full h-9 px-3 rounded-lg bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#737B71] dark:placeholder:text-[#858585] focus:outline-none focus:border-[#171B17] dark:focus:border-[#00D084]"
                         />
                     </div>
 
                     <div>
-                        <label class="block font-semibold text-slate-300 mb-1">Slug Identifier *</label>
+                        <label class="block font-semibold text-[#444C43] dark:text-[#B3B3B3] mb-1">Slug Identifier *</label>
                         <input
                             v-model="roleForm.slug"
                             type="text"
                             placeholder="petugas_puskeswan"
-                            class="w-full h-9 px-3 rounded-lg bg-[#050B14] border border-[#19334A] font-mono text-emerald-400 placeholder:text-slate-500 focus:outline-none focus:border-[#00B98B]"
+                            class="w-full h-9 px-3 rounded-lg bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] font-mono text-[#171B17] dark:text-[#00D084] placeholder:text-[#737B71] dark:placeholder:text-[#858585] focus:outline-none focus:border-[#171B17] dark:focus:border-[#00D084]"
                         />
-                        <span class="text-[10px] text-slate-400 mt-1 block">
+                        <span class="text-[10px] text-[#737B71] dark:text-[#858585] mt-1 block">
                             Hanya huruf kecil, angka, dan underscore (_).
                         </span>
                     </div>
 
                     <div>
-                        <label class="block font-semibold text-slate-300 mb-1">Deskripsi Peran</label>
+                        <label class="block font-semibold text-[#444C43] dark:text-[#B3B3B3] mb-1">Deskripsi Peran</label>
                         <textarea
                             v-model="roleForm.description"
                             rows="2"
                             placeholder="Deskripsi tugas dan batasan akses peran..."
-                            class="w-full p-2.5 rounded-lg bg-[#050B14] border border-[#19334A] text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#00B98B]"
+                            class="w-full p-2.5 rounded-lg bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#737B71] dark:placeholder:text-[#858585] focus:outline-none focus:border-[#171B17] dark:focus:border-[#00D084]"
                         ></textarea>
                     </div>
 
                     <!-- Toggle Status Awal -->
-                    <div class="p-3 rounded-xl bg-[#050B14] border border-[#19334A] flex items-center justify-between">
+                    <div class="p-3 rounded-xl bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] flex items-center justify-between">
                         <div>
-                            <span class="font-semibold text-slate-200 block">Status Aktivasi</span>
-                            <span class="text-[11px] text-slate-400">Aktifkan peran ini langsung di sistem</span>
+                            <span class="font-semibold text-[#171B17] dark:text-[#F5F5F5] block">Status Aktivasi</span>
+                            <span class="text-[11px] text-[#737B71] dark:text-[#858585]">Aktifkan peran ini langsung di sistem</span>
                         </div>
                         <button
                             type="button"
                             role="switch"
                             :aria-checked="roleForm.is_active"
                             @click="roleForm.is_active = !roleForm.is_active"
-                            class="relative inline-flex h-6 w-14 flex-shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-200"
-                            :class="roleForm.is_active ? 'bg-[#00B98B]' : 'bg-[#19334A]'"
+                            class="relative inline-flex h-6 w-14 flex-shrink-0 cursor-pointer items-center rounded-full p-0.5 border transition-colors duration-200"
+                            :class="
+                                roleForm.is_active
+                                    ? 'bg-[#171B17] border-[#171B17] dark:bg-[#00D084] dark:border-[#00D084]'
+                                    : 'bg-slate-200 border-[#CBD2C8] dark:bg-[#181818] dark:border-[#282828]'
+                            "
                         >
                             <span
                                 class="absolute text-[9px] font-black tracking-wider select-none"
-                                :class="roleForm.is_active ? 'left-1.5 text-slate-950' : 'right-1.5 text-slate-400'"
+                                :class="roleForm.is_active ? 'left-1.5 text-white dark:text-[#062117]' : 'right-1.5 text-[#737B71] dark:text-[#858585]'"
                             >
                                 {{ roleForm.is_active ? 'ON' : 'OFF' }}
                             </span>
@@ -1643,18 +1651,18 @@ onMounted(async () => {
                     </div>
                 </div>
 
-                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#19334A]">
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E0E4DD] dark:border-[#1E1E1E]">
                     <button
                         type="button"
                         @click="isAddRoleOpen = false"
-                        class="h-9 px-4 rounded-lg bg-[#0D1D30] hover:bg-[#132A40] border border-[#19334A] text-xs font-semibold text-slate-300 cursor-pointer"
+                        class="h-9 px-4 rounded-lg bg-white dark:bg-[#181818] hover:bg-[#E8EBE5] dark:hover:bg-[#1E1E1E] border border-[#E0E4DD] dark:border-[#1E1E1E] text-xs font-semibold text-[#444C43] dark:text-[#B3B3B3] hover:text-[#171B17] dark:hover:text-white cursor-pointer"
                     >
                         Batal
                     </button>
                     <button
                         type="button"
                         @click="submitAddRole"
-                        class="h-9 px-5 rounded-lg bg-[#00B98B] hover:bg-[#00B98B]/90 text-slate-950 font-bold text-xs flex items-center gap-2 cursor-pointer"
+                        class="h-9 px-5 rounded-lg bg-[#171B17] hover:bg-[#282828] text-white dark:bg-[#00D084] dark:hover:bg-[#00F0A0] dark:text-[#062117] font-bold text-xs flex items-center gap-2 cursor-pointer"
                     >
                         <Plus class="w-4 h-4 stroke-[2.5]" />
                         <span>Buat Peran Baru</span>
@@ -1672,21 +1680,21 @@ onMounted(async () => {
             role="dialog"
             aria-modal="true"
         >
-            <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" @click="isEditRoleOpen = false"></div>
-            <div class="relative bg-[#091525] border border-[#19334A] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-                <div class="flex items-center justify-between pb-3 border-b border-[#19334A]">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-xs" @click="isEditRoleOpen = false"></div>
+            <div class="relative bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#F5F5F5] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-[#0D1D30] text-[#00B98B] flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-lg bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#00D084] flex items-center justify-center">
                             <Edit class="w-4 h-4" />
                         </div>
-                        <h3 class="font-display font-extrabold text-base text-slate-50">
+                        <h3 class="font-display font-extrabold text-base text-[#171B17] dark:text-[#F5F5F5]">
                             Edit Peran: {{ roleForm.name }}
                         </h3>
                     </div>
                     <button
                         type="button"
                         @click="isEditRoleOpen = false"
-                        class="text-slate-400 hover:text-white cursor-pointer"
+                        class="text-[#737B71] dark:text-[#858585] hover:text-[#171B17] dark:hover:text-white cursor-pointer"
                     >
                         <X class="w-4 h-4" />
                     </button>
@@ -1694,46 +1702,46 @@ onMounted(async () => {
 
                 <div class="space-y-3.5 text-xs">
                     <div>
-                        <label class="block font-semibold text-slate-300 mb-1">Nama Peran *</label>
+                        <label class="block font-semibold text-[#444C43] dark:text-[#B3B3B3] mb-1">Nama Peran *</label>
                         <input
                             v-model="roleForm.name"
                             type="text"
-                            class="w-full h-9 px-3 rounded-lg bg-[#050B14] border border-[#19334A] text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#00B98B]"
+                            class="w-full h-9 px-3 rounded-lg bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#737B71] dark:placeholder:text-[#858585] focus:outline-none focus:border-[#171B17] dark:focus:border-[#00D084]"
                         />
                     </div>
 
                     <div>
-                        <label class="block font-semibold text-slate-400 mb-1">Slug (Identifier Permanen)</label>
+                        <label class="block font-semibold text-[#737B71] dark:text-[#858585] mb-1">Slug (Identifier Permanen)</label>
                         <input
                             :value="roleForm.slug"
                             disabled
                             type="text"
-                            class="w-full h-9 px-3 rounded-lg bg-[#0D1D30] border border-[#19334A] font-mono text-slate-400 cursor-not-allowed opacity-75"
+                            class="w-full h-9 px-3 rounded-lg bg-[#F4F5F2] dark:bg-[#181818] border border-[#CBD2C8] dark:border-[#282828] font-mono text-[#737B71] dark:text-[#858585] cursor-not-allowed opacity-75"
                         />
                     </div>
 
                     <div>
-                        <label class="block font-semibold text-slate-300 mb-1">Deskripsi Peran</label>
+                        <label class="block font-semibold text-[#444C43] dark:text-[#B3B3B3] mb-1">Deskripsi Peran</label>
                         <textarea
                             v-model="roleForm.description"
                             rows="2"
-                            class="w-full p-2.5 rounded-lg bg-[#050B14] border border-[#19334A] text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#00B98B]"
+                            class="w-full p-2.5 rounded-lg bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#737B71] dark:placeholder:text-[#858585] focus:outline-none focus:border-[#171B17] dark:focus:border-[#00D084]"
                         ></textarea>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#19334A]">
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E0E4DD] dark:border-[#1E1E1E]">
                     <button
                         type="button"
                         @click="isEditRoleOpen = false"
-                        class="h-9 px-4 rounded-lg bg-[#0D1D30] hover:bg-[#132A40] border border-[#19334A] text-xs font-semibold text-slate-300 cursor-pointer"
+                        class="h-9 px-4 rounded-lg bg-white dark:bg-[#181818] hover:bg-[#E8EBE5] dark:hover:bg-[#1E1E1E] border border-[#E0E4DD] dark:border-[#1E1E1E] text-xs font-semibold text-[#444C43] dark:text-[#B3B3B3] hover:text-[#171B17] dark:hover:text-white cursor-pointer"
                     >
                         Batal
                     </button>
                     <button
                         type="button"
                         @click="submitEditRole"
-                        class="h-9 px-5 rounded-lg bg-[#00B98B] hover:bg-[#00B98B]/90 text-slate-950 font-bold text-xs flex items-center gap-2 cursor-pointer"
+                        class="h-9 px-5 rounded-lg bg-[#171B17] hover:bg-[#282828] text-white dark:bg-[#00D084] dark:hover:bg-[#00F0A0] dark:text-[#062117] font-bold text-xs flex items-center gap-2 cursor-pointer"
                     >
                         <Check class="w-4 h-4 stroke-[2.5]" />
                         <span>Simpan Perubahan</span>
@@ -1751,27 +1759,27 @@ onMounted(async () => {
             role="dialog"
             aria-modal="true"
         >
-            <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" @click="isDeleteRoleOpen = false"></div>
-            <div class="relative bg-[#091525] border border-rose-500/40 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-xs" @click="isDeleteRoleOpen = false"></div>
+            <div class="relative bg-white dark:bg-[#111111] border border-rose-500/40 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 text-[#171B17] dark:text-[#F5F5F5]">
                 <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+                    <div class="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
                         <Trash2 class="w-5 h-5" />
                     </div>
                     <div>
-                        <h3 class="font-display font-extrabold text-base text-slate-50">
+                        <h3 class="font-display font-extrabold text-base text-[#171B17] dark:text-[#F5F5F5]">
                             Hapus Peran Kustom?
                         </h3>
-                        <p class="text-xs text-slate-400 mt-1">
-                            Anda akan menghapus peran <b class="text-rose-300">{{ roleToDelete.name }}</b> ({{ roleToDelete.slug }}). Tindakan ini tidak dapat dibatalkan.
+                        <p class="text-xs text-[#737B71] dark:text-[#858585] mt-1">
+                            Anda akan menghapus peran <b class="text-rose-600 dark:text-rose-400 font-bold">{{ roleToDelete.name }}</b> ({{ roleToDelete.slug }}). Tindakan ini tidak dapat dibatalkan.
                         </p>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#19334A]">
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E0E4DD] dark:border-[#1E1E1E]">
                     <button
                         type="button"
                         @click="isDeleteRoleOpen = false"
-                        class="h-9 px-4 rounded-lg bg-[#0D1D30] hover:bg-[#132A40] border border-[#19334A] text-xs font-semibold text-slate-300 cursor-pointer"
+                        class="h-9 px-4 rounded-lg bg-white dark:bg-[#181818] hover:bg-[#E8EBE5] dark:hover:bg-[#1E1E1E] border border-[#E0E4DD] dark:border-[#1E1E1E] text-xs font-semibold text-[#444C43] dark:text-[#B3B3B3] hover:text-[#171B17] dark:hover:text-white cursor-pointer"
                     >
                         Batal
                     </button>
@@ -1803,20 +1811,20 @@ onMounted(async () => {
                 class="fixed top-5 right-5 z-50 max-w-sm w-full p-4 rounded-xl shadow-2xl flex items-start gap-3 border text-xs font-semibold backdrop-blur-md"
                 :class="[
                     toastType === 'success'
-                        ? 'bg-[#091525]/95 border-[#00B98B] text-slate-100'
+                        ? 'bg-white/95 dark:bg-[#111111]/95 border-[#171B17] dark:border-[#00D084] text-[#171B17] dark:text-[#F5F5F5]'
                         : toastType === 'warning'
-                        ? 'bg-[#091525]/95 border-amber-500 text-amber-200'
-                        : 'bg-[#091525]/95 border-rose-500 text-rose-200'
+                        ? 'bg-white/95 dark:bg-[#111111]/95 border-[#171B17] dark:border-amber-500 text-[#171B17] dark:text-amber-200'
+                        : 'bg-white/95 dark:bg-[#111111]/95 border-rose-500 text-rose-700 dark:text-rose-200'
                 ]"
             >
-                <Check v-if="toastType === 'success'" class="w-4 h-4 text-[#00B98B] shrink-0 mt-0.5" />
-                <AlertTriangle v-else-if="toastType === 'warning'" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <X v-else class="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <Check v-if="toastType === 'success'" class="w-4 h-4 text-[#171B17] dark:text-[#00D084] shrink-0 mt-0.5" />
+                <AlertTriangle v-else-if="toastType === 'warning'" class="w-4 h-4 text-[#171B17] dark:text-amber-400 shrink-0 mt-0.5" />
+                <X v-else class="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                 <div class="flex-1">{{ toastMsg }}</div>
                 <button
                     type="button"
                     @click="toastMsg = null"
-                    class="text-slate-400 hover:text-white cursor-pointer ml-auto"
+                    class="text-[#737B71] dark:text-[#858585] hover:text-[#171B17] dark:hover:text-white cursor-pointer ml-auto"
                 >
                     <X class="w-3.5 h-3.5" />
                 </button>

@@ -15,11 +15,11 @@ import {
     Trophy,
     Layers,
     SlidersHorizontal,
-    Beef,
     Activity,
     TrendingUp,
     Building2,
 } from 'lucide-vue-next';
+import CowIcon from '@/components/icons/CowIcon.vue';
 
 interface LayerDefinition {
     id: string;
@@ -57,12 +57,13 @@ const emit = defineEmits<{
 }>();
 
 // Definisi Kategori Tier 1
-const CATEGORIES: CategoryItem[] = [
-    { id: 'Populasi', label: 'Populasi', icon: Beef },
+const CATEGORY_ITEMS: CategoryItem[] = [
+    { id: 'Populasi', label: 'Populasi', icon: CowIcon },
     { id: 'Penyakit', label: 'Penyakit', icon: Activity },
     { id: 'Produksi', label: 'Produksi', icon: TrendingUp },
     { id: 'Fasilitas', label: 'Fasilitas', icon: Building2 },
 ];
+const CATEGORIES = CATEGORY_ITEMS;
 
 // State Combobox Tier 2 & Pencarian
 const isComboboxOpen = ref(false);
@@ -82,9 +83,49 @@ const LAYER_DEFINITIONS: LayerDefinition[] = [
     { id: 'batasKabupaten', label: 'Batas Kabupaten', sublabel: 'Garis batas terluar wilayah', defaultState: true },
     { id: 'batasKecamatan', label: 'Batas Kecamatan', sublabel: 'Wilayah 27 kecamatan', defaultState: true },
     { id: 'batasDesa', label: 'Batas Desa', sublabel: 'Detail batas 331 desa/kelurahan', defaultState: false },
-    { id: 'heatmapPopulasi', label: 'Heatmap Populasi', sublabel: 'Distribusi intensitas densitas', defaultState: false },
-    { id: 'fasilitasPeternakan', label: 'Fasilitas Peternakan', sublabel: 'Poskeswan & RPH terdaftar', defaultState: false },
+    { id: 'heatmapPopulasi', label: 'Heatmap Kepadatan Populasi', sublabel: 'Konsentrasi Spasial Populasi Ternak', defaultState: false },
+    { id: 'fasilitasPeternakan', label: 'Fasilitas Peternakan', sublabel: 'Titik RPH, Puskeswan & Pasar Hewan', defaultState: false },
     { id: 'jalurTransportasi', label: 'Jalur Transportasi', sublabel: 'Jaringan jalan utama & arteri', defaultState: false },
+];
+
+interface FacilitySubFilter {
+    id: string;
+    label: string;
+    shortLabel: string;
+    color: string;
+    activeBorder: string;
+    activeBg: string;
+    activeText: string;
+}
+
+const FACILITY_SUB_FILTERS: FacilitySubFilter[] = [
+    {
+        id: 'fasilitasRph',
+        label: 'RPH (Rumah Potong Hewan)',
+        shortLabel: 'RPH',
+        color: '#EF4444',
+        activeBorder: 'border-red-500/40',
+        activeBg: 'bg-red-500/10 dark:bg-red-950/30',
+        activeText: 'text-red-500 dark:text-red-400',
+    },
+    {
+        id: 'fasilitasPuskeswan',
+        label: 'UPT Puskeswan',
+        shortLabel: 'Puskeswan',
+        color: '#00D084',
+        activeBorder: 'border-emerald-500/40',
+        activeBg: 'bg-emerald-500/10 dark:bg-emerald-950/30',
+        activeText: 'text-emerald-600 dark:text-[#00D084]',
+    },
+    {
+        id: 'fasilitasPasarHewan',
+        label: 'Pasar Hewan',
+        shortLabel: 'Pasar Hewan',
+        color: '#F59E0B',
+        activeBorder: 'border-amber-500/40',
+        activeBg: 'bg-amber-500/10 dark:bg-amber-950/30',
+        activeText: 'text-amber-600 dark:text-amber-400',
+    },
 ];
 
 const defaultLayers: Record<string, boolean> = {
@@ -93,6 +134,9 @@ const defaultLayers: Record<string, boolean> = {
     batasDesa: false,
     heatmapPopulasi: false,
     fasilitasPeternakan: false,
+    fasilitasRph: true,
+    fasilitasPuskeswan: true,
+    fasilitasPasarHewan: true,
     jalurTransportasi: false,
 };
 
@@ -112,11 +156,36 @@ watch(
 );
 
 function toggleLayer(key: string) {
-    internalLayers.value = {
+    const nextVal = !internalLayers.value[key];
+    const updated: Record<string, boolean> = {
         ...internalLayers.value,
-        [key]: !internalLayers.value[key],
+        [key]: nextVal,
     };
-    emit('update:layerStates', { ...internalLayers.value });
+
+    if (key === 'fasilitasPeternakan' && nextVal) {
+        if (updated.fasilitasRph === undefined) updated.fasilitasRph = true;
+        if (updated.fasilitasPuskeswan === undefined) updated.fasilitasPuskeswan = true;
+        if (updated.fasilitasPasarHewan === undefined) updated.fasilitasPasarHewan = true;
+    }
+
+    internalLayers.value = updated;
+    emit('update:layerStates', { ...updated });
+}
+
+function toggleSubFacility(key: string) {
+    const current = internalLayers.value[key] !== false;
+    const nextVal = !current;
+    const updated: Record<string, boolean> = {
+        ...internalLayers.value,
+        [key]: nextVal,
+    };
+
+    if (nextVal && !updated.fasilitasPeternakan) {
+        updated.fasilitasPeternakan = true;
+    }
+
+    internalLayers.value = updated;
+    emit('update:layerStates', { ...updated });
 }
 
 // State Card C: Legenda Collapsible
@@ -246,9 +315,6 @@ function selectMetric(metric: MetricDefinition) {
                 <h3 class="font-display font-bold text-sm dark:text-[#F5F5F5] text-[#171B17] flex items-center gap-2">
                     Data Peta
                 </h3>
-                <span class="text-[10px] font-semibold text-[#00D084] uppercase tracking-wider dark:bg-[#00D084]/15 dark:text-[#00D084] dark:border-[#00D084]/30 bg-[#E8F8F0] px-2 py-0.5 rounded-full border border-[#00D084]/20">
-                    Prioritas
-                </span>
             </div>
             <p class="text-[11px] dark:text-[#B3B3B3] text-[#6E776D] -mt-1">
                 Pilih komoditas dan atur tampilan data peta.
@@ -261,9 +327,9 @@ function selectMetric(metric: MetricDefinition) {
                     :key="cat.id"
                     type="button"
                     @click="changeCategory(cat.id)"
-                    class="h-12 px-1 rounded-lg text-center flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
+                    class="h-12 px-1 rounded-lg text-center flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer"
                     :class="activeKategori === cat.id
-                        ? 'bg-[#171B17] text-white font-bold shadow-sm border border-[#171B17] dark:bg-[#181818] dark:text-[#F5F5F5] dark:border-[#282828]'
+                        ? 'bg-[#171B17] text-white font-bold shadow-sm border border-[#171B17] dark:bg-[#181818] dark:text-[#00D084] dark:border-[#00D084]/40'
                         : 'bg-white text-[#444C43] border border-[#E0E4DD] hover:bg-[#EDEFEB] hover:text-[#171B17] dark:bg-transparent dark:border-transparent dark:text-[#B3B3B3] dark:hover:text-[#F5F5F5] dark:hover:bg-[#181818]'"
                 >
                     <component :is="cat.icon" class="w-4 h-4 shrink-0" />
@@ -276,7 +342,7 @@ function selectMetric(metric: MetricDefinition) {
                 <button
                     type="button"
                     @click="isComboboxOpen = !isComboboxOpen"
-                    class="w-full h-11 px-3.5 dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:border-[#00D084] focus:border-[#00D084] rounded-xl flex items-center justify-between dark:text-[#F5F5F5] text-[#171B17] font-semibold text-xs transition-all shadow-sm focus:outline-none cursor-pointer"
+                    class="w-full h-11 px-3.5 dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:hover:border-[#00D084] hover:border-[#171B17] dark:focus:border-[#00D084] focus:border-[#171B17] rounded-xl flex items-center justify-between dark:text-[#F5F5F5] text-[#171B17] font-semibold text-xs transition-colors shadow-sm focus:outline-none cursor-pointer"
                     aria-haspopup="listbox"
                     :aria-expanded="isComboboxOpen"
                 >
@@ -294,9 +360,9 @@ function selectMetric(metric: MetricDefinition) {
                         <input
                             v-model="commoditySearch"
                             type="text"
-                            placeholder="Cari komoditas..."
+                            placeholder="Cari komoditas"
                             @focus="isComboboxOpen = true"
-                            class="w-full h-8 pl-8 pr-3 dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-lg text-xs dark:text-[#F5F5F5] text-[#171B17] placeholder:text-[#858585] focus:outline-none focus:border-[#00D084]"
+                            class="w-full h-8 pl-8 pr-3 dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-lg text-xs dark:text-[#F5F5F5] text-[#171B17] placeholder:text-[#858585] focus:outline-none focus:border-[#171B17] dark:focus:border-[#00D084]"
                         />
                     </div>
                     <button
@@ -305,7 +371,7 @@ function selectMetric(metric: MetricDefinition) {
                         class="h-8 px-2.5 rounded-lg border dark:border-[#1E1E1E] border-[#E0E4DD] dark:bg-[#181818] bg-[#F4F5F2] dark:hover:bg-[#1E1E1E] hover:bg-[#EDEFEB] text-xs font-medium dark:text-[#B3B3B3] text-[#444C43] dark:hover:text-[#F5F5F5] hover:text-[#171B17] flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
                         title="Filter Komoditas"
                     >
-                        <SlidersHorizontal class="w-3.5 h-3.5 text-[#00D084]" />
+                        <SlidersHorizontal class="w-3.5 h-3.5 dark:text-[#00D084] text-[#171B17]" />
                         <span>Filter</span>
                     </button>
                 </div>
@@ -340,43 +406,75 @@ function selectMetric(metric: MetricDefinition) {
         <section class="w-full max-w-full box-border dark:bg-[#111111] bg-[#FFFFFF] rounded-2xl p-4 border dark:border-[#1E1E1E] border-[#E0E4DD] shadow-sm flex flex-col gap-2.5">
             <div class="flex items-center justify-between">
                 <h3 class="font-display font-bold text-sm dark:text-[#F5F5F5] text-[#171B17] flex items-center gap-2">
-                    <Layers class="w-4 h-4 text-[#00D084]" />
+                    <Layers class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
                     Layer Peta
                 </h3>
-                <span class="text-[10px] font-semibold dark:text-[#B3B3B3] text-[#6E776D] dark:bg-[#181818] bg-[#F4F5F2] px-2 py-0.5 rounded-full border dark:border-[#1E1E1E] border-[#E0E4DD]">
-                    Kontrol
-                </span>
             </div>
             <p class="text-[11px] dark:text-[#B3B3B3] text-[#6E776D] -mt-1">
                 Aktifkan layer sesuai kebutuhan.
             </p>
 
             <div class="space-y-1 mt-1">
-                <div
-                    v-for="layer in LAYER_DEFINITIONS"
-                    :key="layer.id"
-                    @click="toggleLayer(layer.id)"
-                    class="flex items-center justify-between p-2 rounded-xl dark:hover:bg-[#181818] hover:bg-[#F4F5F2] transition-colors cursor-pointer select-none border border-transparent dark:hover:border-[#1E1E1E] hover:border-[#E0E4DD]"
-                >
-                    <div class="flex flex-col text-left">
-                        <span class="text-xs font-semibold dark:text-[#F5F5F5] text-[#171B17]">{{ layer.label }}</span>
-                        <span class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D]">{{ layer.sublabel }}</span>
-                    </div>
-                    <!-- Accessible Switch Button -->
-                    <button
-                        type="button"
-                        role="switch"
-                        :aria-checked="!!internalLayers[layer.id]"
-                        @click.stop="toggleLayer(layer.id)"
-                        class="w-9 h-5 rounded-full transition-colors relative focus:outline-none focus:ring-2 focus:ring-[#00D084]/50 cursor-pointer shrink-0"
-                        :class="internalLayers[layer.id] ? 'bg-[#00D084]' : 'dark:bg-[#1E1E1E] bg-[#CCD2C8]'"
+                <template v-for="layer in LAYER_DEFINITIONS" :key="layer.id">
+                    <div
+                        @click="toggleLayer(layer.id)"
+                        class="flex items-center justify-between p-2 rounded-xl dark:hover:bg-[#181818] hover:bg-[#F4F5F2] transition-colors cursor-pointer select-none border border-transparent dark:hover:border-[#1E1E1E] hover:border-[#E0E4DD]"
                     >
-                        <span
-                            class="w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform absolute top-0.5"
-                            :class="internalLayers[layer.id] ? 'translate-x-4 left-0.5' : 'translate-x-0.5 left-0'"
-                        />
-                    </button>
-                </div>
+                        <div class="flex flex-col text-left">
+                            <span class="text-xs font-semibold dark:text-[#F5F5F5] text-[#171B17]">{{ layer.label }}</span>
+                            <span class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D]">{{ layer.sublabel }}</span>
+                        </div>
+                        <!-- Accessible Switch Button -->
+                        <button
+                            type="button"
+                            role="switch"
+                            :aria-checked="!!internalLayers[layer.id]"
+                            @click.stop="toggleLayer(layer.id)"
+                            class="w-9 h-5 rounded-full transition-colors relative focus:outline-none dark:focus:ring-2 dark:focus:ring-[#00D084]/50 focus:ring-2 focus:ring-[#171B17]/30 cursor-pointer shrink-0"
+                            :class="internalLayers[layer.id] ? 'dark:bg-[#00D084] bg-[#171B17]' : 'dark:bg-[#1E1E1E] bg-[#CCD2C8]'"
+                        >
+                            <span
+                                class="w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform absolute top-0.5"
+                                :class="internalLayers[layer.id] ? 'translate-x-4 left-0.5' : 'translate-x-0.5 left-0'"
+                            />
+                        </button>
+                    </div>
+
+                    <!-- Sub-Filter Fasilitas Peternakan: RPH, UPT Puskeswan, Pasar Hewan -->
+                    <div
+                        v-if="layer.id === 'fasilitasPeternakan'"
+                        v-show="internalLayers.fasilitasPeternakan"
+                        class="ml-3 pl-3 pr-2 py-2 mb-1 border-l-2 border-emerald-500/40 dark:border-[#00D084]/40 flex flex-col gap-1.5 bg-[#F9FAF8] dark:bg-[#141414] rounded-r-xl transition-all"
+                    >
+                        <span class="text-[10px] font-semibold tracking-wider uppercase text-[#6E776D] dark:text-[#858585]">
+                            Sub-Kategori Fasilitas:
+                        </span>
+                        <div class="flex flex-col gap-1">
+                            <label
+                                v-for="sub in FACILITY_SUB_FILTERS"
+                                :key="sub.id"
+                                class="flex items-center justify-between p-1.5 rounded-lg text-xs cursor-pointer select-none transition-colors border"
+                                :class="internalLayers[sub.id] !== false
+                                    ? `${sub.activeBg} ${sub.activeBorder} ${sub.activeText} font-semibold`
+                                    : 'border-transparent text-[#6E776D] dark:text-[#858585] hover:bg-black/5 dark:hover:bg-white/5'"
+                            >
+                                <div class="flex items-center gap-2 truncate">
+                                    <input
+                                        type="checkbox"
+                                        :checked="internalLayers[sub.id] !== false"
+                                        @change="toggleSubFacility(sub.id)"
+                                        class="w-3.5 h-3.5 rounded border-[#CCD2C8] dark:border-[#333333] text-emerald-600 focus:ring-[#00D084]/50 dark:bg-[#181818] cursor-pointer"
+                                    />
+                                    <span class="truncate">{{ sub.label }}</span>
+                                </div>
+                                <span
+                                    class="w-2 h-2 rounded-full shrink-0"
+                                    :style="{ backgroundColor: sub.color }"
+                                />
+                            </label>
+                        </div>
+                    </div>
+                </template>
             </div>
         </section>
 
@@ -389,7 +487,7 @@ function selectMetric(metric: MetricDefinition) {
                 <div class="flex flex-col text-left">
                     <div class="flex items-center gap-2">
                         <h3 class="font-display font-bold text-sm dark:text-[#F5F5F5] text-[#171B17]">Legenda</h3>
-                        <span class="text-[10px] font-semibold text-[#00D084] px-2 py-0.5 rounded-full dark:bg-[#00D084]/15 dark:border-[#00D084]/30 bg-[#E8F8F0] border border-[#00D084]/20">
+                        <span class="text-[10px] font-semibold dark:text-[#00D084] text-[#171B17] px-2 py-0.5 rounded-full dark:bg-[#00D084]/15 dark:border-[#00D084]/30 bg-[#F4F5F2] border dark:border-[#00D084]/30 border-[#E0E4DD]">
                             {{ selectedMetric.kategori === 'Penyakit' ? 'Kasus & Zona' : '5 Kelas Kuantil' }}
                         </span>
                     </div>
@@ -399,7 +497,7 @@ function selectMetric(metric: MetricDefinition) {
                 </div>
                 <button
                     type="button"
-                    class="w-6 h-6 rounded-lg dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] flex items-center justify-center dark:text-[#B3B3B3] text-[#6E776D] dark:hover:text-[#F5F5F5] hover:text-[#171B17] transition-colors shrink-0"
+                    class="w-7 h-7 rounded-lg dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] flex items-center justify-center dark:text-[#B3B3B3] text-[#6E776D] dark:hover:text-[#F5F5F5] hover:text-[#171B17] transition-colors shrink-0"
                     :aria-expanded="!isLegendaCollapsed"
                     aria-label="Toggle Legenda"
                 >
@@ -494,7 +592,7 @@ function selectMetric(metric: MetricDefinition) {
                         <div class="font-semibold dark:text-[#F5F5F5] text-[#171B17]">
                             Ringkasan Desa di Kec. {{ selectedKecamatan.nama }}:
                         </div>
-                        <div class="text-[10.5px] dark:text-[#B3B3B3] text-[#6E776D] font-medium">
+                        <div class="text-xs dark:text-[#B3B3B3] text-[#6E776D] font-medium">
                             {{ selectedKecamatanDesaStatus.aman }} Desa Aman · {{ selectedKecamatanDesaStatus.waspada }} Waspada · {{ selectedKecamatanDesaStatus.bahaya }} Bahaya
                         </div>
                         <div class="flex items-center gap-1.5 font-mono text-[10px] tabular-nums mt-0.5">
@@ -517,18 +615,18 @@ function selectMetric(metric: MetricDefinition) {
         <section class="w-full max-w-full box-border dark:bg-[#111111] bg-[#FFFFFF] rounded-2xl p-4 border dark:border-[#1E1E1E] border-[#E0E4DD] shadow-sm flex flex-col gap-3">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <Trophy class="w-4 h-4 text-[#00D084]" />
+                    <Trophy class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
                     <h3 class="font-display font-bold text-sm dark:text-[#F5F5F5] text-[#171B17]">Peringkat Kecamatan</h3>
-                    <span class="text-[10px] font-semibold text-[#00D084] dark:bg-[#00D084]/15 bg-[#E8F8F0] px-2 py-0.5 rounded-full border dark:border-[#00D084]/30 border-[#00D084]/20 font-mono tabular-nums">
+                    <span class="text-[10px] font-semibold dark:text-[#00D084] text-[#171B17] dark:bg-[#00D084]/15 bg-[#F4F5F2] px-2 py-0.5 rounded-full border dark:border-[#00D084]/30 border-[#E0E4DD] font-mono tabular-nums">
                         {{ isAllRankingsOpen ? 'Semua' : 'Top 5' }}
                     </span>
                 </div>
                 <button
                     type="button"
                     @click="isAllRankingsOpen = !isAllRankingsOpen"
-                    class="text-xs font-semibold text-[#00D084] hover:text-[#00F0A0] transition-colors cursor-pointer"
+                    class="text-xs font-semibold dark:text-[#00D084] dark:hover:text-[#00F0A0] text-[#171B17] hover:text-black transition-colors cursor-pointer"
                 >
-                    {{ isAllRankingsOpen ? 'Top 5 ←' : 'Lihat semua →' }}
+                    {{ isAllRankingsOpen ? 'Tampilkan Top 5' : 'Lihat Semua' }}
                 </button>
             </div>
 
@@ -543,7 +641,7 @@ function selectMetric(metric: MetricDefinition) {
                     v-for="(kec, idx) in displayedRankings"
                     :key="kec.id"
                     @click="emit('selectKecamatan', kec.id)"
-                    class="p-2.5 rounded-xl border flex flex-col gap-1.5 cursor-pointer transition-all"
+                    class="p-2.5 rounded-xl border flex flex-col gap-1.5 cursor-pointer transition-colors"
                     :class="selectedKecamatanId === kec.id 
                         ? 'border-2 border-[#171B17] bg-white dark:bg-[#181818] dark:border-[#00D084] shadow-xs' 
                         : 'dark:bg-[#181818] bg-[#F4F5F2] dark:border-[#1E1E1E] border-[#E0E4DD] dark:hover:bg-[#1E1E1E] hover:bg-[#EFF2ED]'"
@@ -553,7 +651,7 @@ function selectMetric(metric: MetricDefinition) {
                             <span
                                 class="w-6 h-6 rounded-full text-[11px] font-bold font-mono tabular-nums flex items-center justify-center shrink-0"
                                 :class="idx === 0
-                                    ? 'bg-[#00D084] text-[#062117] shadow-sm font-black'
+                                    ? 'dark:bg-[#00D084] dark:text-[#062117] bg-[#171B17] text-white shadow-sm font-bold tabular-nums'
                                     : 'dark:bg-[#1E1E1E] bg-[#E0E4DD] dark:text-[#B3B3B3] text-[#6E776D] border dark:border-[#282828] border-[#CCD2C8]'"
                             >
                                 {{ idx + 1 }}
@@ -565,7 +663,7 @@ function selectMetric(metric: MetricDefinition) {
                         </div>
 
                         <div class="text-right shrink-0">
-                            <span class="font-bold text-[#00D084] font-mono text-xs tabular-nums">
+                            <span class="font-bold dark:text-[#00D084] text-[#171B17] font-mono text-xs tabular-nums">
                                 {{ formatAngka(Number(kec[selectedMetric.id as keyof KecamatanData])) }}
                             </span>
                             <span class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D] font-normal ml-1">{{ selectedMetric.satuan }}</span>
@@ -575,7 +673,8 @@ function selectMetric(metric: MetricDefinition) {
                     <!-- Relative Progress Bar -->
                     <div class="w-full h-1.5 dark:bg-[#090909] bg-[#E0E4DD] rounded-full overflow-hidden">
                         <div
-                            class="h-full bg-[#00D084] rounded-full transition-all duration-300"
+                            class="h-full rounded-full transition-all duration-300"
+                            :class="idx === 0 ? 'dark:bg-[#00D084] bg-[#171B17]' : 'dark:bg-[#252525] bg-[#CBD2C8]'"
                             :style="{ width: `${getProgressPercent(kec)}%` }"
                         />
                     </div>

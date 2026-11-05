@@ -40,6 +40,7 @@ export interface DesaData {
 
     // Fasilitas (unit)
     poskeswan: number;
+    rph?: number;
 }
 
 export const BANYUMAS_DESA_LIST: DesaData[] = [

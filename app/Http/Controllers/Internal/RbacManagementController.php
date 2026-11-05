@@ -27,10 +27,12 @@ class RbacManagementController extends Controller
         try {
             if ($this->permissionService->hasRbacTables()) {
                 $roles = Role::withCount(['users', 'permissions'])->orderBy('id')->get();
-                return response()->json([
-                    'status' => 'success',
-                    'data' => $roles,
-                ]);
+                if ($roles->isNotEmpty()) {
+                    return response()->json([
+                        'status' => 'success',
+                        'data' => $roles,
+                    ]);
+                }
             }
         } catch (Throwable) {
             // Fallback for resilient testing
@@ -204,21 +206,23 @@ class RbacManagementController extends Controller
         try {
             if ($this->permissionService->hasRbacTables()) {
                 $roles = Role::with('permissions:id,slug,name,module')->orderBy('id')->get();
-                $groupedPermissions = $this->permissionService->getGroupedPermissions();
+                if ($roles->isNotEmpty()) {
+                    $groupedPermissions = $this->permissionService->getGroupedPermissions();
 
-                $matrix = [];
-                foreach ($roles as $role) {
-                    $matrix[$role->slug] = $role->permissions->pluck('slug')->all();
+                    $matrix = [];
+                    foreach ($roles as $role) {
+                        $matrix[$role->slug] = $role->permissions->pluck('slug')->all();
+                    }
+
+                    return response()->json([
+                        'status' => 'success',
+                        'data' => [
+                            'roles' => $roles,
+                            'permissions_by_module' => $groupedPermissions,
+                            'matrix' => $matrix,
+                        ],
+                    ]);
                 }
-
-                return response()->json([
-                    'status' => 'success',
-                    'data' => [
-                        'roles' => $roles,
-                        'permissions_by_module' => $groupedPermissions,
-                        'matrix' => $matrix,
-                    ],
-                ]);
             }
         } catch (Throwable) {
             // Fallback

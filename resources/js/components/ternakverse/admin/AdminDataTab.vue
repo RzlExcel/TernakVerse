@@ -6,6 +6,9 @@ import {
     SlidersHorizontal,
     RotateCcw,
     Download,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-vue-next';
 import { formatAngka, type KecamatanData } from '../../../data/banyumasData';
 import { getDesaByKecamatan } from '../../../data/banyumasDesaData';
@@ -22,6 +25,7 @@ const props = defineProps<{
     currentPage: number;
     rowsPerPage: number;
     totalPages: number;
+    selectedYear?: number | 'all';
 }>();
 
 const emit = defineEmits<{
@@ -39,6 +43,109 @@ const emit = defineEmits<{
     (e: 'editKecamatan', kec: KecamatanData): void;
     (e: 'deleteKecamatan', kec: KecamatanData): void;
 }>();
+
+function getCommodityCategoryLabel(kec: KecamatanData, filter: string): string {
+    if (filter === 'unggas' || filter === 'ayam_broiler' || filter === 'ayam_potong') {
+        return 'Ayam Broiler / Potong';
+    }
+    if (filter === 'ayam_petelur' || filter === 'ayam_layer') {
+        return 'Ayam Layer / Petelur';
+    }
+    if (filter === 'sapi_perah') {
+        return 'Sapi Perah Friesian Holstein';
+    }
+    if (filter === 'sapi_potong') {
+        return 'Sapi Potong Unggul';
+    }
+    if (filter === 'kambing' || filter === 'kambing_potong') {
+        return 'Kambing Potong';
+    }
+    if (filter === 'kambing_perah') {
+        return 'Kambing Perah';
+    }
+    if (filter === 'domba') {
+        return 'Domba Potong & Wol';
+    }
+    if (filter === 'kambing_domba') {
+        return 'Kambing & Domba Potong';
+    }
+
+    // filter === 'semua' or fallback: determine dominant commodity
+    const ayam = kec.ayam_broiler ?? kec.ayam_potong ?? 0;
+    const ayamPetelur = kec.ayam_layer ?? kec.ayam_petelur ?? 0;
+    const sapiPerah = kec.sapi_perah || 0;
+    const sapiPotong = kec.sapi_potong || 0;
+    const kambing = kec.kambing || 0;
+    const kambingPerah = kec.kambing_perah || 0;
+    const domba = kec.domba || 0;
+
+    const maxVal = Math.max(ayam, ayamPetelur, sapiPerah, sapiPotong, kambing, kambingPerah, domba);
+    if (maxVal === ayam && ayam > 0) {
+        return 'Unggas / Ayam Broiler (Dominan)';
+    }
+    if (maxVal === ayamPetelur && ayamPetelur > 0) {
+        return 'Ayam Layer / Petelur (Dominan)';
+    }
+    if (maxVal === sapiPerah && sapiPerah > 0) {
+        return 'Sapi Perah Friesian Holstein (Dominan)';
+    }
+    if (maxVal === sapiPotong && sapiPotong > 0) {
+        return 'Sapi Potong Unggul (Dominan)';
+    }
+    if (maxVal === kambing && kambing > 0) {
+        return 'Kambing Potong (Dominan)';
+    }
+    if (maxVal === kambingPerah && kambingPerah > 0) {
+        return 'Kambing Perah (Dominan)';
+    }
+    if (maxVal === domba && domba > 0) {
+        return 'Domba Potong (Dominan)';
+    }
+
+    return 'Komoditas Campuran';
+}
+
+function getCommodityPopulation(kec: KecamatanData, filter: string): number {
+    if (filter === 'unggas' || filter === 'ayam_broiler' || filter === 'ayam_potong') {
+        return kec.ayam_broiler ?? kec.ayam_potong ?? 0;
+    }
+    if (filter === 'ayam_petelur' || filter === 'ayam_layer') {
+        return kec.ayam_layer ?? kec.ayam_petelur ?? 0;
+    }
+    if (filter === 'sapi_perah') {
+        return kec.sapi_perah || 0;
+    }
+    if (filter === 'sapi_potong') {
+        return kec.sapi_potong || 0;
+    }
+    if (filter === 'kambing' || filter === 'kambing_potong') {
+        return kec.kambing || 0;
+    }
+    if (filter === 'kambing_perah') {
+        return kec.kambing_perah || 0;
+    }
+    if (filter === 'domba') {
+        return kec.domba || 0;
+    }
+    if (filter === 'kambing_domba') {
+        return (kec.kambing || 0) + (kec.domba || 0);
+    }
+
+    // filter === 'semua'
+    const ayam = kec.ayam_broiler ?? kec.ayam_potong ?? 0;
+    const ayamPetelur = kec.ayam_layer ?? kec.ayam_petelur ?? 0;
+    const ruminansia =
+        (kec.sapi_potong || 0) +
+        (kec.sapi_perah || 0) +
+        (kec.kambing || 0) +
+        (kec.kambing_perah || 0) +
+        (kec.domba || 0);
+    return kec.populasi_total ?? (ruminansia + ayam + ayamPetelur);
+}
+
+function getCommoditySubDetails(kec: KecamatanData): string {
+    return `Sapi: ${formatAngka(kec.sapi_potong || 0)} Ptg, ${formatAngka(kec.sapi_perah || 0)} Prh | Kambing: ${formatAngka(kec.kambing || 0)} (Perah: ${formatAngka(kec.kambing_perah || 0)}) | Domba: ${formatAngka(kec.domba || 0)} | Ayam: ${formatAngka(kec.ayam_potong ?? kec.ayam_broiler ?? 0)} Ptg, ${formatAngka(kec.ayam_petelur ?? kec.ayam_layer ?? 0)} Tlr`;
+}
 </script>
 
 <template>
@@ -55,17 +162,17 @@ const emit = defineEmits<{
                     Katalog Komoditas &amp; Bibit Ternak
                 </h1>
                 <p class="text-xs text-[#6E776D] dark:text-[#B3B3B3] mt-0.5">
-                    Kelola data rumpun ternak sapi perah FH, sapi potong, kambing, dan status zonasi EWS 27 kecamatan
+                    Kelola data rumpun ternak sapi perah FH, sapi potong, kambing, domba, unggas/ayam broiler, dan status zonasi EWS 27 kecamatan
                 </p>
             </div>
 
             <button
                 type="button"
                 @click="emit('startCreateNew')"
-                class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2.5 rounded-lg text-xs flex items-center gap-2 shadow-sm transition-all self-start sm:self-auto cursor-pointer"
+                class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2.5 rounded-lg text-xs flex items-center gap-2 shadow-sm transition-colors self-start sm:self-auto cursor-pointer"
             >
                 <Plus class="w-4 h-4 stroke-[2.5]" />
-                <span>+ Tambah Komoditas Baru</span>
+                <span>Tambah Komoditas Baru</span>
             </button>
         </div>
 
@@ -82,8 +189,8 @@ const emit = defineEmits<{
                             :value="props.searchQuery"
                             @input="emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
                             type="text"
-                            placeholder="Cari berdasarkan nama komoditas atau kode..."
-                            class="w-full h-9 bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg pl-9 pr-8 text-xs text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#858585] outline-none focus:border-[#00D084] focus:ring-1 focus:ring-[#00D084] transition-all"
+                            placeholder="Cari nama atau kode komoditas"
+                            class="w-full h-9 bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg pl-9 pr-8 text-xs text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#858585] outline-none focus:border-[#00D084] focus:ring-1 focus:ring-[#00D084] transition-colors"
                         />
                         <button
                             v-if="props.searchQuery"
@@ -98,22 +205,23 @@ const emit = defineEmits<{
                     </div>
 
                     <!-- 2. Dropdown Filter Kategori Komoditas Ternak -->
-                    <div class="relative w-44 flex-shrink-0">
+                    <div class="relative w-48 flex-shrink-0">
                         <select
                             :value="props.selectedCategoryFilter"
                             @change="emit('update:selectedCategoryFilter', ($event.target as HTMLSelectElement).value)"
-                            class="w-full h-9 bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg pl-3 pr-7 text-xs font-medium text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] cursor-pointer transition-all appearance-none truncate"
+                            class="w-full h-9 bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg pl-3 pr-7 text-xs font-medium text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] cursor-pointer transition-colors appearance-none truncate"
                             title="Filter Kategori Komoditas"
                         >
                             <option value="semua" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Semua Kategori</option>
                             <option value="sapi_potong" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Sapi Potong (&gt;500)</option>
                             <option value="sapi_perah" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Sapi Perah (&gt;50)</option>
-                            <option value="kambing_domba" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Kambing / Domba (&gt;1rb)</option>
-                            <option value="unggas" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Ayam Broiler (&gt;5rb)</option>
+                            <option value="kambing" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Kambing Potong (&gt;1rb)</option>
+                            <option value="kambing_perah" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Kambing Perah (&gt;200)</option>
+                            <option value="domba" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Domba (&gt;500)</option>
+                            <option value="unggas" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Ayam Broiler / Potong (&gt;5rb)</option>
+                            <option value="ayam_petelur" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Ayam Layer / Petelur (&gt;1rb)</option>
                         </select>
-                        <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#6E776D] dark:text-[#858585] text-[10px]">
-                            ▼
-                        </div>
+                        <ChevronDown class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#6E776D] dark:text-[#858585] w-3.5 h-3.5" />
                     </div>
 
                     <!-- 3. Dropdown Filter Status Zonasi EWS -->
@@ -121,7 +229,7 @@ const emit = defineEmits<{
                         <select
                             :value="props.selectedZonaFilter"
                             @change="emit('update:selectedZonaFilter', ($event.target as HTMLSelectElement).value)"
-                            class="w-full h-9 bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg pl-3 pr-7 text-xs font-medium text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] cursor-pointer transition-all appearance-none truncate"
+                            class="w-full h-9 bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg pl-3 pr-7 text-xs font-medium text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] cursor-pointer transition-colors appearance-none truncate"
                             title="Filter Status Zonasi EWS"
                         >
                             <option value="semua" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Semua Status Zonasi</option>
@@ -129,16 +237,14 @@ const emit = defineEmits<{
                             <option value="waspada" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Zona Kuning (Waspada)</option>
                             <option value="aman" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Zona Hijau (Aman)</option>
                         </select>
-                        <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#6E776D] dark:text-[#858585] text-[10px]">
-                            ▼
-                        </div>
+                        <ChevronDown class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#6E776D] dark:text-[#858585] w-3.5 h-3.5" />
                     </div>
 
                     <!-- 4. Tombol Buka Modal Parameter Filter Lanjutan -->
                     <button
                         type="button"
                         @click="emit('openFilterModal')"
-                        class="h-9 px-3 rounded-lg border border-[#E0E4DD] dark:border-[#1E1E1E] bg-white dark:bg-[#181818] text-xs font-medium text-[#171B17] dark:text-[#F5F5F5] hover:border-[#00D084] flex items-center gap-1.5 transition-all select-none flex-shrink-0 cursor-pointer"
+                        class="h-9 px-3 rounded-lg border border-[#E0E4DD] dark:border-[#1E1E1E] bg-white dark:bg-[#181818] text-xs font-medium text-[#171B17] dark:text-[#F5F5F5] hover:border-[#00D084] flex items-center gap-1.5 transition-colors select-none flex-shrink-0 cursor-pointer"
                         title="Buka panel parameter filter lanjutan"
                     >
                         <SlidersHorizontal class="w-3.5 h-3.5 text-emerald-500 dark:text-[#00D084] flex-shrink-0" />
@@ -150,7 +256,7 @@ const emit = defineEmits<{
                         v-if="props.hasActiveFilters"
                         type="button"
                         @click="emit('resetFilters')"
-                        class="h-9 px-3 rounded-lg border border-rose-300 dark:border-rose-500/40 bg-rose-50 dark:bg-rose-500/10 text-xs font-medium text-rose-600 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-500/20 flex items-center gap-1.5 transition-all select-none whitespace-nowrap flex-shrink-0 cursor-pointer"
+                        class="h-9 px-3 rounded-lg border border-rose-300 dark:border-rose-500/40 bg-rose-50 dark:bg-rose-500/10 text-xs font-medium text-rose-600 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-500/20 flex items-center gap-1.5 transition-colors select-none whitespace-nowrap flex-shrink-0 cursor-pointer"
                         title="Reset semua filter"
                     >
                         <RotateCcw class="w-3.5 h-3.5 flex-shrink-0" />
@@ -163,7 +269,7 @@ const emit = defineEmits<{
                     <button
                         type="button"
                         @click="emit('openExportModal')"
-                        class="h-9 px-3 rounded-lg border border-[#E0E4DD] dark:border-[#1E1E1E] bg-white dark:bg-[#181818] text-xs font-semibold text-[#171B17] dark:text-[#F5F5F5] hover:border-[#00D084] flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer"
+                        class="h-9 px-3 rounded-lg border border-[#E0E4DD] dark:border-[#1E1E1E] bg-white dark:bg-[#181818] text-xs font-semibold text-[#171B17] dark:text-[#F5F5F5] hover:border-[#00D084] flex items-center gap-2 transition-colors whitespace-nowrap cursor-pointer"
                         title="Ekspor data peternakan ke berkas CSV atau Excel"
                     >
                         <Download class="w-3.5 h-3.5 text-emerald-500 dark:text-[#00D084]" />
@@ -244,16 +350,25 @@ const emit = defineEmits<{
                                     class="font-medium"
                                     :class="props.selectedRowIds.includes(kec.id) ? 'text-white/90' : 'text-[#444C43] dark:text-[#B3B3B3]'"
                                 >
-                                    {{ kec.sapi_perah > 50 ? 'Sapi Perah Friesian Holstein' : 'Sapi Potong Unggul' }}
+                                    {{ getCommodityCategoryLabel(kec, props.selectedCategoryFilter) }}
                                 </span>
                             </td>
 
                             <!-- Populasi Ekor -->
-                            <td
-                                class="py-3.5 px-4 font-mono tabular-nums font-bold text-xs"
-                                :class="props.selectedRowIds.includes(kec.id) ? 'text-white' : 'text-[#171B17] dark:text-[#F5F5F5]'"
-                            >
-                                {{ formatAngka(kec.sapi_potong) }} ekor
+                            <td class="py-3.5 px-4 font-mono tabular-nums">
+                                <div
+                                    class="font-bold text-xs"
+                                    :class="props.selectedRowIds.includes(kec.id) ? 'text-white' : 'text-[#171B17] dark:text-[#F5F5F5]'"
+                                >
+                                    {{ formatAngka(getCommodityPopulation(kec, props.selectedCategoryFilter)) }} ekor
+                                </div>
+                                <div
+                                    class="text-[10px] mt-0.5 tracking-tight"
+                                    :class="props.selectedRowIds.includes(kec.id) ? 'text-white/70' : 'text-[#6E776D] dark:text-[#858585]'"
+                                    :title="getCommoditySubDetails(kec)"
+                                >
+                                    {{ getCommoditySubDetails(kec) }}
+                                </div>
                             </td>
 
                             <!-- Year -->
@@ -261,7 +376,7 @@ const emit = defineEmits<{
                                 class="py-3.5 px-4 font-mono tabular-nums"
                                 :class="props.selectedRowIds.includes(kec.id) ? 'text-white/70' : 'text-[#6E776D] dark:text-[#858585]'"
                             >
-                                2026
+                                {{ props.selectedYear === 'all' ? '2024 - 2026' : (props.selectedYear || 2026) }}
                             </td>
 
                             <!-- Status Zona EWS -->
@@ -330,12 +445,12 @@ const emit = defineEmits<{
             <!-- FOOTER TABEL -->
             <div class="p-3.5 md:p-4 border-t border-[#E0E4DD] dark:border-[#1E1E1E] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#6E776D] dark:text-[#858585] w-full bg-[#F4F5F2] dark:bg-[#141414]">
                 <div class="font-medium font-mono tabular-nums text-[#6E776D] dark:text-[#858585]">
-                    Showing {{ props.filteredCount === 0 ? 0 : (props.currentPage - 1) * props.rowsPerPage + 1 }} to {{ Math.min(props.currentPage * props.rowsPerPage, props.filteredCount) }} of {{ props.filteredCount }} results
+                    Menampilkan {{ props.filteredCount === 0 ? 0 : (props.currentPage - 1) * props.rowsPerPage + 1 }} - {{ Math.min(props.currentPage * props.rowsPerPage, props.filteredCount) }} dari {{ props.filteredCount }} data
                 </div>
 
                 <div class="flex items-center gap-3">
                     <div class="flex items-center gap-2 bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] px-3 py-1 rounded-lg text-[#6E776D] dark:text-[#B3B3B3]">
-                        <span>Per page</span>
+                        <span>Baris per halaman</span>
                         <select
                             :value="props.rowsPerPage"
                             @change="emit('update:rowsPerPage', Number(($event.target as HTMLSelectElement).value))"
@@ -354,10 +469,10 @@ const emit = defineEmits<{
                             type="button"
                             @click="emit('update:currentPage', Math.max(1, props.currentPage - 1))"
                             :disabled="props.currentPage === 1"
-                            class="h-8 px-2.5 rounded-lg border border-[#E0E4DD] dark:border-[#1E1E1E] bg-white dark:bg-[#181818] text-[#444C43] dark:text-[#B3B3B3] hover:bg-[#EDEFEB] dark:hover:bg-[#282828] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs"
+                            class="h-8 w-8 rounded-lg border border-[#E0E4DD] dark:border-[#1E1E1E] bg-white dark:bg-[#181818] text-[#444C43] dark:text-[#B3B3B3] hover:bg-[#EDEFEB] dark:hover:bg-[#282828] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs flex items-center justify-center transition-colors"
                             aria-label="Halaman sebelumnya"
                         >
-                            &lt;
+                            <ChevronLeft class="w-3.5 h-3.5" />
                         </button>
 
                         <template v-for="p in props.totalPages" :key="p">
@@ -369,7 +484,7 @@ const emit = defineEmits<{
                                     p === props.currentPage
                                         ? 'bg-[#171B17] text-white font-bold border-[#171B17] dark:bg-[#181818] dark:text-[#00D084] dark:border-[#00D084]'
                                         : 'bg-white dark:bg-[#181818] text-[#444C43] dark:text-[#B3B3B3] border border-[#E0E4DD] dark:border-[#1E1E1E] hover:bg-[#EDEFEB] dark:hover:bg-[#282828]',
-                                    'h-8 min-w-[32px] px-2 rounded-lg border text-xs cursor-pointer transition-all'
+                                    'h-8 w-8 px-2 rounded-lg border text-xs cursor-pointer transition-colors flex items-center justify-center'
                                 ]"
                             >
                                 {{ p }}
@@ -386,10 +501,10 @@ const emit = defineEmits<{
                             type="button"
                             @click="emit('update:currentPage', Math.min(props.totalPages, props.currentPage + 1))"
                             :disabled="props.currentPage === props.totalPages"
-                            class="h-8 px-2.5 rounded-lg border border-[#E0E4DD] dark:border-[#1E1E1E] bg-white dark:bg-[#181818] text-[#444C43] dark:text-[#B3B3B3] hover:bg-[#EDEFEB] dark:hover:bg-[#282828] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs"
+                            class="h-8 w-8 rounded-lg border border-[#E0E4DD] dark:border-[#1E1E1E] bg-white dark:bg-[#181818] text-[#444C43] dark:text-[#B3B3B3] hover:bg-[#EDEFEB] dark:hover:bg-[#282828] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs flex items-center justify-center transition-colors"
                             aria-label="Halaman selanjutnya"
                         >
-                            &gt;
+                            <ChevronRight class="w-3.5 h-3.5" />
                         </button>
                     </div>
                 </div>

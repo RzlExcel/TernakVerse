@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import {
     LayoutDashboard,
     FolderKanban,
@@ -11,17 +12,23 @@ import {
     Compass,
     LogOut,
     X,
+    Database,
+    Wrench,
 } from 'lucide-vue-next';
 import type { AdminTab } from '../../../composables/ternakverse/admin/useAdminPortal';
 
+export type ExtendedAdminTab = AdminTab | 'maintenance';
+
 const props = defineProps<{
-    currentTab: AdminTab;
+    currentTab: ExtendedAdminTab;
     isMobileMenuOpen: boolean;
     isSidebarCollapsed: boolean;
+    isSuperAdmin?: boolean;
+    userRole?: string;
 }>();
 
 const emit = defineEmits<{
-    (e: 'selectTab', tab: AdminTab): void;
+    (e: 'selectTab', tab: ExtendedAdminTab): void;
     (e: 'startCreateNew'): void;
     (e: 'update:isMobileMenuOpen', val: boolean): void;
     (e: 'goToPublicPortal'): void;
@@ -30,7 +37,7 @@ const emit = defineEmits<{
 }>();
 
 interface NavItem {
-    id: AdminTab;
+    id: ExtendedAdminTab;
     label: string;
     group: 'utama' | 'monitoring';
     icon: typeof LayoutDashboard;
@@ -43,15 +50,51 @@ const mainNavItems: NavItem[] = [
     { id: 'create', label: 'Input Data Baru', group: 'utama', icon: PlusSquare },
 ];
 
-const monitoringNavItems: NavItem[] = [
+const allMonitoringNavItems: NavItem[] = [
     { id: 'ews', label: 'Monitoring EWS', group: 'monitoring', icon: ShieldAlert },
-    { id: 'rph', label: 'Fasilitas RPH', group: 'monitoring', icon: Building2 },
+    { id: 'rph', label: 'Fasilitas Peternakan', group: 'monitoring', icon: Building2 },
+    { id: 'master_data', label: 'Master Data', group: 'monitoring', icon: Database },
+    { id: 'maintenance', label: 'Pemeliharaan Sistem', group: 'monitoring', icon: Wrench },
     { id: 'laporan', label: 'Ekspor Laporan', group: 'monitoring', icon: FileDown },
     { id: 'profile', label: 'Pengaturan Akun', group: 'monitoring', icon: User },
     { id: 'rbac', label: 'Role & Permission', group: 'monitoring', icon: ShieldCheck },
 ];
 
-function handleNavClick(tab: AdminTab): void {
+const monitoringNavItems = computed<NavItem[]>(() => {
+    if (props.isSuperAdmin) {
+        return allMonitoringNavItems;
+    }
+    const superAdminTabs: ExtendedAdminTab[] = ['master_data', 'maintenance', 'rbac'];
+    return allMonitoringNavItems.filter((item) => !superAdminTabs.includes(item.id));
+});
+
+const currentLiveTime = ref<string>('');
+
+function updateLiveTime(): void {
+    const now = new Date();
+    currentLiveTime.value = new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(now);
+}
+
+let clockInterval: ReturnType<typeof setInterval> | null = null;
+
+onMounted(() => {
+    updateLiveTime();
+    clockInterval = setInterval(updateLiveTime, 30000);
+});
+
+onUnmounted(() => {
+    if (clockInterval) {
+        clearInterval(clockInterval);
+    }
+});
+
+function handleNavClick(tab: ExtendedAdminTab): void {
     if (tab === 'create') {
         emit('startCreateNew');
     } else {
@@ -75,9 +118,9 @@ function handleNavClick(tab: AdminTab): void {
             <div class="space-y-1">
                 <div
                     v-if="!props.isSidebarCollapsed"
-                    class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider dark:text-[#858585] text-[#737B71]"
+                    class="px-3 py-1 text-xs font-semibold tracking-normal dark:text-[#858585] text-[#737B71]"
                 >
-                    MENU UTAMA
+                    Menu Utama
                 </div>
                 <button
                     v-for="item in mainNavItems"
@@ -85,7 +128,7 @@ function handleNavClick(tab: AdminTab): void {
                     type="button"
                     @click="handleNavClick(item.id)"
                     :title="item.label"
-                    class="w-full h-9 rounded-lg flex items-center text-xs font-medium transition-all cursor-pointer"
+                    class="w-full h-9 rounded-lg flex items-center text-xs font-medium transition-colors cursor-pointer"
                     :class="[
                         props.isSidebarCollapsed ? 'justify-center px-0' : 'text-left px-3 gap-2.5 justify-between',
                         props.currentTab === item.id
@@ -101,12 +144,6 @@ function handleNavClick(tab: AdminTab): void {
                         />
                         <span v-if="!props.isSidebarCollapsed" class="truncate">{{ item.label }}</span>
                     </div>
-                    <span
-                        v-if="!props.isSidebarCollapsed && props.currentTab === item.id"
-                        class="bg-[#063D2D] text-[#00D084] text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0"
-                    >
-                        Aktif
-                    </span>
                 </button>
             </div>
 
@@ -114,7 +151,7 @@ function handleNavClick(tab: AdminTab): void {
             <div class="space-y-1">
                 <div
                     v-if="!props.isSidebarCollapsed"
-                    class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider dark:text-[#858585] text-[#737B71]"
+                    class="px-3 py-1 text-xs font-semibold tracking-normal dark:text-[#858585] text-[#737B71]"
                 >
                     MONITORING &amp; FASILITAS
                 </div>
@@ -124,7 +161,7 @@ function handleNavClick(tab: AdminTab): void {
                     type="button"
                     @click="handleNavClick(item.id)"
                     :title="item.label"
-                    class="w-full h-9 rounded-lg flex items-center text-xs font-medium transition-all cursor-pointer"
+                    class="w-full h-9 rounded-lg flex items-center text-xs font-medium transition-colors cursor-pointer"
                     :class="[
                         props.isSidebarCollapsed ? 'justify-center px-0' : 'text-left px-3 gap-2.5 justify-between',
                         props.currentTab === item.id
@@ -140,12 +177,6 @@ function handleNavClick(tab: AdminTab): void {
                         />
                         <span v-if="!props.isSidebarCollapsed" class="truncate">{{ item.label }}</span>
                     </div>
-                    <span
-                        v-if="!props.isSidebarCollapsed && props.currentTab === item.id"
-                        class="bg-[#063D2D] text-[#00D084] text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0"
-                    >
-                        Aktif
-                    </span>
                 </button>
             </div>
         </div>
@@ -163,14 +194,14 @@ function handleNavClick(tab: AdminTab): void {
                         Sistem Berjalan Normal
                     </div>
                     <div class="text-[10px] dark:text-[#858585] text-[#737B71] leading-tight mt-0.5 truncate">
-                        Terakhir sinkron: 14 Okt 2026, 11:20
+                        Terakhir sinkron: {{ currentLiveTime || 'Sinkronisasi...' }}
                     </div>
                 </div>
             </div>
             <div
                 v-else
                 class="w-full flex justify-center py-1"
-                title="Sistem Berjalan Normal (Terakhir sinkron: 14 Okt 2026, 11:20)"
+                :title="`Sistem Berjalan Normal (Terakhir sinkron: ${currentLiveTime || 'Sinkronisasi...'})`"
             >
                 <span class="w-2.5 h-2.5 rounded-full bg-[#00D084]"></span>
             </div>
@@ -179,16 +210,16 @@ function handleNavClick(tab: AdminTab): void {
             <div class="space-y-1">
                 <div
                     v-if="!props.isSidebarCollapsed"
-                    class="px-2 text-[10px] uppercase font-bold tracking-wider dark:text-[#858585] text-[#737B71]"
+                    class="px-2 text-xs font-semibold tracking-normal dark:text-[#858585] text-[#737B71]"
                 >
-                    TAUTAN EKSTERNAL
+                    Tautan Eksternal
                 </div>
 
                 <button
                     type="button"
                     @click="emit('goToDinasMap')"
                     title="WebGIS Dinas"
-                    class="w-full h-8 rounded-lg dark:text-[#B3B3B3] text-[#444C43] hover:text-[#00D084] dark:hover:text-[#00D084] dark:hover:bg-[#1E1E1E] hover:bg-[#EDEFEB] font-medium text-xs flex items-center transition-all cursor-pointer"
+                    class="w-full h-8 rounded-lg dark:text-[#B3B3B3] text-[#444C43] hover:text-[#00D084] dark:hover:text-[#00D084] dark:hover:bg-[#1E1E1E] hover:bg-[#EDEFEB] font-medium text-xs flex items-center transition-colors cursor-pointer"
                     :class="props.isSidebarCollapsed ? 'justify-center px-0' : 'px-3 gap-2'"
                 >
                     <Compass class="w-3.5 h-3.5 text-[#00D084] flex-shrink-0" />
@@ -199,7 +230,7 @@ function handleNavClick(tab: AdminTab): void {
                     type="button"
                     @click="emit('logout')"
                     title="Keluar Sesi"
-                    class="w-full h-8 rounded-lg text-[#DC625F] hover:text-[#EF8784] dark:hover:bg-[#181818] hover:bg-[#FBEAEA] font-medium text-xs flex items-center transition-all mt-1 cursor-pointer"
+                    class="w-full h-8 rounded-lg text-[#DC625F] hover:text-[#EF8784] dark:hover:bg-[#181818] hover:bg-[#FBEAEA] font-medium text-xs flex items-center transition-colors mt-1 cursor-pointer"
                     :class="props.isSidebarCollapsed ? 'justify-center px-0' : 'px-3 gap-2'"
                 >
                     <LogOut class="w-3.5 h-3.5 flex-shrink-0" />
@@ -262,15 +293,15 @@ function handleNavClick(tab: AdminTab): void {
 
                 <!-- MENU UTAMA -->
                 <div class="space-y-1">
-                    <div class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider dark:text-[#858585] text-[#737B71]">
-                        MENU UTAMA
+                    <div class="px-3 py-1 text-xs font-semibold tracking-normal dark:text-[#858585] text-[#737B71]">
+                        Menu Utama
                     </div>
                     <button
                         v-for="item in mainNavItems"
                         :key="item.id"
                         type="button"
                         @click="handleNavClick(item.id)"
-                        class="w-full text-left px-3 h-10 rounded-lg flex items-center justify-between text-xs font-medium transition-all cursor-pointer"
+                        class="w-full text-left px-3 h-10 rounded-lg flex items-center justify-between text-xs font-medium transition-colors cursor-pointer"
                         :class="
                             props.currentTab === item.id
                                 ? 'bg-[#171B17] text-white shadow-xs font-semibold dark:bg-[#181818] dark:text-[#F5F5F5]'
@@ -285,18 +316,12 @@ function handleNavClick(tab: AdminTab): void {
                             />
                             <span class="truncate">{{ item.label }}</span>
                         </div>
-                        <span
-                            v-if="props.currentTab === item.id"
-                            class="bg-[#063D2D] text-[#00D084] text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0"
-                        >
-                            Aktif
-                        </span>
                     </button>
                 </div>
 
                 <!-- MONITORING & FASILITAS -->
                 <div class="space-y-1">
-                    <div class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider dark:text-[#858585] text-[#737B71]">
+                    <div class="px-3 py-1 text-xs font-semibold tracking-normal dark:text-[#858585] text-[#737B71]">
                         MONITORING &amp; FASILITAS
                     </div>
                     <button
@@ -304,7 +329,7 @@ function handleNavClick(tab: AdminTab): void {
                         :key="item.id"
                         type="button"
                         @click="handleNavClick(item.id)"
-                        class="w-full text-left px-3 h-10 rounded-lg flex items-center justify-between text-xs font-medium transition-all cursor-pointer"
+                        class="w-full text-left px-3 h-10 rounded-lg flex items-center justify-between text-xs font-medium transition-colors cursor-pointer"
                         :class="
                             props.currentTab === item.id
                                 ? 'bg-[#171B17] text-white shadow-xs font-semibold dark:bg-[#181818] dark:text-[#F5F5F5]'
@@ -319,12 +344,6 @@ function handleNavClick(tab: AdminTab): void {
                             />
                             <span class="truncate">{{ item.label }}</span>
                         </div>
-                        <span
-                            v-if="props.currentTab === item.id"
-                            class="bg-[#063D2D] text-[#00D084] text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0"
-                        >
-                            Aktif
-                        </span>
                     </button>
                 </div>
             </div>
@@ -339,7 +358,7 @@ function handleNavClick(tab: AdminTab): void {
                             Sistem Berjalan Normal
                         </div>
                         <div class="text-[10px] dark:text-[#858585] text-[#737B71] leading-tight mt-0.5">
-                            Terakhir sinkron: 14 Okt 2026, 11:20
+                            Terakhir sinkron: {{ currentLiveTime || 'Sinkronisasi...' }}
                         </div>
                     </div>
                 </div>
@@ -348,7 +367,7 @@ function handleNavClick(tab: AdminTab): void {
                     <button
                         type="button"
                         @click="emit('goToDinasMap')"
-                        class="w-full h-9 px-3 rounded-lg dark:text-[#B3B3B3] text-[#444C43] hover:text-[#00D084] dark:hover:text-[#00D084] dark:hover:bg-[#1E1E1E] hover:bg-[#EDEFEB] font-medium text-xs flex items-center gap-2 transition-all cursor-pointer"
+                        class="w-full h-9 px-3 rounded-lg dark:text-[#B3B3B3] text-[#444C43] hover:text-[#00D084] dark:hover:text-[#00D084] dark:hover:bg-[#1E1E1E] hover:bg-[#EDEFEB] font-medium text-xs flex items-center gap-2 transition-colors cursor-pointer"
                     >
                         <Compass class="w-4 h-4 text-[#00D084]" />
                         <span>WebGIS Dinas</span>
@@ -356,7 +375,7 @@ function handleNavClick(tab: AdminTab): void {
                     <button
                         type="button"
                         @click="emit('logout')"
-                        class="w-full h-9 px-3 rounded-lg text-[#DC625F] hover:text-[#EF8784] dark:hover:bg-[#181818] hover:bg-[#FBEAEA] font-medium text-xs flex items-center gap-2 transition-all cursor-pointer"
+                        class="w-full h-9 px-3 rounded-lg text-[#DC625F] hover:text-[#EF8784] dark:hover:bg-[#181818] hover:bg-[#FBEAEA] font-medium text-xs flex items-center gap-2 transition-colors cursor-pointer"
                     >
                         <LogOut class="w-4 h-4" />
                         <span>Keluar Sesi</span>

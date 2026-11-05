@@ -31,7 +31,7 @@ const submit = () => {
     <AuthBase title="Log in to your account" description="Enter your email and password below to log in">
         <Head title="Log in" />
 
-        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
+        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600 dark:text-[#00D084]">
             {{ status }}
         </div>
 
@@ -47,7 +47,7 @@ const submit = () => {
                         tabindex="1"
                         autocomplete="email"
                         v-model="form.email"
-                        placeholder="email@example.com"
+                        placeholder="nama@instansi.go.id"
                     />
                     <InputError :message="form.errors.email" />
                 </div>
@@ -82,9 +82,11 @@ const submit = () => {
                 </Button>
             </div>
 
-            <div class="text-center text-sm text-muted-foreground">
-                Don't have an account?
-                <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
+            <div class="text-center text-xs text-muted-foreground">
+                <span>Sistem Informasi Tertutup Pemerintah Kabupaten Banyumas.</span>
+                <div class="mt-1 text-[11px] text-slate-500 dark:text-[#858585]">
+                    Akun dinas dan hak akses hanya diterbitkan oleh Super Administrator.
+                </div>
             </div>
         </form>
     </AuthBase>

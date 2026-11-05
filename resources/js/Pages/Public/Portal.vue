@@ -17,13 +17,21 @@ const page = usePage<SharedData>();
 const authUser = computed(() => page.props.auth?.user as (User & { role?: string }) | undefined);
 
 const currentRole = computed<'publik' | 'dinas' | 'admin'>(() => {
-    const role = authUser.value?.role;
+    const role = authUser.value?.role || (typeof window !== 'undefined' ? localStorage.getItem('ternakverse_role') : null);
     if (role === 'admin') return 'admin';
-    if (role === 'stakeholder') return 'dinas';
+    if (role === 'stakeholder' || role === 'dinas') return 'dinas';
     return 'publik';
 });
 
-const userName = computed(() => authUser.value?.name || 'Warga Banyumas');
+const userName = computed(() => {
+    if (currentRole.value === 'admin') {
+        return authUser.value?.name || (typeof window !== 'undefined' ? localStorage.getItem('ternakverse_name') : null) || 'Satrio Wibowo';
+    }
+    if (currentRole.value === 'dinas') {
+        return authUser.value?.name || (typeof window !== 'undefined' ? localStorage.getItem('ternakverse_name') : null) || 'drh. Sulistyo';
+    }
+    return authUser.value?.name || 'Warga Banyumas';
+});
 
 const userRoleTitle = computed(() => {
     if (currentRole.value === 'admin') return 'Super Admin';
@@ -86,6 +94,8 @@ function handleSelectKecamatan(id: string) {
 }
 
 function handleSelectDesa(desa: any) {
+    if (!desa) return;
+    if (selectedDesaId.value === desa.id) return;
     selectedDesaId.value = desa.id;
     if (selectedKecamatanId.value !== desa.kecamatan_id) {
         selectedKecamatanId.value = desa.kecamatan_id;
@@ -132,7 +142,7 @@ onUnmounted(() => {
     <Head title="Ternakverse - Portal Publik WebGIS Peternakan Kab. Banyumas" />
 
     <!-- 100vh FIXED GEOSPATIAL COMMAND CENTER APPLICATION SHELL -->
-    <div class="h-screen w-screen overflow-hidden dark:bg-[#090909] bg-[#FFFFFF] dark:text-[#F5F5F5] text-[#171B17] flex flex-col font-ui antialiased selection:bg-emerald-500 selection:text-slate-950 transition-colors">
+    <div class="h-screen w-screen overflow-hidden dark:bg-[#090909] bg-[#FFFFFF] dark:text-[#F5F5F5] text-[#171B17] flex flex-col font-ui antialiased selection:bg-neutral-800 selection:text-white dark:selection:bg-emerald-500 dark:selection:text-slate-950 transition-colors">
         
         <!-- TOP COMMAND BAR (WebGisHeader) -->
         <WebGisHeader
@@ -144,7 +154,7 @@ onUnmounted(() => {
             @openHelp="isHelpOpen = true"
         />
 
-        <!-- MAIN CONTAINER (Fixed 100vh minus Header 56px) -->
+        <!-- MAIN CONTAINER (Fixed 100vh minus Header) -->
         <main class="flex-1 flex overflow-hidden relative w-full h-[calc(100vh-56px)]">
             <!-- Left Sidebar Desktop (360px) -->
             <div class="hidden lg:flex w-[360px] h-full shrink-0 flex-col overflow-y-auto overflow-x-hidden dark:bg-[#090909] bg-[#FFFFFF] border-r dark:border-[#1E1E1E] border-[#E0E4DD] p-3 custom-sidebar-scroll transition-colors">
@@ -193,12 +203,12 @@ onUnmounted(() => {
                 <button
                     type="button"
                     @click="isMobileFilterOpen = true"
-                    class="lg:hidden absolute bottom-6 left-6 z-30 h-11 px-3.5 rounded-xl dark:bg-[#111111]/95 bg-white/95 hover:dark:bg-[#181818] hover:bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#F5F5F5] text-[#171B17] text-xs font-semibold flex items-center gap-2 shadow-xl backdrop-blur-md cursor-pointer transition-transform active:scale-95"
+                    class="lg:hidden absolute bottom-6 left-6 z-30 h-11 px-4 rounded-xl dark:bg-[#111111]/95 bg-white/95 hover:dark:bg-[#181818] hover:bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#F5F5F5] text-[#171B17] text-xs font-semibold flex items-center gap-2 shadow-xl backdrop-blur-md cursor-pointer transition-colors"
                     aria-label="Buka Filter Data & Layer Peta"
                 >
-                    <SlidersHorizontal class="w-4 h-4 dark:text-[#00D084] text-[#00A86B]" />
+                    <SlidersHorizontal class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
                     <span>Filter &amp; Layer</span>
-                    <span class="px-1.5 py-0.5 rounded-md dark:bg-[#063D2D] bg-[#E8F8F1] dark:text-[#00D084] text-[#00A86B] border dark:border-[#00D084]/30 border-[#00A86B]/30 text-[10px] font-bold truncate max-w-[100px]">
+                    <span class="px-1.5 py-0.5 rounded-md dark:bg-[#063D2D] bg-[#F4F5F2] dark:text-[#00D084] text-[#171B17] border dark:border-[#00D084]/30 border-[#171B17]/20 text-[10px] font-bold truncate max-w-[100px]">
                         {{ selectedMetric.label }}
                     </span>
                 </button>
@@ -223,7 +233,7 @@ onUnmounted(() => {
                 <!-- Header -->
                 <div class="flex items-center justify-between p-4 border-b dark:border-[#1E1E1E] border-[#E0E4DD] shrink-0">
                     <div class="flex items-center gap-2">
-                        <SlidersHorizontal class="w-4 h-4 dark:text-[#00D084] text-[#00A86B]" />
+                        <SlidersHorizontal class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
                         <h2 class="font-display font-bold text-sm dark:text-[#F5F5F5] text-[#171B17]">Kontrol WebGIS</h2>
                     </div>
                     <button
@@ -263,7 +273,7 @@ onUnmounted(() => {
             <div class="dark:bg-[#111111] bg-[#FFFFFF] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-150">
                 <div class="flex items-center justify-between pb-4 border-b dark:border-[#1E1E1E] border-[#E0E4DD] mb-4">
                     <h3 class="font-display font-bold text-lg dark:text-[#F5F5F5] text-[#171B17] flex items-center gap-2">
-                        <HelpCircle class="w-5 h-5 dark:text-[#00D084] text-[#00A86B]" />
+                        <HelpCircle class="w-5 h-5 dark:text-[#00D084] text-[#171B17]" />
                         Panduan Peta Publik
                     </h3>
                     <button

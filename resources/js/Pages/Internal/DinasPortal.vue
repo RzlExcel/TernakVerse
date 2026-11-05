@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import type { SharedData, User } from '../../types';
 import { KECAMATAN_LIST, METRIC_LIST, KecamatanData, MetricDefinition, calculateQuantiles, formatAngka } from '../../data/banyumasData';
 import WebGisHeader from '../../components/ternakverse/WebGisHeader.vue';
 import MapSidebar from '../../components/ternakverse/MapSidebar.vue';
@@ -10,6 +11,28 @@ import RegionDetailAnalyticsModal from '../../components/ternakverse/RegionDetai
 import DiagnosticBox from '../../components/ternakverse/DiagnosticBox.vue';
 import ChatbotDrawer from '../../components/ternakverse/ChatbotDrawer.vue';
 import { LogOut, SlidersHorizontal, X, BarChart3, HelpCircle } from 'lucide-vue-next';
+
+// Autentikasi & Role Pengguna Dinamis
+const page = usePage<SharedData>();
+const authUser = computed(() => page.props.auth?.user as (User & { role?: string }) | undefined);
+
+const currentRole = computed<'dinas' | 'admin'>(() => {
+    const role = authUser.value?.role || (typeof window !== 'undefined' ? localStorage.getItem('ternakverse_role') : null);
+    if (role === 'admin') return 'admin';
+    if (role === 'stakeholder' || role === 'dinas') return 'dinas';
+    return 'dinas';
+});
+
+const userName = computed(() => {
+    if (currentRole.value === 'admin') {
+        return authUser.value?.name || (typeof window !== 'undefined' ? localStorage.getItem('ternakverse_name') : null) || 'Satrio Wibowo';
+    }
+    return authUser.value?.name || (typeof window !== 'undefined' ? localStorage.getItem('ternakverse_name') : null) || 'drh. Sulistyo';
+});
+
+const userRoleTitle = computed(() => {
+    return currentRole.value === 'admin' ? 'Super Admin' : 'Kabid Peternakan';
+});
 
 const activeKategori = ref<'Populasi' | 'Produksi' | 'Penyakit' | 'Fasilitas'>('Populasi');
 const selectedMetric = ref<MetricDefinition>(METRIC_LIST[0]);
@@ -46,7 +69,15 @@ const selectedKecamatan = computed(() => {
     return kecamatanList.value.find(k => k.id === selectedKecamatanId.value) || null;
 });
 
+const totalPopulasiBanyumas = computed(() => {
+    return kecamatanList.value.reduce((acc, k) => acc + (k.populasi_total ?? (k.sapi_potong + k.sapi_perah + k.kambing + k.domba + (k.ayam_broiler ?? k.ayam_potong ?? 0))), 0);
+});
+
 function handleLogout() {
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem('ternakverse_role');
+        localStorage.removeItem('ternakverse_name');
+    }
     router.post('/internal/logout');
 }
 
@@ -66,6 +97,8 @@ function resetFilter() {
 }
 
 function handleSelectDesa(desa: any) {
+    if (!desa) return;
+    if (selectedDesaId.value === desa.id) return;
     selectedDesaId.value = desa.id;
     if (selectedKecamatanId.value !== desa.kecamatan_id) {
         selectedKecamatanId.value = desa.kecamatan_id;
@@ -78,14 +111,14 @@ function handleSelectDesa(desa: any) {
     <Head title="Portal Dinas - WebGIS Kuantitatif Peternakan Banyumas" />
 
     <!-- 100vh FIXED GEOSPATIAL COMMAND CENTER APPLICATION SHELL (DINAS) -->
-    <div class="h-screen w-screen overflow-hidden dark:bg-[#090909] bg-[#FFFFFF] dark:text-[#F5F5F5] text-[#171B17] flex flex-col font-ui antialiased selection:bg-emerald-500 selection:text-slate-950 transition-colors">
+    <div class="h-screen w-screen overflow-hidden dark:bg-[#090909] bg-[#FFFFFF] dark:text-[#F5F5F5] text-[#171B17] flex flex-col font-ui antialiased selection:bg-neutral-800 selection:text-white dark:selection:bg-emerald-500 dark:selection:text-slate-950 transition-colors">
         
-        <!-- TOP COMMAND BAR (WebGisHeader with Dinas Role) -->
+        <!-- TOP COMMAND BAR (WebGisHeader with Dynamic Role) -->
         <WebGisHeader
             v-model:mapEngine="mapEngine"
-            current-role="dinas"
-            user-name="drh. Sulistyo"
-            user-role-title="Kabid Peternakan"
+            :current-role="currentRole"
+            :user-name="userName"
+            :user-role-title="userRoleTitle"
             @resetFilter="resetFilter"
             @openHelp="isHelpOpen = true"
         />
@@ -94,31 +127,31 @@ function handleSelectDesa(desa: any) {
         <div class="border-b dark:border-[#1E1E1E] border-[#E0E4DD] dark:bg-[#111111] bg-[#F4F5F2] px-4 md:px-6 py-2 shrink-0 transition-colors">
             <div class="w-full flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-[10px] uppercase font-bold tracking-wider dark:text-[#B3B3B3] text-[#6E776D]">Ringkasan Eksekutif:</span>
+                    <span class="text-xs font-semibold tracking-normal text-[#6E776D] dark:text-[#B3B3B3]">Ringkasan eksekutif:</span>
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#F5F5F5] text-[#171B17] font-mono tabular-nums">
-                        <span class="w-2 h-2 rounded-sm bg-emerald-500"></span>
-                        Populasi Banyumas: <strong class="dark:text-white text-[#171B17] font-mono tabular-nums">{{ formatAngka(38450) }} ekor</strong>
+                        <span class="w-2 h-2 rounded-sm dark:bg-emerald-500 bg-[#171B17]"></span>
+                        Populasi Banyumas: <strong class="dark:text-white text-[#171B17] font-mono tabular-nums">{{ formatAngka(totalPopulasiBanyumas) }} ekor</strong>
                     </span>
                     <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#F5F5F5] text-[#171B17] font-mono tabular-nums">
-                        <span class="w-2 h-2 rounded-sm bg-teal-400"></span>
+                        <span class="w-2 h-2 rounded-sm dark:bg-teal-400 bg-[#171B17]"></span>
                         Poskeswan: <strong class="dark:text-white text-[#171B17] font-mono tabular-nums">12 Unit</strong>
                     </span>
                     <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#F5F5F5] text-[#171B17] font-mono tabular-nums">
-                        <span class="w-2 h-2 rounded-sm bg-amber-400"></span>
+                        <span class="w-2 h-2 rounded-sm dark:bg-amber-400 bg-[#171B17]"></span>
                         RPH Aktif: <strong class="dark:text-white text-[#171B17] font-mono tabular-nums">5 Fasilitas</strong>
                     </span>
-                    <span class="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg dark:bg-[#063D2D] bg-[#E8F8F1] border dark:border-[#00D084]/30 border-[#00A86B]/30 dark:text-[#00D084] text-[#00A86B] text-[11px] font-semibold">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span class="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#F5F5F5] text-[#171B17] text-[11px] font-semibold">
+                        <span class="w-2 h-2 rounded-full dark:bg-emerald-400 bg-[#171B17]"></span>
                         Surveilans: Bebas Antraks
                     </span>
                 </div>
                 <div class="flex items-center gap-2">
                     <Link
                         href="/dinas/dashboard"
-                        class="h-8 px-3 rounded-xl dark:bg-[#181818] bg-white hover:dark:bg-[#1E1E1E] hover:bg-[#E8EBE5] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:dark:border-[#00D084]/40 hover:border-[#00A86B]/40 dark:text-[#F5F5F5] text-[#171B17] hover:dark:text-[#00D084] hover:text-[#00A86B] text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                        class="h-8 px-3 rounded-xl dark:bg-[#181818] bg-white hover:dark:bg-[#1E1E1E] hover:bg-[#E8EBE5] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:dark:border-[#00D084]/40 hover:border-[#171B17] dark:text-[#F5F5F5] text-[#171B17] hover:dark:text-[#00D084] hover:text-[#171B17] text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                         title="Buka Dashboard Eksekutif Bento Dinas"
                     >
-                        <BarChart3 class="w-3.5 h-3.5 dark:text-[#00D084] text-[#00A86B]" />
+                        <BarChart3 class="w-3.5 h-3.5 dark:text-[#00D084] text-[#171B17]" />
                         <span>Dashboard Analitik</span>
                     </Link>
                     <button
@@ -181,12 +214,12 @@ function handleSelectDesa(desa: any) {
                 <button
                     type="button"
                     @click="isMobileFilterOpen = true"
-                    class="lg:hidden absolute bottom-6 left-6 z-30 h-11 px-3.5 rounded-xl dark:bg-[#111111]/95 bg-white/95 hover:dark:bg-[#181818] hover:bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#F5F5F5] text-[#171B17] text-xs font-semibold flex items-center gap-2 shadow-xl backdrop-blur-md cursor-pointer transition-transform active:scale-95"
+                    class="lg:hidden absolute bottom-6 left-6 z-30 h-11 px-3.5 rounded-xl dark:bg-[#111111]/95 bg-white/95 hover:dark:bg-[#181818] hover:bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#F5F5F5] text-[#171B17] text-xs font-semibold flex items-center gap-2 shadow-xl backdrop-blur-md cursor-pointer transition-colors"
                     aria-label="Buka Filter Data & Layer Peta Dinas"
                 >
-                    <SlidersHorizontal class="w-4 h-4 dark:text-[#00D084] text-[#00A86B]" />
+                    <SlidersHorizontal class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
                     <span>Filter &amp; Layer</span>
-                    <span class="px-1.5 py-0.5 rounded-md dark:bg-[#063D2D] bg-[#E8F8F1] dark:text-[#00D084] text-[#00A86B] border dark:border-[#00D084]/30 border-[#00A86B]/30 text-[10px] font-bold truncate max-w-[100px]">
+                    <span class="px-1.5 py-0.5 rounded-md dark:bg-[#063D2D] bg-[#F4F5F2] dark:text-[#00D084] text-[#171B17] border dark:border-[#00D084]/30 border-[#171B17]/20 text-[10px] font-bold truncate max-w-[100px]">
                         {{ selectedMetric.label }}
                     </span>
                 </button>
@@ -203,7 +236,7 @@ function handleSelectDesa(desa: any) {
                 <!-- Header -->
                 <div class="flex items-center justify-between p-4 border-b dark:border-[#1E1E1E] border-[#E0E4DD] shrink-0">
                     <div class="flex items-center gap-2">
-                        <SlidersHorizontal class="w-4 h-4 dark:text-[#00D084] text-[#00A86B]" />
+                        <SlidersHorizontal class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
                         <h2 class="font-display font-bold text-sm dark:text-[#F5F5F5] text-[#171B17]">Kontrol WebGIS Dinas</h2>
                     </div>
                     <button
@@ -243,7 +276,7 @@ function handleSelectDesa(desa: any) {
             <div class="dark:bg-[#111111] bg-[#FFFFFF] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-150">
                 <div class="flex items-center justify-between pb-4 border-b dark:border-[#1E1E1E] border-[#E0E4DD] mb-4">
                     <h3 class="font-display font-bold text-lg dark:text-[#F5F5F5] text-[#171B17] flex items-center gap-2">
-                        <HelpCircle class="w-5 h-5 dark:text-[#00D084] text-[#00A86B]" />
+                        <HelpCircle class="w-5 h-5 dark:text-[#00D084] text-[#171B17]" />
                         Panduan WebGIS Petugas Dinas
                     </h3>
                     <button

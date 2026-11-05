@@ -112,15 +112,15 @@
         <!-- Audit Log Table -->
         <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-[#1E1E1E]">
           <table class="w-full text-left border-collapse text-xs">
-            <thead class="bg-slate-100/80 dark:bg-[#181818] text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3] border-b border-slate-200 dark:border-[#1E1E1E]">
+            <thead class="bg-slate-100/80 dark:bg-[#181818] text-xs font-semibold text-slate-500 dark:text-[#B3B3B3] border-b border-slate-200 dark:border-[#1E1E1E]">
               <tr>
-                <th class="py-3 px-4">WAKTU (WIB)</th>
-                <th class="py-3 px-4">OPERATOR</th>
-                <th class="py-3 px-4">AKSI</th>
-                <th class="py-3 px-4">TABEL</th>
-                <th class="py-3 px-4">RECORD ID</th>
-                <th class="py-3 px-4">IP ADDRESS</th>
-                <th class="py-3 px-4">MUTASI DATA</th>
+                <th class="py-3 px-4">Waktu (WIB)</th>
+                <th class="py-3 px-4">Operator</th>
+                <th class="py-3 px-4">Aksi</th>
+                <th class="py-3 px-4">Tabel</th>
+                <th class="py-3 px-4">Record ID</th>
+                <th class="py-3 px-4">IP address</th>
+                <th class="py-3 px-4">Mutasi data</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 dark:divide-[#1E1E1E]">
@@ -152,21 +152,21 @@
                 <td class="py-3 px-4 font-mono tabular-nums text-slate-500 dark:text-[#B3B3B3] whitespace-nowrap">
                   {{ log.ip_address || '127.0.0.1' }}
                 </td>
-                <td class="py-3 px-4 min-w-[260px]">
+                <td class="py-3 px-4 min-w-64">
                   <details class="group text-xs">
                     <summary class="cursor-pointer font-semibold text-slate-600 dark:text-[#B3B3B3] hover:text-emerald-600 dark:hover:text-emerald-400 select-none inline-flex items-center gap-1.5">
                       <span>Lihat Perubahan</span>
                     </summary>
                     <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-100 dark:bg-[#181818] border border-slate-200 dark:border-[#1E1E1E] font-mono text-[11px]">
                       <div class="p-2 rounded bg-rose-500/5 border border-rose-500/20 overflow-x-auto">
-                        <div class="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 mb-1">
-                          OLD VALUES
+                        <div class="text-[10px] font-semibold text-rose-600 dark:text-rose-400 mb-1">
+                          Old values
                         </div>
                         <pre class="text-slate-700 dark:text-[#B3B3B3] whitespace-pre-wrap break-all">{{ formatDiffValue(log.old_values) }}</pre>
                       </div>
                       <div class="p-2 rounded bg-emerald-500/5 border border-emerald-500/20 overflow-x-auto">
-                        <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">
-                          NEW VALUES
+                        <div class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
+                          New values
                         </div>
                         <pre class="text-slate-700 dark:text-[#B3B3B3] whitespace-pre-wrap break-all">{{ formatDiffValue(log.new_values) }}</pre>
                       </div>
@@ -196,9 +196,10 @@
           <button
             type="button"
             @click="showRaw = !showRaw"
-            class="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-[#181818] dark:hover:bg-[#1E1E1E] text-teal-700 dark:text-teal-300 border border-slate-200 dark:border-[#1E1E1E] transition-colors"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-[#181818] dark:hover:bg-[#1E1E1E] text-slate-700 dark:text-[#F5F5F5] border border-slate-200 dark:border-[#1E1E1E] transition-colors"
           >
-            {{ showRaw ? '[-] Sembunyikan JSON' : '[+] Tampilkan Full JSON Props' }}
+            <span>{{ showRaw ? 'Sembunyikan JSON' : 'Tampilkan Full JSON Props' }}</span>
+            <ChevronDown class="w-3.5 h-3.5 transition-transform duration-200" :class="{ 'rotate-180': showRaw }" />
           </button>
         </div>
         <pre
@@ -220,6 +221,7 @@ import {
   ShieldAlert,
   Search,
   Terminal,
+  ChevronDown,
 } from 'lucide-vue-next'
 
 const props = defineProps<{

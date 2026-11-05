@@ -10,7 +10,7 @@ import SettingsLayout from '@/layouts/settings/Layout.vue';
 
 const breadcrumbItems: BreadcrumbItem[] = [
     {
-        title: 'Appearance settings',
+        title: 'Tampilan Tema',
         href: '/settings/appearance',
     },
 ];
@@ -18,11 +18,11 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Appearance settings" />
+        <Head title="Tampilan Tema" />
 
         <SettingsLayout>
             <div class="space-y-6">
-                <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
+                <HeadingSmall title="Tampilan Antarmuka" description="Pilih tema Obsidian Gelap, Porselen Terang, atau mengikuti preferensi sistem perangkat Anda." />
                 <AppearanceTabs />
             </div>
         </SettingsLayout>

@@ -1,8 +1,10 @@
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, type Ref, type ComputedRef } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { KECAMATAN_LIST, type KecamatanData } from '../../../data/banyumasData';
 
-export type AdminTab = 'dashboard' | 'webgis' | 'data' | 'create' | 'ews' | 'rph' | 'laporan' | 'profile' | 'rbac';
+export type KecamatanDataSource = Ref<KecamatanData[]> | ComputedRef<KecamatanData[]> | (() => KecamatanData[]);
+
+export type AdminTab = 'dashboard' | 'webgis' | 'data' | 'create' | 'ews' | 'rph' | 'laporan' | 'profile' | 'rbac' | 'master_data';
 
 export interface AuditLogItem {
     id: number;
@@ -24,6 +26,9 @@ export interface RphFacility {
     status: 'Aktif Operasional' | 'Pemeliharaan Terjadwal';
     lat: number;
     lng: number;
+    tipe?: 'RPH' | 'Puskeswan' | 'Pasar Hewan';
+    hari_pasaran?: string;
+    wilayah_binaan?: string;
 }
 
 export interface AdminFormData {
@@ -34,13 +39,16 @@ export interface AdminFormData {
     sapi_potong: number;
     sapi_perah: number;
     kambing: number;
+    kambing_perah?: number;
     domba: number;
     ayam_broiler: number;
+    ayam_petelur?: number;
     susu_liter: number;
     daging_sapi: number;
     pmk: number;
     lsd: number;
     poskeswan: number;
+    luas_hmt_ha?: number;
     catatan: string;
 }
 
@@ -73,15 +81,18 @@ export interface AdminProfileSettings {
 
 function escapeSpreadsheetCell(val: string | number | null | undefined, isExcel: boolean): string {
     if (val === null || val === undefined) return '';
-    const s = String(val);
+    let s = String(val);
+    if (/^[=+\-@\t\r]/.test(s)) {
+        s = `'${s}`;
+    }
     if (isExcel) return s;
-    if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+    if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
         return `"${s.replace(/"/g, '""')}"`;
     }
     return s;
 }
 
-export function useAdminPortal() {
+export function useAdminPortal(customKecamatanSource?: KecamatanDataSource) {
     // ----------------------------------------------------
     // NAVIGASI TAB & RESPONSIVE DRAWER / SIDEBAR STATE
     // ----------------------------------------------------
@@ -106,6 +117,24 @@ export function useAdminPortal() {
     // MASTER DATA 27 KECAMATAN BANYUMAS
     // ----------------------------------------------------
     const kecamatanList = ref<KecamatanData[]>([...KECAMATAN_LIST]);
+    const dynamicSource = ref<KecamatanDataSource | null>(
+        customKecamatanSource ?? null
+    ) as Ref<KecamatanDataSource | null>;
+
+    function setKecamatanSource(source: KecamatanDataSource): void {
+        dynamicSource.value = source;
+    }
+
+    function resolveSourceList(): KecamatanData[] {
+        if (!dynamicSource.value) {
+            return kecamatanList.value;
+        }
+        const src = dynamicSource.value;
+        if (typeof src === 'function') {
+            return src();
+        }
+        return src.value;
+    }
 
     // Search & Modal di Dashboard
     const searchQueryDashboard = ref('');
@@ -166,22 +195,104 @@ export function useAdminPortal() {
         }
     }
 
-    function handleImportSuccess(): void {
+    function handleImportSuccess(importedRows?: Record<string, unknown>[]): void {
         isImportModalOpen.value = false;
-        auditLogs.value.unshift({
-            id: Date.now(),
-            user: 'Satrio (Super Admin)',
-            action: 'INSERT',
-            table: 'populasi_ternak',
-            detail: 'Impor batch berkas CSV/Excel 27 kecamatan',
-            time: 'Baru saja',
-            status: 'SUCCESS',
-        });
-        showToast('Data CSV/Excel berhasil diimpor & tersinkronisasi ke peta.');
+        if (importedRows && importedRows.length > 0) {
+            let updatedCount = 0;
+
+            kecamatanList.value = kecamatanList.value.map(k => {
+                const match = importedRows.find(row => {
+                    const rKode = row.kode_kec !== undefined && row.kode_kec !== null ? String(row.kode_kec).trim().toLowerCase() : '';
+                    const rNama = row.nama !== undefined && row.nama !== null ? String(row.nama).trim().toLowerCase() : '';
+                    const kNama = k.nama.toLowerCase().trim();
+                    const kKode = k.kode_kec.toLowerCase().trim();
+                    return (
+                        (rKode !== '' && kKode === rKode) ||
+                        (rNama !== '' && (kNama === rNama || kNama.replace(/\s+/g, '') === rNama.replace(/\s+/g, '')))
+                    );
+                });
+
+                if (!match) return k;
+
+                updatedCount++;
+                const updated: KecamatanData = { ...k };
+
+                if (typeof match.sapi_potong === 'number' && !Number.isNaN(match.sapi_potong)) {
+                    updated.sapi_potong = match.sapi_potong;
+                }
+                if (typeof match.sapi_perah === 'number' && !Number.isNaN(match.sapi_perah)) {
+                    updated.sapi_perah = match.sapi_perah;
+                }
+                if (typeof match.kambing === 'number' && !Number.isNaN(match.kambing)) {
+                    updated.kambing = match.kambing;
+                }
+                if (typeof match.domba === 'number' && !Number.isNaN(match.domba)) {
+                    updated.domba = match.domba;
+                }
+                if (typeof match.ayam_potong === 'number' && !Number.isNaN(match.ayam_potong)) {
+                    updated.ayam_potong = match.ayam_potong;
+                    updated.ayam_broiler = match.ayam_potong;
+                }
+                if (typeof match.ayam_layer === 'number' && !Number.isNaN(match.ayam_layer)) {
+                    updated.ayam_petelur = match.ayam_layer;
+                }
+                if (typeof match.daging_sapi === 'number' && !Number.isNaN(match.daging_sapi)) {
+                    updated.daging_sapi = match.daging_sapi;
+                }
+                if (typeof match.susu_liter === 'number' && !Number.isNaN(match.susu_liter)) {
+                    updated.susu_liter = match.susu_liter;
+                    updated.susu_sapi = match.susu_liter;
+                }
+                if (typeof match.pmk === 'number' && !Number.isNaN(match.pmk)) {
+                    updated.pmk = match.pmk;
+                }
+                if (typeof match.lsd === 'number' && !Number.isNaN(match.lsd)) {
+                    updated.lsd = match.lsd;
+                }
+                if (typeof match.poskeswan === 'number' && !Number.isNaN(match.poskeswan)) {
+                    updated.poskeswan = match.poskeswan;
+                }
+
+                // Kalkulasi zonasi dinamis EWS berdasarkan kasus aktif PMK dan LSD
+                const totalKasus = (updated.pmk || 0) + (updated.lsd || 0);
+                if (totalKasus > 10) {
+                    updated.zona = 'bahaya';
+                } else if (totalKasus > 0) {
+                    updated.zona = 'waspada';
+                } else {
+                    updated.zona = 'aman';
+                }
+
+                updated.last_updated = new Date().toISOString().slice(0, 10);
+                return updated;
+            });
+
+            auditLogs.value.unshift({
+                id: Date.now(),
+                user: 'Satrio (Super Admin)',
+                action: 'UPDATE',
+                table: 'populasi_ternak',
+                detail: `Sinkronisasi batch impor: ${updatedCount} kecamatan berhasil diperbarui melalui smart alias mapping`,
+                time: 'Baru saja',
+                status: 'SUCCESS',
+            });
+            showToast(`Berhasil mengimpor & memperbarui ${updatedCount} kecamatan dengan smart alias mapping.`);
+        } else {
+            auditLogs.value.unshift({
+                id: Date.now(),
+                user: 'Satrio (Super Admin)',
+                action: 'INSERT',
+                table: 'populasi_ternak',
+                detail: 'Impor batch berkas CSV/Excel 27 kecamatan',
+                time: 'Baru saja',
+                status: 'SUCCESS',
+            });
+            showToast('Data CSV/Excel berhasil diimpor & tersinkronisasi ke peta.');
+        }
     }
 
     const filteredKecamatan = computed<KecamatanData[]>(() => {
-        return kecamatanList.value.filter(k => {
+        return resolveSourceList().filter(k => {
             const q = searchQuery.value.toLowerCase().trim();
             const matchesQuery =
                 !q ||
@@ -221,10 +332,12 @@ export function useAdminPortal() {
             let matchesPopulasi = true;
             if (minPopulasiFilter.value > 0) {
                 const totalTernak =
-                    (k.sapi_potong || 0) +
+                    k.populasi_total ??
+                    ((k.sapi_potong || 0) +
                     (k.sapi_perah || 0) +
                     (k.kambing || 0) +
-                    (k.domba || 0);
+                    (k.domba || 0) +
+                    (k.ayam_broiler ?? k.ayam_potong ?? 0));
                 matchesPopulasi = totalTernak >= minPopulasiFilter.value;
             }
 
@@ -317,9 +430,10 @@ export function useAdminPortal() {
     function handleExport(format: 'excel' | 'csv'): void {
         isExportDropdownOpen.value = false;
         isExportModalOpen.value = false;
+        const currentSource = resolveSourceList();
         const dataToExport =
             selectedRowIds.value.length > 0
-                ? kecamatanList.value.filter(k => selectedRowIds.value.includes(k.id))
+                ? currentSource.filter(k => selectedRowIds.value.includes(k.id))
                 : filteredKecamatan.value;
 
         if (dataToExport.length === 0) {
@@ -426,13 +540,16 @@ export function useAdminPortal() {
         sapi_potong: 1000,
         sapi_perah: 150,
         kambing: 1200,
+        kambing_perah: 0,
         domba: 300,
         ayam_broiler: 5000,
+        ayam_petelur: 0,
         susu_liter: 450,
         daging_sapi: 6000,
         pmk: 0,
         lsd: 0,
         poskeswan: 1,
+        luas_hmt_ha: 0,
         catatan: 'Data telah diverifikasi oleh Petugas Medik Veteriner Dinas Pertanian Banyumas.',
     });
 
@@ -447,13 +564,16 @@ export function useAdminPortal() {
             sapi_potong: 500,
             sapi_perah: 0,
             kambing: 300,
+            kambing_perah: 0,
             domba: 100,
             ayam_broiler: 2000,
+            ayam_petelur: 0,
             susu_liter: 0,
             daging_sapi: 2500,
             pmk: 0,
             lsd: 0,
             poskeswan: 0,
+            luas_hmt_ha: 0,
             catatan: 'Pencatatan data survei lapangan periode Triwulan II 2026.',
         };
         selectTab('create');
@@ -470,13 +590,16 @@ export function useAdminPortal() {
             sapi_potong: kec.sapi_potong,
             sapi_perah: kec.sapi_perah,
             kambing: kec.kambing,
+            kambing_perah: kec.kambing_perah ?? 0,
             domba: kec.domba,
             ayam_broiler: kec.ayam_broiler ?? kec.ayam_potong ?? 0,
+            ayam_petelur: kec.ayam_petelur ?? 0,
             susu_liter: kec.susu_liter ?? kec.susu_sapi ?? 0,
             daging_sapi: kec.daging_sapi,
             pmk: kec.pmk,
             lsd: kec.lsd,
             poskeswan: kec.poskeswan,
+            luas_hmt_ha: kec.luas_hmt_ha ?? 0,
             catatan: `Pemutakhiran berkala data statistik Kecamatan ${kec.nama}.`,
         };
         selectTab('create');
@@ -500,15 +623,18 @@ export function useAdminPortal() {
                 sapi_potong: Number(formData.value.sapi_potong),
                 sapi_perah: Number(formData.value.sapi_perah),
                 kambing: Number(formData.value.kambing),
+                kambing_perah: Number(formData.value.kambing_perah),
                 domba: Number(formData.value.domba),
                 ayam_potong: Number(formData.value.ayam_broiler),
                 ayam_broiler: Number(formData.value.ayam_broiler),
+                ayam_petelur: Number(formData.value.ayam_petelur),
                 susu_sapi: Number(formData.value.susu_liter),
                 susu_liter: Number(formData.value.susu_liter),
                 daging_sapi: Number(formData.value.daging_sapi),
                 pmk: Number(formData.value.pmk),
                 lsd: Number(formData.value.lsd),
                 poskeswan: Number(formData.value.poskeswan),
+                luas_hmt_ha: Number(formData.value.luas_hmt_ha),
                 last_updated: 'Baru saja',
             };
             auditLogs.value.unshift({
@@ -531,8 +657,9 @@ export function useAdminPortal() {
                 kode_kec: formData.value.kode_kec,
                 zona: formData.value.zona,
                 ayam_potong: broilerCount,
-                ayam_petelur: 0,
+                ayam_petelur: Number(formData.value.ayam_petelur),
                 kambing: Number(formData.value.kambing),
+                kambing_perah: Number(formData.value.kambing_perah),
                 domba: Number(formData.value.domba),
                 sapi_perah: Number(formData.value.sapi_perah),
                 sapi_potong: Number(formData.value.sapi_potong),
@@ -549,6 +676,7 @@ export function useAdminPortal() {
                 pmk: Number(formData.value.pmk),
                 lsd: Number(formData.value.lsd),
                 poskeswan: Number(formData.value.poskeswan),
+                luas_hmt_ha: Number(formData.value.luas_hmt_ha),
                 lat: -7.5134,
                 lng: 109.1762,
                 last_updated: 'Baru saja',
@@ -590,14 +718,21 @@ export function useAdminPortal() {
     }
 
     // ----------------------------------------------------
-    // DATA RUMAH POTONG HEWAN (PRD FR-MAP-05)
+    // DATA FASILITAS PETERNAKAN RESMI BANYUMAS (PRD FR-MAP-05)
+    // 6 RPH, 3 Pasar Hewan, 2 UPT Puskeswan
     // ----------------------------------------------------
     const rphList = ref<RphFacility[]>([
-        { id: 1, nama: 'RPH Kertanegara', kecamatan: 'Purwokerto Selatan', pengelola: 'Pemerintah Kab. Banyumas', kapasitas: 50, jenis: 'Sapi & Kambing', status: 'Aktif Operasional', lat: -7.4352, lng: 109.2312 },
-        { id: 2, nama: 'RPH Ajibarang', kecamatan: 'Ajibarang', pengelola: 'Pemerintah Kab. Banyumas', kapasitas: 35, jenis: 'Sapi', status: 'Aktif Operasional', lat: -7.4124, lng: 109.0721 },
-        { id: 3, nama: 'RPH Sokaraja', kecamatan: 'Sokaraja', pengelola: 'Pemerintah Kab. Banyumas', kapasitas: 40, jenis: 'Sapi', status: 'Aktif Operasional', lat: -7.4589, lng: 109.2845 },
-        { id: 4, nama: 'RPH Wangon', kecamatan: 'Wangon', pengelola: 'UPTD Diskanak', kapasitas: 30, jenis: 'Sapi & Kambing', status: 'Aktif Operasional', lat: -7.5187, lng: 109.0531 },
-        { id: 5, nama: 'RPH Baturraden', kecamatan: 'Baturraden', pengelola: 'Swasta Terlisensi', kapasitas: 25, jenis: 'Sapi Perah & Potong', status: 'Aktif Operasional', lat: -7.3120, lng: 109.2241 },
+        { id: 1, nama: 'RPH Sokaraja', kecamatan: 'Sokaraja Kidul', pengelola: 'Pemkab Banyumas', kapasitas: 20, jenis: 'Sapi & Kambing', status: 'Aktif Operasional', lat: -7.4562, lng: 109.2645, tipe: 'RPH' },
+        { id: 2, nama: 'RPH Ajibarang', kecamatan: 'Pancasan', pengelola: 'Pemkab Banyumas', kapasitas: 15, jenis: 'Sapi', status: 'Aktif Operasional', lat: -7.4125, lng: 109.0732, tipe: 'RPH' },
+        { id: 3, nama: 'RPH Wangon', kecamatan: 'Jl. Raya Wangon-Ajibarang', pengelola: 'UPTD Diskanak', kapasitas: 15, jenis: 'Sapi & Kambing', status: 'Aktif Operasional', lat: -7.5187, lng: 109.0521, tipe: 'RPH' },
+        { id: 4, nama: 'RPH Cilongok', kecamatan: 'Pernasidi', pengelola: 'Pemkab Banyumas', kapasitas: 20, jenis: 'Sapi & Kambing', status: 'Aktif Operasional', lat: -7.4150, lng: 109.1350, tipe: 'RPH' },
+        { id: 5, nama: 'RPH Sumpiuh', kecamatan: 'Jl. Stasiun Kradenan', pengelola: 'Pemkab Banyumas', kapasitas: 15, jenis: 'Sapi', status: 'Aktif Operasional', lat: -7.6124, lng: 109.3582, tipe: 'RPH' },
+        { id: 6, nama: 'RPH Purwokerto', kecamatan: 'Purwokerto Barat', pengelola: 'Pemkab Banyumas', kapasitas: 30, jenis: 'Sapi & Kerbau', status: 'Aktif Operasional', lat: -7.4225, lng: 109.2215, tipe: 'RPH' },
+        { id: 7, nama: 'Pasar Hewan Ajibarang', kecamatan: 'Ajibarang Kulon', pengelola: 'Pemkab Banyumas', kapasitas: 1500, jenis: 'Sapi, Kambing, Domba', status: 'Aktif Operasional', lat: -7.4112, lng: 109.0768, tipe: 'Pasar Hewan', hari_pasaran: 'Pon, Wage' },
+        { id: 8, nama: 'Pasar Hewan Sokaraja', kecamatan: 'Sokaraja Kidul', pengelola: 'Pemkab Banyumas', kapasitas: 1000, jenis: 'Sapi, Kambing, Unggas', status: 'Aktif Operasional', lat: -7.4589, lng: 109.2612, tipe: 'Pasar Hewan', hari_pasaran: 'Pon, Kliwon' },
+        { id: 9, nama: 'Pasar Hewan Cilongok', kecamatan: 'Pernasidi', pengelola: 'Pemkab Banyumas', kapasitas: 800, jenis: 'Kambing & Domba', status: 'Aktif Operasional', lat: -7.4089, lng: 109.1362, tipe: 'Pasar Hewan', hari_pasaran: 'Legi / Manis' },
+        { id: 10, nama: 'UPT Puskeswan Banyumas', kecamatan: 'Kejawar', pengelola: 'Dinas Perikanan dan Peternakan', kapasitas: 50, jenis: 'Pelayanan Kesehatan Hewan', status: 'Aktif Operasional', lat: -7.5142, lng: 109.2985, tipe: 'Puskeswan', wilayah_binaan: 'Banyumas, Somagede, Kalibagor, Patikraja, Tambak, Sumpiuh, Kemranjen' },
+        { id: 11, nama: 'UPT Puskeswan Cilongok', kecamatan: 'Pernasidi', pengelola: 'Dinas Perikanan dan Peternakan', kapasitas: 50, jenis: 'Pelayanan Kesehatan Hewan', status: 'Aktif Operasional', lat: -7.4110, lng: 109.1330, tipe: 'Puskeswan', wilayah_binaan: 'Cilongok, Ajibarang, Gumelar, Pekuncen, Wangon, Lumbir, Jatilawang' },
     ]);
 
     function toggleRphStatus(id: number): void {
@@ -682,14 +817,26 @@ export function useAdminPortal() {
     // LOGOUT & NAVIGASI EKSTERNAL
     // ----------------------------------------------------
     function handleLogout(): void {
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('ternakverse_role');
+            localStorage.removeItem('ternakverse_name');
+        }
         router.post('/internal/logout');
     }
 
     function goToPublicPortal(): void {
-        router.visit('/');
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('ternakverse_role', 'admin');
+            localStorage.setItem('ternakverse_name', 'Satrio Wibowo');
+        }
+        router.visit('/?preview=1');
     }
 
     function goToDinasMap(): void {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('ternakverse_role', 'admin');
+            localStorage.setItem('ternakverse_name', 'Satrio Wibowo');
+        }
         router.visit('/internal/dinas');
     }
 
@@ -711,6 +858,7 @@ export function useAdminPortal() {
 
         // Data & Logs
         kecamatanList,
+        setKecamatanSource,
         auditLogs,
         toastMsg,
         showToast,

@@ -4,10 +4,12 @@ use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
 
-test('login screen can be rendered', function () {
+test('login screen redirects to internal login', function () {
     $response = $this->get(route('login'));
+    $response->assertRedirect(route('internal.login'));
 
-    $response->assertOk();
+    $internalResponse = $this->get(route('internal.login'));
+    $internalResponse->assertOk();
 });
 
 test('users can authenticate using the login screen', function () {

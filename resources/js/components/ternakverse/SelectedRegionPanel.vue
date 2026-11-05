@@ -23,7 +23,9 @@ import {
     AlertTriangle,
     CheckCircle2,
     Search,
-    ChevronLeft
+    ChevronLeft,
+    ChevronRight,
+    Leaf
 } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<{
@@ -103,14 +105,80 @@ const formattedArea = computed(() => {
 // Estimasi peternak resmi terdata
 const estimatedFarmers = computed(() => {
     const k = props.kecamatan;
-    const totalTernak = (k.sapi_potong || 0) + (k.sapi_perah || 0) + Math.round(((k.kambing || 0) + (k.domba || 0)) / 2.5);
+    const totalTernak = (k.sapi_potong || 0) + (k.sapi_perah || 0) + Math.round(((k.kambing || 0) + (k.domba || 0) + (k.kambing_perah || 0)) / 2.5);
     return Math.max(120, Math.round(totalTernak / 4));
 });
 
 // Nilai metrik aktif
 const activeValue = computed(() => {
-    return Number(props.kecamatan[props.selectedMetric.id]) || 0;
+    const k = props.kecamatan;
+    const mId = props.selectedMetric.id;
+    if (mId === 'populasi_total') {
+        return (
+            k.populasi_total ??
+            ((k.sapi_potong || 0) +
+                (k.sapi_perah || 0) +
+                (k.kambing || 0) +
+                (k.domba || 0) +
+                (k.kambing_perah || 0) +
+                (k.ayam_potong || 0) +
+                (k.ayam_petelur || 0))
+        );
+    }
+    if (mId === 'kasus_total') {
+        return k.kasus_total ?? ((k.pmk || 0) + (k.lsd || 0));
+    }
+    if (mId === 'produksi_total') {
+        return (
+            k.produksi_total ??
+            ((k.telur_ayam || 0) +
+                (k.daging_ayam || 0) +
+                (k.daging_sapi || 0) +
+                (k.daging_kambing || 0) +
+                (k.daging_domba || 0) +
+                (k.susu_sapi || 0) +
+                (k.susu_kambing || 0) +
+                (k.susu_domba || 0))
+        );
+    }
+    if (mId === 'fasilitas_total') {
+        return k.fasilitas_total ?? ((k.poskeswan || 0) + (k.rph || 0));
+    }
+    return Number(k[mId]) || 0;
 });
+
+function getDesaMetricValue(d: DesaData): number {
+    const mId = props.selectedMetric.id;
+    if (mId === 'populasi_total') {
+        return (
+            (d.sapi_potong || 0) +
+            (d.sapi_perah || 0) +
+            (d.kambing || 0) +
+            (d.domba || 0) +
+            (d.ayam_potong || 0) +
+            (d.ayam_petelur || 0)
+        );
+    }
+    if (mId === 'kasus_total') {
+        return (d.pmk || 0) + (d.lsd || 0);
+    }
+    if (mId === 'produksi_total') {
+        return (
+            (d.telur_ayam || 0) +
+            (d.daging_ayam || 0) +
+            (d.daging_sapi || 0) +
+            (d.daging_kambing || 0) +
+            (d.daging_domba || 0) +
+            (d.susu_sapi || 0) +
+            (d.susu_kambing || 0) +
+            (d.susu_domba || 0)
+        );
+    }
+    if (mId === 'fasilitas_total') {
+        return (d.poskeswan || 0) + ((d as any).rph || 0);
+    }
+    return Number(d[mId as keyof DesaData] || 0);
+}
 
 // Status zona wilayah
 const zonaConfig = computed(() => {
@@ -149,6 +217,64 @@ const qualitativeStatus = computed(() => {
         label: labels[lvl - 1] || 'Kategori Sedang'
     };
 });
+
+// Ringkasan 3 Kategori Komoditas (Ternak Besar, Ternak Kecil, Unggas)
+const categoryBreakdown = computed(() => {
+    const k = props.kecamatan;
+    const besar = (k.sapi_potong || 0) + (k.sapi_perah || 0);
+    const kecil = (k.kambing || 0) + (k.domba || 0) + (k.kambing_perah || 0);
+    const unggas = (k.ayam_potong || 0) + (k.ayam_petelur || 0);
+    const kambingPerah = k.kambing_perah || 0;
+
+    return {
+        besar,
+        kecil,
+        unggas,
+        kambingPerah
+    };
+});
+
+// Analisis Daya Dukung Pakan (Carrying Capacity)
+const carryingCapacity = computed(() => {
+    const k = props.kecamatan;
+    const sapi = (k.sapi_potong || 0) + (k.sapi_perah || 0);
+    const kecil = (k.kambing || 0) + (k.domba || 0) + (k.kambing_perah || 0);
+    const unggas = (k.ayam_potong || 0) + (k.ayam_petelur || 0);
+
+    const stSapi = sapi * 1.0;
+    const stKecil = kecil * 0.14;
+    const stUnggas = unggas * 0.01;
+    const totalST = Number((stSapi + stKecil + stUnggas).toFixed(1));
+
+    const luasHmt = k.luas_hmt_ha || 0;
+    const kapasitasTampungST = Number((luasHmt * 6).toFixed(1));
+
+    const indeks = totalST > 0 ? Number((kapasitasTampungST / totalST).toFixed(2)) : 1.0;
+
+    let status = 'Surplus Pakan';
+    let statusClass = 'text-emerald-500 bg-emerald-500/10 border-emerald-500/30';
+    let dotClass = 'bg-emerald-500';
+
+    if (indeks < 0.7) {
+        status = 'Defisit Pakan';
+        statusClass = 'text-rose-500 bg-rose-500/10 border-rose-500/30';
+        dotClass = 'bg-rose-500';
+    } else if (indeks < 1.0) {
+        status = 'Waspada Pakan';
+        statusClass = 'text-amber-500 bg-amber-500/10 border-amber-500/30';
+        dotClass = 'bg-amber-500';
+    }
+
+    return {
+        totalST,
+        luasHmt,
+        kapasitasTampungST,
+        indeks,
+        status,
+        statusClass,
+        dotClass
+    };
+});
 </script>
 
 <template>
@@ -164,8 +290,8 @@ const qualitativeStatus = computed(() => {
                 <!-- Header Card -->
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-[#00D084] inline-block"></span>
-                        <span class="text-[11px] font-semibold uppercase tracking-wider dark:text-[#B3B3B3] text-[#6E776D]">
+                        <span class="w-2 h-2 rounded-full dark:bg-[#00D084] bg-[#171B17] inline-block"></span>
+                        <span class="text-xs font-semibold tracking-normal dark:text-[#B3B3B3] text-[#6E776D]">
                             Detail Wilayah
                         </span>
                     </div>
@@ -173,16 +299,16 @@ const qualitativeStatus = computed(() => {
                         <button
                             type="button"
                             @click="$emit('drillDown', kecamatan)"
-                            class="w-7 h-7 rounded-lg dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#B3B3B3] text-[#6E776D] hover:text-[#00D084] dark:hover:border-[#00D084]/40 flex items-center justify-center transition-colors cursor-pointer"
+                            class="w-8 h-8 rounded-lg dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#B3B3B3] text-[#6E776D] dark:hover:text-[#00D084] hover:text-[#171B17] dark:hover:border-[#00D084]/40 hover:border-[#171B17] flex items-center justify-center transition-colors cursor-pointer"
                             title="Buka Rincian Lengkap"
                             aria-label="Buka Rincian Lengkap"
                         >
-                            <ExternalLink class="w-3.5 h-3.5" />
+                            <ExternalLink class="w-4 h-4" />
                         </button>
                         <button
                             type="button"
                             @click="$emit('close')"
-                            class="w-7 h-7 rounded-lg dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#B3B3B3] text-[#6E776D] hover:text-[#DC625F] dark:hover:border-[#DC625F]/40 flex items-center justify-center transition-colors cursor-pointer"
+                            class="w-8 h-8 rounded-lg dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#B3B3B3] text-[#6E776D] hover:text-[#DC625F] dark:hover:border-[#DC625F]/40 flex items-center justify-center transition-colors cursor-pointer"
                             title="Tutup Panel (Esc)"
                             aria-label="Tutup Panel"
                         >
@@ -216,82 +342,156 @@ const qualitativeStatus = computed(() => {
                         <span class="dark:text-[#B3B3B3] text-[#6E776D] font-medium">
                             {{ selectedMetric.kategori === 'Populasi' ? 'Populasi Ternak' : selectedMetric.label }}
                         </span>
-                        <span class="text-[#00D084] font-semibold">
+                        <span class="dark:text-[#00D084] text-[#171B17] font-semibold">
                             {{ selectedMetric.label }}
                         </span>
                     </div>
 
                     <div class="flex items-baseline justify-between mt-0.5">
-                        <template v-if="currentRole === 'publik'">
-                            <div class="text-sm font-bold text-[#00D084] flex items-center gap-1.5 py-0.5">
-                                <span class="w-2 h-2 rounded-full bg-[#00D084]"></span>
-                                <span>{{ qualitativeStatus.label }}</span>
-                            </div>
-                        </template>
-                        <template v-else>
-                            <div class="text-lg font-bold font-mono text-[#00D084] tabular-nums">
-                                {{ formatAngka(activeValue) }}
-                                <span class="text-xs font-normal dark:text-[#B3B3B3] text-[#6E776D]">{{ selectedMetric.satuan }}</span>
-                            </div>
-                        </template>
+                        <div class="text-lg font-bold font-mono dark:text-[#00D084] text-[#171B17] tabular-nums">
+                            {{ formatAngka(activeValue) }}
+                            <span class="text-xs font-normal dark:text-[#B3B3B3] text-[#6E776D]">{{ selectedMetric.satuan }}</span>
+                        </div>
+                        <span v-if="currentRole === 'publik'" class="text-[10px] px-1.5 py-0.5 rounded dark:bg-[#00D084]/10 bg-[#171B17]/10 dark:text-[#00D084] text-[#171B17] font-medium">
+                            Publik
+                        </span>
                     </div>
 
-                    <div v-if="currentRole !== 'publik'" class="text-[11px] text-[#39D6C0] font-medium flex items-center gap-1.5 mt-0.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#39D6C0]"></span>
+                    <div class="text-[11px] dark:text-[#39D6C0] text-[#171B17] font-medium flex items-center gap-1.5 mt-0.5">
+                        <span class="w-1.5 h-1.5 rounded-full dark:bg-[#39D6C0] bg-[#171B17]"></span>
                         <span>{{ qualitativeStatus.label }}</span>
                     </div>
                 </div>
 
-                <!-- 3-Stat Grid: Desa, Peternak, Luas Wilayah -->
-                <div class="grid grid-cols-3 gap-2">
+                <!-- Ringkasan 3 Kategori Komoditas (Tanpa Dominasi Skala Unggas) -->
+                <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5 flex flex-col gap-2">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span class="font-semibold dark:text-[#F5F5F5] text-[#171B17] flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full dark:bg-[#00D084] bg-[#171B17]"></span>
+                            Struktur Populasi Ternak
+                        </span>
+                        <span class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D]">3 Kategori</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-1.5 text-center">
+                        <!-- Ternak Besar -->
+                        <div class="p-2 rounded-lg dark:bg-[#121212] bg-white border dark:border-[#222222] border-[#E5E7EB] flex flex-col items-center">
+                            <span class="text-[10px] font-medium text-emerald-600 dark:text-[#00D084] truncate w-full">Ruminansia Besar</span>
+                            <span class="text-xs font-bold font-mono dark:text-[#F5F5F5] text-[#171B17] tabular-nums mt-0.5">
+                                {{ formatAngka(categoryBreakdown.besar) }}
+                            </span>
+                            <span class="text-[9px] dark:text-[#888888] text-[#888888]">Sapi (ekor)</span>
+                        </div>
+
+                        <!-- Ternak Kecil -->
+                        <div class="p-2 rounded-lg dark:bg-[#121212] bg-white border dark:border-[#222222] border-[#E5E7EB] flex flex-col items-center">
+                            <span class="text-[10px] font-medium text-cyan-600 dark:text-cyan-400 truncate w-full">Ruminansia Kecil</span>
+                            <span class="text-xs font-bold font-mono dark:text-[#F5F5F5] text-[#171B17] tabular-nums mt-0.5">
+                                {{ formatAngka(categoryBreakdown.kecil) }}
+                            </span>
+                            <span class="text-[9px] dark:text-[#888888] text-[#888888]">Kamb/Dmb (ekor)</span>
+                            <span v-if="categoryBreakdown.kambingPerah > 0" class="text-[8px] text-amber-500 font-mono mt-0.5 truncate w-full">
+                                Perah: {{ formatAngka(categoryBreakdown.kambingPerah) }}
+                            </span>
+                        </div>
+
+                        <!-- Unggas -->
+                        <div class="p-2 rounded-lg dark:bg-[#121212] bg-white border dark:border-[#222222] border-[#E5E7EB] flex flex-col items-center">
+                            <span class="text-[10px] font-medium text-amber-600 dark:text-amber-400 truncate w-full">Unggas</span>
+                            <span class="text-xs font-bold font-mono dark:text-[#F5F5F5] text-[#171B17] tabular-nums mt-0.5">
+                                {{ formatAngka(categoryBreakdown.unggas) }}
+                            </span>
+                            <span class="text-[9px] dark:text-[#888888] text-[#888888]">Ayam (ekor)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Daya Dukung Pakan Hijauan (Carrying Capacity) -->
+                <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5 flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <div class="flex items-center gap-1.5">
+                            <Leaf class="w-3.5 h-3.5 text-emerald-500" />
+                            <span class="font-semibold dark:text-[#F5F5F5] text-[#171B17]">Daya Dukung Pakan</span>
+                        </div>
+                        <div
+                            class="px-2 py-0.5 rounded-full border text-[10px] font-semibold flex items-center gap-1"
+                            :class="carryingCapacity.statusClass"
+                        >
+                            <span class="w-1.5 h-1.5 rounded-full" :class="carryingCapacity.dotClass"></span>
+                            <span>{{ carryingCapacity.status }}</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-1.5 mt-0.5">
+                        <div class="p-1.5 rounded-lg dark:bg-[#121212] bg-white border dark:border-[#222222] border-[#E5E7EB]">
+                            <div class="text-[10px] dark:text-[#888888] text-[#6E776D]">Kebun HMT</div>
+                            <div class="text-xs font-bold font-mono dark:text-[#F5F5F5] text-[#171B17] tabular-nums">
+                                {{ carryingCapacity.luasHmt.toLocaleString('id-ID') }} <span class="text-[10px] font-normal font-sans">Ha</span>
+                            </div>
+                        </div>
+                        <div class="p-1.5 rounded-lg dark:bg-[#121212] bg-white border dark:border-[#222222] border-[#E5E7EB]">
+                            <div class="text-[10px] dark:text-[#888888] text-[#6E776D]">Beban Ternak</div>
+                            <div class="text-xs font-bold font-mono dark:text-[#F5F5F5] text-[#171B17] tabular-nums">
+                                {{ formatAngka(carryingCapacity.totalST) }} <span class="text-[10px] font-normal font-sans">ST</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D] flex items-center justify-between pt-1 border-t dark:border-[#222222] border-[#E5E7EB]">
+                        <span>Kapasitas Lahan (6 ST/Ha):</span>
+                        <span class="font-mono font-semibold dark:text-[#F5F5F5] text-[#171B17]">{{ formatAngka(carryingCapacity.kapasitasTampungST) }} ST</span>
+                    </div>
+                </div>
+
+                <!-- Stat Grid: Desa button + 2-col metrics (Peternak, Luas Wilayah) -->
+                <div class="flex flex-col gap-2">
                     <!-- Desa -->
                     <button
                         type="button"
                         @click="showDesaView = true"
-                        class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:border-[#171B17] dark:hover:border-[#00D084]/50 rounded-xl p-2.5 flex flex-col items-center text-center transition-all cursor-pointer group"
+                        class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:border-[#171B17] dark:hover:border-[#00D084]/50 rounded-xl px-3 py-2 flex items-center justify-between transition-colors cursor-pointer group"
                         title="Klik untuk melihat daftar desa"
                     >
-                        <Building2 class="w-4 h-4 text-[#00D084] mb-1 group-hover:scale-110 transition-transform" />
-                        <span class="text-xs font-bold dark:text-[#F5F5F5] text-[#171B17] font-mono tabular-nums leading-tight">
-                            {{ desaList.length }}
-                        </span>
-                        <span class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D] mt-0.5">Desa</span>
+                        <div class="flex items-center gap-2">
+                            <Building2 class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
+                            <span class="text-xs font-medium dark:text-[#B3B3B3] text-[#6E776D]">Daftar Desa / Kelurahan</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-bold dark:text-[#F5F5F5] text-[#171B17] font-mono tabular-nums">
+                                {{ desaList.length }} Desa
+                            </span>
+                            <ChevronRight class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
+                        </div>
                     </button>
 
-                    <!-- Peternak -->
-                    <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5 flex flex-col items-center text-center">
-                        <Users class="w-4 h-4 text-[#39D6C0] mb-1" />
-                        <template v-if="currentRole === 'publik'">
-                            <span class="text-[11px] font-bold text-[#00D084] leading-tight">
-                                Terdata
-                            </span>
-                        </template>
-                        <template v-else>
+                    <div class="grid grid-cols-2 gap-2">
+                        <!-- Peternak -->
+                        <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5 flex flex-col items-center text-center">
+                            <Users class="w-4 h-4 dark:text-[#39D6C0] text-[#171B17] mb-1" />
                             <span class="text-xs font-bold dark:text-[#F5F5F5] text-[#171B17] font-mono tabular-nums leading-tight">
                                 {{ formatAngka(estimatedFarmers) }}
                             </span>
-                        </template>
-                        <span class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D] mt-0.5">Peternak</span>
-                    </div>
+                            <span class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D] mt-0.5">Peternak</span>
+                        </div>
 
-                    <!-- Luas Wilayah -->
-                    <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5 flex flex-col items-center text-center">
-                        <MapPin class="w-4 h-4 text-[#39D6C0] mb-1" />
-                        <span class="text-xs font-bold dark:text-[#F5F5F5] text-[#171B17] font-mono tabular-nums leading-tight truncate max-w-full">
-                            {{ formattedArea.replace(' km²', '') }}
-                        </span>
-                        <span class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D] mt-0.5">km² Luas</span>
+                        <!-- Luas Wilayah -->
+                        <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5 flex flex-col items-center text-center">
+                            <MapPin class="w-4 h-4 dark:text-[#39D6C0] text-[#171B17] mb-1" />
+                            <span class="text-xs font-bold dark:text-[#F5F5F5] text-[#171B17] font-mono tabular-nums leading-tight">
+                                {{ formattedArea }}
+                            </span>
+                            <span class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D] mt-0.5">Luas Wilayah</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Action Button -->
                 <button
                     type="button"
                     @click="$emit('drillDown', kecamatan)"
-                    class="w-full py-2.5 px-3 rounded-xl bg-[#00D084] text-[#062117] hover:bg-[#00F0A0] text-xs font-bold flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-all active:scale-[0.99]"
+                    class="w-full py-2.5 px-3 rounded-xl dark:bg-[#00D084] dark:text-[#062117] dark:hover:bg-[#00F0A0] dark:active:bg-[#00D084] bg-[#171B17] text-white hover:bg-[#282828] active:opacity-90 text-xs font-bold flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-colors"
                 >
                     <span>Lihat Detail Lengkap</span>
-                    <ArrowRight class="w-3.5 h-3.5" />
+                    <ArrowRight class="w-4 h-4" />
                 </button>
             </template>
 
@@ -301,7 +501,7 @@ const qualitativeStatus = computed(() => {
                     <button
                         type="button"
                         @click="showDesaView = false"
-                        class="text-xs dark:text-[#B3B3B3] text-[#6E776D] hover:text-[#00D084] flex items-center gap-1 transition-colors cursor-pointer"
+                        class="text-xs dark:text-[#B3B3B3] text-[#6E776D] dark:hover:text-[#00D084] hover:text-[#171B17] flex items-center gap-1 transition-colors cursor-pointer"
                     >
                         <ChevronLeft class="w-4 h-4" />
                         <span>Kembali</span>
@@ -317,9 +517,9 @@ const qualitativeStatus = computed(() => {
                         v-model="searchDesaQuery"
                         type="text"
                         :placeholder="`Cari desa...`"
-                        class="w-full h-8 dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] focus:border-[#00D084] rounded-lg px-2.5 pr-7 text-xs dark:text-[#F5F5F5] text-[#171B17] outline-none placeholder:text-[#858585]"
+                        class="w-full h-8 dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] focus:border-[#171B17] dark:focus:border-[#00D084] rounded-lg px-2.5 pr-7 text-xs dark:text-[#F5F5F5] text-[#171B17] outline-none placeholder:text-[#858585]"
                     />
-                    <Search class="w-3.5 h-3.5 dark:text-[#B3B3B3] text-[#6E776D] absolute right-2.5 top-2.5 pointer-events-none" />
+                    <Search class="w-4 h-4 dark:text-[#B3B3B3] text-[#6E776D] absolute right-2.5 top-2 pointer-events-none" />
                 </div>
 
                 <!-- Scroll List Desa -->
@@ -334,8 +534,8 @@ const qualitativeStatus = computed(() => {
                             : 'border dark:bg-[#181818] bg-[#F4F5F2] dark:border-[#1E1E1E] border-[#E0E4DD] hover:border-[#171B17]/40 dark:hover:border-[#00D084]/40'"
                     >
                         <div class="min-w-0 pr-2">
-                            <div class="text-xs font-semibold dark:text-[#F5F5F5] text-[#171B17] group-hover:text-[#00D084] truncate flex items-center gap-1.5">
-                                <CheckCircle2 v-if="selectedDesaId === d.id" class="w-3.5 h-3.5 text-[#00D084] shrink-0" />
+                            <div class="text-xs font-semibold dark:text-[#F5F5F5] text-[#171B17] dark:group-hover:text-[#00D084] group-hover:text-black truncate flex items-center gap-1.5">
+                                <CheckCircle2 v-if="selectedDesaId === d.id" class="w-3.5 h-3.5 dark:text-[#00D084] text-[#171B17] shrink-0" />
                                 <span class="truncate">{{ d.nama }}</span>
                             </div>
                             <div class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D] font-mono">
@@ -343,8 +543,8 @@ const qualitativeStatus = computed(() => {
                             </div>
                         </div>
                         <div class="text-right shrink-0">
-                            <span class="text-xs font-bold font-mono text-[#00D084] tabular-nums">
-                                {{ currentRole === 'publik' ? 'Aktif' : formatAngka(Number(d[selectedMetric.id as keyof DesaData] || 0)) }}
+                            <span class="text-xs font-bold font-mono dark:text-[#00D084] text-[#171B17] tabular-nums">
+                                {{ formatAngka(getDesaMetricValue(d)) }}
                             </span>
                         </div>
                     </div>
@@ -363,7 +563,7 @@ const qualitativeStatus = computed(() => {
             <!-- Header Card -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <ShieldCheck class="w-4 h-4 text-[#00D084]" />
+                    <ShieldCheck class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
                     <h3 class="text-xs font-bold dark:text-[#F5F5F5] text-[#171B17]">Rule / Aturan</h3>
                 </div>
                 <Info
@@ -409,7 +609,7 @@ const qualitativeStatus = computed(() => {
             <!-- Content Tab: Populasi -->
             <div v-if="activeRuleTab === 'Populasi'" class="space-y-2.5">
                 <div>
-                    <div class="text-[10px] font-semibold uppercase tracking-wider dark:text-[#B3B3B3] text-[#6E776D] mb-1.5">
+                    <div class="text-xs font-semibold tracking-normal dark:text-[#B3B3B3] text-[#6E776D] mb-1.5">
                         Kondisi Populasi Ternak (ekor)
                     </div>
                     <div class="space-y-1 text-xs">
@@ -453,7 +653,7 @@ const qualitativeStatus = computed(() => {
 
                 <!-- Section Status Wilayah (Penyakit) -->
                 <div class="pt-2 border-t dark:border-[#1E1E1E] border-[#E0E4DD]">
-                    <div class="text-[10px] font-semibold uppercase tracking-wider dark:text-[#B3B3B3] text-[#6E776D] mb-1.5">
+                    <div class="text-xs font-semibold tracking-normal dark:text-[#B3B3B3] text-[#6E776D] mb-1.5">
                         Status Wilayah (Penyakit)
                     </div>
                     <div class="space-y-1">
@@ -473,8 +673,8 @@ const qualitativeStatus = computed(() => {
                         </div>
                         <div class="flex items-center justify-between text-xs py-0.5">
                             <div class="flex items-center gap-1.5">
-                                <CheckCircle2 class="w-3.5 h-3.5 text-[#20B88A]" />
-                                <span class="text-[#20B88A] font-medium text-[11px]">Zona Hijau</span>
+                                <CheckCircle2 class="w-3.5 h-3.5 dark:text-emerald-400 text-[#171B17]" />
+                                <span class="dark:text-emerald-400 text-[#171B17] font-medium text-[11px]">Zona Hijau</span>
                             </div>
                             <span class="dark:text-[#B3B3B3] text-[#6E776D] text-[11px]">Aman</span>
                         </div>
@@ -484,7 +684,7 @@ const qualitativeStatus = computed(() => {
 
             <!-- Content Tab: Penyakit -->
             <div v-else-if="activeRuleTab === 'Penyakit'" class="space-y-2 text-xs">
-                <div class="text-[10px] font-semibold uppercase tracking-wider dark:text-[#B3B3B3] text-[#6E776D]">
+                <div class="text-xs font-semibold tracking-normal dark:text-[#B3B3B3] text-[#6E776D]">
                     Protokol EWS PMK &amp; LSD
                 </div>
                 <div class="p-2.5 rounded-xl dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] space-y-1.5">
@@ -500,11 +700,11 @@ const qualitativeStatus = computed(() => {
 
             <!-- Content Tab: Fasilitas -->
             <div v-else class="space-y-2 text-xs">
-                <div class="text-[10px] font-semibold uppercase tracking-wider dark:text-[#B3B3B3] text-[#6E776D]">
+                <div class="text-xs font-semibold tracking-normal dark:text-[#B3B3B3] text-[#6E776D]">
                     Standar Layanan Poskeswan / RPH
                 </div>
                 <div class="p-2.5 rounded-xl dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] space-y-1.5">
-                    <div class="flex items-center gap-1.5 text-[#00D084] font-semibold text-[11px]">
+                    <div class="flex items-center gap-1.5 dark:text-[#00D084] text-[#171B17] font-semibold text-[11px]">
                         <Building2 class="w-3.5 h-3.5" />
                         <span>Cakupan Wilayah Satelit</span>
                     </div>
@@ -518,7 +718,7 @@ const qualitativeStatus = computed(() => {
             <button
                 type="button"
                 @click="$emit('openRules')"
-                class="w-full pt-2 border-t dark:border-[#1E1E1E] border-[#E0E4DD] text-[11px] text-[#00D084] hover:text-[#00F0A0] font-semibold flex items-center justify-between cursor-pointer transition-colors"
+                class="w-full pt-2 border-t dark:border-[#1E1E1E] border-[#E0E4DD] text-[11px] dark:text-[#00D084] dark:hover:text-[#00F0A0] text-[#171B17] hover:text-black font-semibold flex items-center justify-between cursor-pointer transition-colors"
             >
                 <span>Lihat detail rule lainnya</span>
                 <ArrowRight class="w-3.5 h-3.5" />
@@ -540,6 +740,10 @@ const qualitativeStatus = computed(() => {
     border-radius: 4px;
 }
 .custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: #171B17;
+}
+:root.dark .custom-scroll::-webkit-scrollbar-thumb:hover,
+.dark .custom-scroll::-webkit-scrollbar-thumb:hover {
     background: #00D084;
 }
 </style>

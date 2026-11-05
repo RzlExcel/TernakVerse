@@ -22,7 +22,7 @@ defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Profile settings',
+        title: 'Profil Akun',
         href: '/settings/profile',
     },
 ];
@@ -44,21 +44,21 @@ const submit = () => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Profile settings" />
+        <Head title="Profil Akun" />
 
         <SettingsLayout>
             <div class="flex flex-col space-y-6">
-                <HeadingSmall title="Profile information" description="Update your name and email address" />
+                <HeadingSmall title="Informasi Profil" description="Perbarui nama dan alamat email akun Anda." />
 
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="grid gap-2">
-                        <Label for="name">Name</Label>
-                        <Input id="name" class="mt-1 block w-full" v-model="form.name" required autocomplete="name" placeholder="Full name" />
+                        <Label for="name">Nama</Label>
+                        <Input id="name" class="mt-1 block w-full" v-model="form.name" required autocomplete="name" placeholder="Nama lengkap" />
                         <InputError class="mt-2" :message="form.errors.name" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="email">Email address</Label>
+                        <Label for="email">Alamat Email</Label>
                         <Input
                             id="email"
                             type="email"
@@ -66,31 +66,31 @@ const submit = () => {
                             v-model="form.email"
                             required
                             autocomplete="username"
-                            placeholder="Email address"
+                            placeholder="Alamat email"
                         />
                         <InputError class="mt-2" :message="form.errors.email" />
                     </div>
 
                     <div v-if="mustVerifyEmail && !user.email_verified_at">
-                        <p class="mt-2 text-sm text-neutral-800">
-                            Your email address is unverified.
+                        <p class="mt-2 text-sm text-neutral-800 dark:text-[#F5F5F5]">
+                            Alamat email Anda belum diverifikasi.
                             <Link
                                 :href="route('verification.send')"
                                 method="post"
                                 as="button"
-                                class="focus:outline-hidden rounded-md text-sm text-neutral-600 underline hover:text-neutral-900 focus:ring-2 focus:ring-offset-2"
+                                class="focus:outline-hidden rounded-md text-sm text-neutral-600 underline hover:text-neutral-900 focus:ring-2 focus:ring-offset-2 dark:text-[#B3B3B3] dark:hover:text-[#F5F5F5]"
                             >
-                                Click here to re-send the verification email.
+                                Klik di sini untuk mengirim ulang email verifikasi.
                             </Link>
                         </p>
 
-                        <div v-if="status === 'verification-link-sent'" class="mt-2 text-sm font-medium text-green-600">
-                            A new verification link has been sent to your email address.
+                        <div v-if="status === 'verification-link-sent'" class="mt-2 text-sm font-medium text-green-600 dark:text-[#00D084]">
+                            Tautan verifikasi baru telah dikirim ke alamat email Anda.
                         </div>
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <Button :disabled="form.processing">Save</Button>
+                        <Button :disabled="form.processing">Simpan</Button>
 
                         <TransitionRoot
                             :show="form.recentlySuccessful"
@@ -99,7 +99,7 @@ const submit = () => {
                             leave="transition ease-in-out"
                             leave-to="opacity-0"
                         >
-                            <p class="text-sm text-neutral-600">Saved.</p>
+                            <p class="text-sm text-neutral-600 dark:text-[#B3B3B3]">Tersimpan.</p>
                         </TransitionRoot>
                     </div>
                 </form>

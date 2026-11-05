@@ -20,6 +20,7 @@ class Kecamatan extends Model
         'nama_kecamatan',
         'geom',
         'luas_wilayah_km2',
+        'luas_hmt_ha',
         'fcode',
         'metadata_id',
         'srs_id',
@@ -29,6 +30,7 @@ class Kecamatan extends Model
     protected $casts = [
         'geom' => GeoJsonCast::class,
         'luas_wilayah_km2' => 'decimal:2',
+        'luas_hmt_ha' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

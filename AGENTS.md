@@ -32,3 +32,9 @@ in `.agents/GEMINI.md` and `.agents/rules/`. Refresh this file with `/onboard-re
 - GeoJSON satellite layers: semi-transparent choropleth fills (0.45-0.55 opacity) with emerald outline (#00B98B, weight 3.5) preserve terrain visibility
 - Additive design tokens: new palette variables in `tailwind.config.js` and `app.css` must coexist with legacy tokens to preserve regression tests
 - Inertia component name assertions in PHPUnit: pass `false` as second argument (`$page->component('Public/Portal', false)`) to avoid case sensitivity mismatches
+- Cross-portal session persistence: dual server session fallback in `HandleInertiaRequests` with client `localStorage` maintains Super Admin identity across external views
+- Database seeding: guard engine-specific DDL/truncation with `DB::getDriverName() === 'pgsql'` to preserve SQLite test environment compatibility
+- Vite dev server on Windows: explicitly bind server.host to '127.0.0.1' in vite.config.ts to avoid IPv6 loopback connection timeouts
+- Multi-role RBAC: supported roles include superadmin, admin_dinas, admin, and stakeholder; authorization checks must allow all permitted roles instead of strict single-role equality
+- Geospatial Analytics Performance: Dinas dashboard spatial aggregations are cached for 300s via Cache::remember with composite table indexes (idx_populasi_perf, idx_produksi_perf, idx_kasus_perf); frontend filter updates use Inertia partial reloads (only: [...]) to avoid re-fetching static GeoJSON layers
+

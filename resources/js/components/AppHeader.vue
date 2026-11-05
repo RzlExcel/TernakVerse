@@ -133,7 +133,7 @@ const utilityNavItems: NavItem[] = [
                                 <Menu class="h-5 w-5" />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="left" class="w-[300px] border-r border-[#E0E4DD] dark:border-[#1E1E1E] bg-white p-6 dark:bg-[#111111]">
+                        <SheetContent side="left" class="w-72 border-r border-[#E0E4DD] dark:border-[#1E1E1E] bg-white p-6 dark:bg-[#111111]">
                             <SheetTitle class="sr-only">Menu Navigasi TernakVerse</SheetTitle>
                             <SheetHeader class="flex justify-start border-b border-border pb-4 text-left">
                                 <Link :href="route('dashboard')" class="flex items-center gap-2">
@@ -146,7 +146,7 @@ const utilityNavItems: NavItem[] = [
                                         v-for="item in mainNavItems"
                                         :key="item.href"
                                         :href="item.href"
-                                        class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                                        class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-slate-100 dark:hover:bg-[#1C1C1C]"
                                         :class="activeItemStyles(item.href)"
                                     >
                                         <component v-if="item.icon" :is="item.icon" class="h-4 w-4 shrink-0" />
@@ -154,7 +154,7 @@ const utilityNavItems: NavItem[] = [
                                     </Link>
                                 </nav>
                                 <div class="space-y-3 border-t border-border pt-4">
-                                    <div class="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                                    <div class="rounded-lg border border-[#E0E4DD] bg-[#F4F5F2] px-3 py-2 text-xs font-medium text-[#444C43] dark:border-[#292929] dark:bg-[#171717] dark:text-[#B3B3B3]">
                                         Kabupaten Banyumas • Dinas Perikanan &amp; Peternakan
                                     </div>
                                     <div class="flex flex-col space-y-1">
@@ -162,7 +162,7 @@ const utilityNavItems: NavItem[] = [
                                             v-for="item in utilityNavItems"
                                             :key="item.href"
                                             :href="item.href"
-                                            class="flex items-center space-x-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                                            class="flex items-center space-x-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-[#1C1C1C]"
                                         >
                                             <component v-if="item.icon" :is="item.icon" class="h-4 w-4 shrink-0" />
                                             <span>{{ item.title }}</span>
@@ -193,7 +193,7 @@ const utilityNavItems: NavItem[] = [
                                 </Link>
                                 <div
                                     v-if="isCurrentRoute(item.href)"
-                                    class="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-[#059669] dark:bg-[#10B981]"
+                                    class="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-[#00D084]"
                                 />
                             </NavigationMenuItem>
                         </NavigationMenuList>
@@ -202,9 +202,9 @@ const utilityNavItems: NavItem[] = [
 
                 <div class="ml-auto flex items-center space-x-3">
                     <div
-                        class="hidden items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700 xl:flex dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-[#00D084]"
+                        class="hidden items-center gap-2 rounded-full border border-[#E0E4DD] bg-[#F4F5F2] px-3 py-1 text-xs font-medium text-[#444C43] xl:flex dark:border-[#292929] dark:bg-[#171717] dark:text-[#B3B3B3]"
                     >
-                        <span class="size-1.5 rounded-full bg-emerald-500" />
+                        <span class="size-1.5 rounded-full bg-[#00D084]" />
                         <span>Kabupaten Banyumas • Dinas Perikanan &amp; Peternakan</span>
                     </div>
 
@@ -240,7 +240,7 @@ const utilityNavItems: NavItem[] = [
                             >
                                 <Avatar class="size-8 overflow-hidden rounded-full border border-border">
                                     <AvatarImage v-if="user.avatar" :src="user.avatar" :alt="user.name" />
-                                    <AvatarFallback class="rounded-lg bg-emerald-600 font-semibold text-white dark:bg-emerald-500 dark:text-slate-950">
+                                    <AvatarFallback class="rounded-full bg-emerald-600 font-semibold text-white dark:bg-emerald-500 dark:text-slate-950">
                                         {{ getInitials(user.name) }}
                                     </AvatarFallback>
                                 </Avatar>

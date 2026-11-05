@@ -1,0 +1,126 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.2612,
+          -7.3821
+        ]
+      },
+      "properties": {
+        "id_rph": "RPH-01",
+        "nama_rph": "RPH Tambaksogra",
+        "kode_kecamatan": "33.02.21",
+        "nama_kecamatan": "Sumbang",
+        "alamat_lengkap": "Jl. Raya Tambaksogra No. 12, Kecamatan Sumbang, Kabupaten Banyumas",
+        "jenis_pengelola": "Pemerintah (Dinkannak)",
+        "jenis_hewan_potong": "Sapi, Kerbau, Kambing",
+        "kapasitas_potong_ekor_hari": 25,
+        "status_operasional": "Aktif",
+        "sertifikasi_halal_nkv": "NKV Level II & Sertifikat Halal LPPOM",
+        "nomor_kontak": "(0281) 684123"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.3582,
+          -7.6124
+        ]
+      },
+      "properties": {
+        "id_rph": "RPH-02",
+        "nama_rph": "RPH Kradenan Sumpiuh",
+        "kode_kecamatan": "33.02.07",
+        "nama_kecamatan": "Sumpiuh",
+        "alamat_lengkap": "Jl. Stasiun Kradenan, Kecamatan Sumpiuh, Kabupaten Banyumas",
+        "jenis_pengelola": "Pemerintah (Dinkannak)",
+        "jenis_hewan_potong": "Sapi, Kambing",
+        "kapasitas_potong_ekor_hari": 15,
+        "status_operasional": "Aktif",
+        "sertifikasi_halal_nkv": "NKV Level II & Bersertifikat Halal",
+        "nomor_kontak": "(0281) 689432"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.0521,
+          -7.5187
+        ]
+      },
+      "properties": {
+        "id_rph": "RPH-03",
+        "nama_rph": "RPH Wangon",
+        "kode_kecamatan": "33.02.02",
+        "nama_kecamatan": "Wangon",
+        "alamat_lengkap": "Jl. Raya Wangon-Ajibarang Km 2, Kecamatan Wangon, Kabupaten Banyumas",
+        "jenis_pengelola": "Pemerintah (Dinkannak)",
+        "jenis_hewan_potong": "Sapi, Kambing",
+        "kapasitas_potong_ekor_hari": 15,
+        "status_operasional": "Aktif",
+        "sertifikasi_halal_nkv": "NKV Level II & Bersertifikat Halal",
+        "nomor_kontak": "(0281) 657190"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.2645,
+          -7.4562
+        ]
+      },
+      "properties": {
+        "id_rph": "RPH-04",
+        "nama_rph": "RPH Sokaraja Lor",
+        "kode_kecamatan": "33.02.19",
+        "nama_kecamatan": "Sokaraja",
+        "alamat_lengkap": "Jl. Suparjo Rustam No. 45, Kecamatan Sokaraja, Kabupaten Banyumas",
+        "jenis_pengelola": "Pemerintah (Dinkannak)",
+        "jenis_hewan_potong": "Sapi, Kambing",
+        "kapasitas_potong_ekor_hari": 20,
+        "status_operasional": "Aktif",
+        "sertifikasi_halal_nkv": "NKV Level II & Bersertifikat Halal",
+        "nomor_kontak": "(0281) 644201"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.0732,
+          -7.4125
+        ]
+      },
+      "properties": {
+        "id_rph": "RPH-05",
+        "nama_rph": "RPH Mitra Mandiri Ajibarang",
+        "kode_kecamatan": "33.02.14",
+        "nama_kecamatan": "Ajibarang",
+        "alamat_lengkap": "Jl. Pancasan No. 8, Kecamatan Ajibarang, Kabupaten Banyumas",
+        "jenis_pengelola": "Swasta",
+        "jenis_hewan_potong": "Sapi, Kambing",
+        "kapasitas_potong_ekor_hari": 10,
+        "status_operasional": "Aktif",
+        "sertifikasi_halal_nkv": "Proses Sertifikasi",
+        "nomor_kontak": "081391234567"
+      }
+    }
+  ]
+}

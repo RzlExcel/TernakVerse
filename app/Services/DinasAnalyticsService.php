@@ -165,12 +165,18 @@ class DinasAnalyticsService
      */
     public function getCommodityRankings(int $tahun, ?int $triwulan = null, string $komoditasKode = 'SAPI_POTONG', int $limit = 5): array
     {
+        $isAll = in_array(strtoupper($komoditasKode), ['SEMUA', 'ALL', ''], true);
+
         $query = DB::table('kecamatan')
             ->join('desa', 'desa.kecamatan_id', '=', 'kecamatan.id')
-            ->join('populasi_ternak', 'populasi_ternak.desa_id', '=', 'desa.id')
-            ->join('komoditas', 'komoditas.id', '=', 'populasi_ternak.komoditas_id')
-            ->where('komoditas.kode', $komoditasKode)
-            ->where('populasi_ternak.tahun', $tahun);
+            ->join('populasi_ternak', 'populasi_ternak.desa_id', '=', 'desa.id');
+
+        if (! $isAll) {
+            $query->join('komoditas', 'komoditas.id', '=', 'populasi_ternak.komoditas_id')
+                ->where('komoditas.kode', $komoditasKode);
+        }
+
+        $query->where('populasi_ternak.tahun', $tahun);
 
         if ($triwulan !== null) {
             $query->where('populasi_ternak.triwulan', $triwulan);
@@ -336,16 +342,20 @@ class DinasAnalyticsService
     {
         $kecamatans = Kecamatan::all();
 
+        $isAll = in_array(strtoupper($komoditasKode), ['SEMUA', 'ALL', ''], true);
+
         $query = DB::table('kecamatan')
             ->leftJoin('desa', 'desa.kecamatan_id', '=', 'kecamatan.id')
-            ->leftJoin('populasi_ternak', function ($join) use ($tahun, $triwulan, $komoditasKode) {
+            ->leftJoin('populasi_ternak', function ($join) use ($tahun, $triwulan) {
                 $join->on('populasi_ternak.desa_id', '=', 'desa.id')
                      ->where('populasi_ternak.tahun', '=', $tahun);
                 if ($triwulan !== null) {
                     $join->where('populasi_ternak.triwulan', '=', $triwulan);
                 }
-            })
-            ->leftJoin('komoditas', function ($join) use ($komoditasKode) {
+            });
+
+        if (! $isAll) {
+            $query->leftJoin('komoditas', function ($join) use ($komoditasKode) {
                 $join->on('komoditas.id', '=', 'populasi_ternak.komoditas_id')
                      ->where('komoditas.kode', '=', $komoditasKode);
             })
@@ -353,8 +363,18 @@ class DinasAnalyticsService
                 'kecamatan.id as kecamatan_id',
                 'kecamatan.kode_kecamatan',
                 'kecamatan.nama_kecamatan',
+                DB::raw('COALESCE(SUM(CASE WHEN komoditas.id IS NOT NULL THEN populasi_ternak.jumlah_total ELSE 0 END), 0) as nilai')
+            );
+        } else {
+            $query->select(
+                'kecamatan.id as kecamatan_id',
+                'kecamatan.kode_kecamatan',
+                'kecamatan.nama_kecamatan',
                 DB::raw('COALESCE(SUM(populasi_ternak.jumlah_total), 0) as nilai')
-            )
+            );
+        }
+
+        $query = $query
             ->groupBy('kecamatan.id', 'kecamatan.kode_kecamatan', 'kecamatan.nama_kecamatan')
             ->get();
 

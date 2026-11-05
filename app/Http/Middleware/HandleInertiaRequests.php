@@ -36,28 +36,52 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $userData = null;
+
+        if ($user) {
+            $userData = [
+                'id' => $user->id,
+                'name' => $user->nama ?? $user->name,
+                'nama' => $user->nama ?? $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'roles' => method_exists($user, 'getRoleNames') ? $user->getRoleNames() : [$user->role],
+                'permissions' => method_exists($user, 'getPermissionSlugs') ? $user->getPermissionSlugs() : [],
+                'is_admin' => in_array($user->role, ['superadmin', 'admin_dinas', 'admin'], true),
+                'is_superadmin' => ($user->role === 'superadmin'),
+                'is_stakeholder' => $user->role === 'stakeholder',
+            ];
+        } elseif ($request->hasSession() && $request->session()->has('authenticated_role')) {
+            $sessionRole = (string) $request->session()->get('authenticated_role');
+            $sessionUserId = (int) $request->session()->get('authenticated_user_id', $sessionRole === 'admin' ? 1 : 2);
+            $sessionName = (string) $request->session()->get('authenticated_name', $sessionRole === 'admin' ? 'Satrio Wibowo' : 'drh. Sulistyo');
+            $sessionEmail = (string) $request->session()->get('authenticated_email', $sessionRole === 'admin' ? 'admin.diskanak@banyumaskab.go.id' : 'drh.sulistyo@banyumaskab.go.id');
+
+            $userData = [
+                'id' => $sessionUserId,
+                'name' => $sessionName,
+                'nama' => $sessionName,
+                'email' => $sessionEmail,
+                'role' => $sessionRole,
+                'roles' => [$sessionRole],
+                'permissions' => [],
+                'is_admin' => in_array($sessionRole, ['superadmin', 'admin_dinas', 'admin'], true),
+                'is_superadmin' => ($sessionRole === 'superadmin'),
+                'is_stakeholder' => $sessionRole === 'stakeholder',
+            ];
+        }
 
         return array_merge(parent::share($request), [
             'name' => config('app.name', 'TERNAKVERSE WebGIS Banyumas'),
             'appName' => config('app.name', 'TERNAKVERSE WebGIS Banyumas'),
             'auth' => [
-                'user' => $user ? [
-                    'id' => $user->id,
-                    'name' => $user->nama,
-                    'nama' => $user->nama,
-                    'email' => $user->email,
-                    'role' => $user->role,
-                    'roles' => method_exists($user, 'getRoleNames') ? $user->getRoleNames() : [$user->role],
-                    'permissions' => $user ? (method_exists($user, 'getPermissionSlugs') ? $user->getPermissionSlugs() : []) : [],
-                    'is_admin' => $user->role === 'admin',
-                    'is_stakeholder' => $user->role === 'stakeholder',
-                ] : null,
+                'user' => $userData,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
-                'error'   => fn () => $request->session()->get('error'),
-                'info'    => fn () => $request->session()->get('info'),
+                'error' => fn () => $request->session()->get('error'),
+                'info' => fn () => $request->session()->get('info'),
             ],
         ]);
     }

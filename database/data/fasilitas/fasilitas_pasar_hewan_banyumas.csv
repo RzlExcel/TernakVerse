@@ -1,0 +1,5 @@
+id_pasar,nama_pasar,kode_kecamatan,nama_kecamatan,alamat_lengkap,hari_pasaran,komoditas_utama,kapasitas_tampung_ekor,pos_pos_pemeriksaan_keswan,status_operasional,lng,lat
+PH-01,Pasar Hewan Ajibarang (Pasar Wage),33.02.14,Ajibarang,"Jl. Raya Pancasan-Ajibarang, Ajibarang, Kabupaten Banyumas",Wage (Penanggalan Jawa),"Sapi Potong, Sapi Perah, Kambing, Domba",1500,Tersedia Pos Pengawasan Dinkannak,Aktif,109.0782,-7.414
+PH-02,Pasar Hewan Sokaraja,33.02.19,Sokaraja,"Jl. Suparjo Rustam, Sokaraja, Kabupaten Banyumas",Kliwon / Pahing,"Kambing, Domba, Unggas",800,Tersedia Pos Pengawasan Dinkannak,Aktif,109.268,-7.455
+PH-03,Pasar Hewan Sumpiuh,33.02.07,Sumpiuh,"Jl. Raya Barat Sumpiuh, Sumpiuh, Kabupaten Banyumas",Pon / Legi,"Sapi, Kambing, Unggas",600,Tersedia Pos Pengawasan Dinkannak,Aktif,109.359,-7.613
+PH-04,Pasar Hewan Wangon,33.02.02,Wangon,"Jl. Raya Selatan Wangon, Wangon, Kabupaten Banyumas",Manis / Wage,"Sapi, Kambing, Domba",750,Tersedia Pos Pengawasan Dinkannak,Aktif,109.054,-7.521

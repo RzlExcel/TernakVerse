@@ -63,7 +63,7 @@ const inputQuestion = ref('');
 const messages = ref<{ sender: 'bot' | 'user'; text: string; time: string }[]>([
     {
         sender: 'bot',
-        text: 'Hai! Tanya apa nih soal data peternakan Kabupaten Banyumas? Kamu bisa tanya sebaran populasi, status zona PMK, atau kecamatan dengan sapi terbanyak!',
+        text: 'Pusat informasi data peternakan Kabupaten Banyumas. Tanyakan sebaran populasi, status zona PMK, atau fasilitas peternakan.',
         time: 'Baru saja'
     }
 ]);
@@ -149,32 +149,29 @@ function handleSend(question?: string) {
         <!-- 2. FLOATING CHAT DRAWER WINDOW (WHEN OPEN) -->
         <div
             v-if="isChatOpen"
-            class="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[520px] bg-[#090909] border border-[#1E1E1E] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 select-none backdrop-blur-xl"
+            class="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[520px] dark:bg-[#080808] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#F5F5F5] text-[#171B17] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 select-none backdrop-blur-xl"
         >
             <!-- Header Chat -->
-            <div class="p-3.5 bg-[#111111] border-b border-[#1E1E1E] flex items-center justify-between">
+            <div class="p-3.5 dark:bg-[#111111] bg-[#F4F5F2] border-b dark:border-[#1E1E1E] border-[#E0E4DD] flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-[#00D084] shrink-0">
                         <MessageSquareText class="w-4 h-4 stroke-[2.2]" />
                     </div>
                     <div>
-                        <h3 class="font-display font-bold text-sm text-[#F5F5F5] flex items-center gap-1.5 leading-tight">
+                        <h3 class="font-display font-bold text-sm dark:text-[#F5F5F5] text-[#171B17] flex items-center gap-1.5 leading-tight">
                             <span>TERNAKVERSE AI</span>
-                            <span class="text-[9px] px-1.5 py-0.5 rounded bg-[#103F3A] border border-[#159B78] text-[#39D6C0] font-mono">
-                                v1.0
-                            </span>
                         </h3>
-                        <p class="text-[10px] text-[#B3B3B3] leading-tight mt-0.5">Asisten Data & Pengetahuan Spasial</p>
+                        <p class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D] leading-tight mt-0.5">Asisten Data & Pengetahuan Spasial</p>
                     </div>
                 </div>
                 <button
                     type="button"
                     @click="closeChat"
-                    class="w-7 h-7 rounded-lg bg-[#181818] border border-[#1E1E1E] text-[#B3B3B3] hover:text-rose-400 hover:border-rose-500/40 flex items-center justify-center transition-colors cursor-pointer"
+                    class="w-8 h-8 rounded-lg dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#B3B3B3] text-[#444C43] hover:text-rose-400 hover:border-rose-500/40 flex items-center justify-center transition-colors cursor-pointer"
                     aria-label="Tutup Asisten Data"
                     title="Tutup Chatbot (Esc)"
                 >
-                    <X class="w-3.5 h-3.5" />
+                    <X class="w-4 h-4" />
                 </button>
             </div>
 
@@ -195,45 +192,45 @@ function handleSend(question?: string) {
                     <div
                         class="max-w-[82%] p-3 rounded-2xl text-xs leading-relaxed tabular-nums"
                         :class="msg.sender === 'bot'
-                            ? 'bg-[#181818] border border-[#1E1E1E] text-[#F5F5F5] shadow-sm'
-                            : 'bg-emerald-600/20 border border-emerald-500/40 text-emerald-100 font-medium'"
+                            ? 'dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#F5F5F5] text-[#171B17] shadow-sm'
+                            : 'dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#282828] border-[#CCD2C8] dark:text-white text-[#171B17] font-medium'"
                     >
                         <div v-if="msg.sender === 'bot'" v-html="formatMessage(msg.text)"></div>
                         <div v-else>{{ msg.text }}</div>
-                        <span class="block text-[9px] mt-1 text-[#B3B3B3] text-right tabular-nums">{{ msg.time }}</span>
+                        <span class="block text-[9px] mt-1 dark:text-[#B3B3B3] text-[#6E776D] text-right tabular-nums">{{ msg.time }}</span>
                     </div>
                 </div>
             </div>
 
             <!-- Pertanyaan Cepat (Chips) -->
-            <div class="px-3 py-2 border-t border-[#1E1E1E] bg-[#111111]/70 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <div class="px-3 py-2 border-t dark:border-[#1E1E1E] border-[#E0E4DD] dark:bg-[#111111]/70 bg-[#F4F5F2]/70 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
                 <button
                     v-for="(prompt, idx) in quickPrompts"
                     :key="idx"
                     type="button"
                     @click="handleSend(prompt)"
-                    class="h-7 px-2.5 rounded-lg bg-[#181818] border border-[#1E1E1E] hover:border-emerald-500/50 text-[10px] text-[#B3B3B3] hover:text-emerald-300 whitespace-nowrap transition-colors flex-shrink-0 cursor-pointer"
+                    class="h-7 px-2.5 rounded-lg dark:bg-[#181818] bg-[#E8EAE5] border dark:border-[#1E1E1E] border-[#CCD2C8] hover:border-emerald-500/50 text-[10px] dark:text-[#B3B3B3] text-[#444C43] hover:text-emerald-500 dark:hover:text-emerald-300 whitespace-nowrap transition-colors flex-shrink-0 cursor-pointer"
                 >
                     {{ prompt }}
                 </button>
             </div>
 
             <!-- Input Bar -->
-            <div class="p-3 bg-[#111111] border-t border-[#1E1E1E] flex items-center gap-2">
+            <div class="p-3 dark:bg-[#111111] bg-white border-t dark:border-[#1E1E1E] border-[#E0E4DD] flex items-center gap-2">
                 <input
                     v-model="inputQuestion"
                     @keydown.enter="handleSend()"
                     type="text"
-                    placeholder="Tanyakan data peternakan..."
-                    class="h-9 px-3 rounded-xl bg-[#181818] border border-[#1E1E1E] focus:border-emerald-500 text-[#F5F5F5] placeholder:text-[#B3B3B3] outline-none flex-1 text-xs"
+                    placeholder="Tanya data peternakan"
+                    class="h-9 px-3 rounded-xl dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] focus:border-emerald-500 dark:text-[#F5F5F5] text-[#171B17] placeholder:dark:text-[#B3B3B3] placeholder:text-[#6E776D] outline-none flex-1 text-xs"
                 />
                 <button
                     type="button"
                     @click="handleSend()"
-                    class="h-9 w-9 rounded-xl bg-[#159B78] hover:bg-[#1BB18A] text-white flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer shadow-sm active:scale-95"
+                    class="h-9 w-9 rounded-xl bg-[#159B78] hover:bg-[#1BB18A] text-white flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer shadow-sm"
                     aria-label="Kirim Pertanyaan"
                 >
-                    <Send class="w-3.5 h-3.5 stroke-[2.2]" />
+                    <Send class="w-4 h-4 stroke-2" />
                 </button>
             </div>
         </div>

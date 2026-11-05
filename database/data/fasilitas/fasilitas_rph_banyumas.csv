@@ -1,0 +1,6 @@
+id_rph,nama_rph,kode_kecamatan,nama_kecamatan,alamat_lengkap,jenis_pengelola,jenis_hewan_potong,kapasitas_potong_ekor_hari,status_operasional,sertifikasi_halal_nkv,nomor_kontak,lng,lat
+RPH-01,RPH Tambaksogra,33.02.21,Sumbang,"Jl. Raya Tambaksogra No. 12, Kecamatan Sumbang, Kabupaten Banyumas",Pemerintah (Dinkannak),"Sapi, Kerbau, Kambing",25,Aktif,NKV Level II & Sertifikat Halal LPPOM,(0281) 684123,109.2612,-7.3821
+RPH-02,RPH Kradenan Sumpiuh,33.02.07,Sumpiuh,"Jl. Stasiun Kradenan, Kecamatan Sumpiuh, Kabupaten Banyumas",Pemerintah (Dinkannak),"Sapi, Kambing",15,Aktif,NKV Level II & Bersertifikat Halal,(0281) 689432,109.3582,-7.6124
+RPH-03,RPH Wangon,33.02.02,Wangon,"Jl. Raya Wangon-Ajibarang Km 2, Kecamatan Wangon, Kabupaten Banyumas",Pemerintah (Dinkannak),"Sapi, Kambing",15,Aktif,NKV Level II & Bersertifikat Halal,(0281) 657190,109.0521,-7.5187
+RPH-04,RPH Sokaraja Lor,33.02.19,Sokaraja,"Jl. Suparjo Rustam No. 45, Kecamatan Sokaraja, Kabupaten Banyumas",Pemerintah (Dinkannak),"Sapi, Kambing",20,Aktif,NKV Level II & Bersertifikat Halal,(0281) 644201,109.2645,-7.4562
+RPH-05,RPH Mitra Mandiri Ajibarang,33.02.14,Ajibarang,"Jl. Pancasan No. 8, Kecamatan Ajibarang, Kabupaten Banyumas",Swasta,"Sapi, Kambing",10,Aktif,Proses Sertifikasi,081391234567,109.0732,-7.4125

@@ -18,6 +18,32 @@ import {
 import { BANYUMAS_DESA_LIST, getDesaByKecamatan, getDesaById, getDesaStatus, DesaData } from '../../data/banyumasDesaData';
 import { Plus, Minus, Compass, Layers, X, Search, Crosshair, MapPin } from 'lucide-vue-next';
 
+interface FacilityItem {
+    id: string | number;
+    nama?: string;
+    nama_rph?: string;
+    nama_puskeswan?: string;
+    nama_pasar?: string;
+    tipe_fasilitas?: 'RPH' | 'Puskeswan' | 'Pasar Hewan' | string;
+    tipe?: string;
+    jenis?: string;
+    alamat?: string;
+    alamat_lengkap?: string;
+    status_operasional?: string;
+    lat: number;
+    lng: number;
+    kecamatan?: string;
+    nama_kecamatan?: string;
+    kapasitas_potong_ekor_hari?: number;
+    jenis_hewan_potong?: string;
+    wilayah_binaan?: string;
+    penanggung_jawab?: string;
+    nomor_kontak?: string;
+    hari_pasaran?: string;
+    kapasitas?: number;
+    kapasitas_tampung_ekor?: number;
+}
+
 const props = withDefaults(
     defineProps<{
         selectedMetric: MetricDefinition;
@@ -26,6 +52,7 @@ const props = withDefaults(
         selectedKecamatanId?: string;
         layerStates?: Record<string, boolean>;
         mapEngine?: 'real' | 'vector';
+        facilities?: FacilityItem[];
     }>(),
     {
         layerStates: () => ({}),
@@ -43,7 +70,7 @@ let map: L.Map | null = null;
 let geojsonLayer: L.GeoJSON | null = null;
 let outerCountyLayer: L.GeoJSON | null = null;
 let desaGeoJsonLayer: L.GeoJSON | null = null;
-let heatmapLayer: L.LayerGroup | null = null;
+let heatmapLayer: L.Layer | null = null;
 let facilitiesLayer: L.LayerGroup | null = null;
 let transportLayer: L.TileLayer | null = null;
 let diseaseMarkersLayer: L.LayerGroup | null = null;
@@ -74,6 +101,73 @@ const scaleValues = ref({
 const searchQuery = ref('');
 const isSearchFocused = ref(false);
 
+function getDesaMetricValue(d: DesaData, metricId: string): number {
+    if (metricId === 'populasi_total') {
+        return (
+            (d.sapi_potong || 0) +
+            (d.sapi_perah || 0) +
+            (d.kambing || 0) +
+            (d.domba || 0) +
+            (d.ayam_potong || 0) +
+            (d.ayam_petelur || 0)
+        );
+    }
+    if (metricId === 'kasus_total') {
+        return (d.pmk || 0) + (d.lsd || 0);
+    }
+    if (metricId === 'produksi_total') {
+        return (
+            (d.telur_ayam || 0) +
+            (d.daging_ayam || 0) +
+            (d.daging_sapi || 0) +
+            (d.daging_kambing || 0) +
+            (d.daging_domba || 0) +
+            (d.susu_sapi || 0) +
+            (d.susu_kambing || 0) +
+            (d.susu_domba || 0)
+        );
+    }
+    if (metricId === 'fasilitas_total') {
+        return (d.poskeswan || 0) + (d.rph || 0);
+    }
+    return Number(d[metricId as keyof DesaData] || 0);
+}
+
+function getKecamatanMetricValue(kec: KecamatanData, metricId: string): number {
+    if (metricId === 'populasi_total') {
+        return (
+            kec.populasi_total ??
+            ((kec.sapi_potong || 0) +
+                (kec.sapi_perah || 0) +
+                (kec.kambing || 0) +
+                (kec.domba || 0) +
+                (kec.ayam_potong || 0) +
+                (kec.ayam_petelur || 0) +
+                (kec.kambing_perah || 0))
+        );
+    }
+    if (metricId === 'kasus_total') {
+        return kec.kasus_total ?? ((kec.pmk || 0) + (kec.lsd || 0));
+    }
+    if (metricId === 'produksi_total') {
+        return (
+            kec.produksi_total ??
+            ((kec.telur_ayam || 0) +
+                (kec.daging_ayam || 0) +
+                (kec.daging_sapi || 0) +
+                (kec.daging_kambing || 0) +
+                (kec.daging_domba || 0) +
+                (kec.susu_sapi || 0) +
+                (kec.susu_kambing || 0) +
+                (kec.susu_domba || 0))
+        );
+    }
+    if (metricId === 'fasilitas_total') {
+        return kec.fasilitas_total ?? ((kec.poskeswan || 0) + (kec.rph || 0));
+    }
+    return Number(kec[metricId as keyof KecamatanData] || 0);
+}
+
 const searchResults = computed(() => {
     if (!searchQuery.value.trim()) return [];
     const q = searchQuery.value.toLowerCase().trim();
@@ -102,7 +196,7 @@ const searchResults = computed(() => {
             subtitle:
                 props.currentRole === 'publik'
                     ? `Kec. ${d.kecamatan_nama} (${d.kode_kd})`
-                    : `Kec. ${d.kecamatan_nama} · ${formatAngka(Number(d[props.selectedMetric.id as keyof DesaData] || 0))} ${props.selectedMetric.satuan}`,
+                    : `Kec. ${d.kecamatan_nama} · ${formatAngka(getDesaMetricValue(d, props.selectedMetric.id))} ${props.selectedMetric.satuan}`,
             lat: d.lat,
             lng: d.lng,
             kecamatanId: d.kecamatan_id,
@@ -151,16 +245,16 @@ const kecDataLookup = computed(() => {
 
 // Kecamatan Peringkat 1 untuk Stiker Sorotan
 const topRankKecamatan = computed(() => {
-    const key = props.selectedMetric.id as keyof KecamatanData;
-    const sorted = [...KECAMATAN_LIST].sort((a, b) => Number(b[key] || 0) - Number(a[key] || 0));
+    const sorted = [...KECAMATAN_LIST].sort(
+        (a, b) => getKecamatanMetricValue(b, props.selectedMetric.id) - getKecamatanMetricValue(a, props.selectedMetric.id)
+    );
     return sorted[0];
 });
 
 const topRankValueFormatted = computed(() => {
     if (!topRankKecamatan.value) return '';
     if (props.currentRole === 'publik') return 'Sentra Unggulan';
-    const key = props.selectedMetric.id as keyof KecamatanData;
-    const val = Number(topRankKecamatan.value[key]) || 0;
+    const val = getKecamatanMetricValue(topRankKecamatan.value, props.selectedMetric.id);
     const unit = props.selectedMetric.satuan || (props.selectedMetric.kategori === 'Penyakit' ? 'kasus' : 'ekor');
     return `${formatAngka(val)} ${unit}`;
 });
@@ -177,7 +271,7 @@ function getFeatureStyle(feature: any) {
 
     let fillColor: string = GIS_TOKENS.surface;
     if (kec && props.selectedMetric.kategori !== 'Penyakit') {
-        const val = Number(kec[props.selectedMetric.id as keyof KecamatanData]) || 0;
+        const val = getKecamatanMetricValue(kec, props.selectedMetric.id);
         const lvl = getClassLevel(val, props.quantiles);
         fillColor = CHOROPLETH_DARK_CLASSES[lvl] || COLOR_CLASSES[lvl] || GIS_TOKENS.primary;
     } else if (kec && props.selectedMetric.kategori === 'Penyakit') {
@@ -416,7 +510,7 @@ function renderOfficialGeoJson() {
             const kec = getKecamatanDataFromFeature(feature);
             if (!kec) return;
 
-            const metricVal = kec[props.selectedMetric.id as keyof KecamatanData];
+            const metricVal = getKecamatanMetricValue(kec, props.selectedMetric.id);
             const desaCount = getDesaByKecamatan(kec.id).length;
             const valText =
                 props.currentRole === 'publik'
@@ -551,7 +645,7 @@ function renderDesaGeoJson() {
             if (!d) return;
 
             const status = getDesaStatus(d);
-            const metricVal = d[props.selectedMetric.id as keyof DesaData] || 0;
+            const metricVal = getDesaMetricValue(d, props.selectedMetric.id);
             const valFormatted = formatAngka(Number(metricVal));
             const desaDetailText =
                 props.currentRole === 'publik'
@@ -604,7 +698,124 @@ function renderDesaGeoJson() {
     }).addTo(map);
 }
 
-// 4. Heatmap Populasi Layer (Prop layerStates.heatmapPopulasi)
+// 4. Heatmap Populasi Layer (Vivid 4-tier thermal neon gradient)
+const HEATMAP_CONFIG = {
+    radius: 26,
+    blur: 18,
+    maxZoom: 14,
+    gradient: {
+        0.2: '#00D084', // Emerald (Densitas Rendah)
+        0.5: '#F59E0B', // Amber (Densitas Sedang)
+        0.75: '#FF7A45', // Coral / Oranye (Densitas Tinggi)
+        1.0: '#EF4444', // Crimson Red (Densitas Sangat Tinggi / Sentra Utama)
+    },
+};
+
+function createHeatCanvasLayer(points: Array<[number, number, number]>, options: typeof HEATMAP_CONFIG): L.Layer {
+    const canvas = document.createElement('canvas');
+    canvas.className = 'leaflet-heatmap-layer';
+    canvas.style.position = 'absolute';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '250';
+
+    let mapInstance: L.Map | null = null;
+
+    // 1. Create 256-pixel gradient Lookup Table (LUT)
+    const lutCanvas = document.createElement('canvas');
+    lutCanvas.width = 1;
+    lutCanvas.height = 256;
+    const lutCtx = lutCanvas.getContext('2d');
+    let lutData: Uint8ClampedArray | null = null;
+    if (lutCtx) {
+        const grad = lutCtx.createLinearGradient(0, 0, 0, 256);
+        for (const stopKey in options.gradient) {
+            grad.addColorStop(parseFloat(stopKey), options.gradient[stopKey as unknown as keyof typeof options.gradient]);
+        }
+        lutCtx.fillStyle = grad;
+        lutCtx.fillRect(0, 0, 1, 256);
+        lutData = lutCtx.getImageData(0, 0, 1, 256).data;
+    }
+
+    // 2. Pre-render circular radial brush for smooth continuous canopy
+    const brushCanvas = document.createElement('canvas');
+    const r = options.radius;
+    const blur = options.blur;
+    const r2 = r + blur;
+    brushCanvas.width = brushCanvas.height = r2 * 2;
+    const brushCtx = brushCanvas.getContext('2d');
+    if (brushCtx) {
+        const radGrad = brushCtx.createRadialGradient(r2, r2, Math.max(0, r - blur), r2, r2, r2);
+        radGrad.addColorStop(0, 'rgba(0,0,0,1)');
+        radGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        brushCtx.fillStyle = radGrad;
+        brushCtx.fillRect(0, 0, r2 * 2, r2 * 2);
+    }
+
+    function render() {
+        if (!mapInstance || !lutData) return;
+        const size = mapInstance.getSize();
+        if (size.x <= 0 || size.y <= 0) return;
+
+        canvas.width = size.x;
+        canvas.height = size.y;
+
+        const topLeft = mapInstance.containerPointToLayerPoint([0, 0]);
+        L.DomUtil.setPosition(canvas, topLeft);
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.clearRect(0, 0, size.x, size.y);
+
+        // Render point stamps to alpha channel
+        for (const [lat, lng, val] of points) {
+            const p = mapInstance.latLngToContainerPoint([lat, lng]);
+            if (p.x < -r2 || p.x > size.x + r2 || p.y < -r2 || p.y > size.y + r2) continue;
+            ctx.globalAlpha = Math.min(Math.max(val, 0.05), 1.0);
+            ctx.drawImage(brushCanvas, p.x - r2, p.y - r2);
+        }
+
+        // Apply thermal color palette from gradient LUT
+        try {
+            const imgData = ctx.getImageData(0, 0, size.x, size.y);
+            const data = imgData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const alpha = data[i + 3];
+                if (alpha > 0) {
+                    const offset = alpha * 4;
+                    data[i] = lutData[offset];         // R
+                    data[i + 1] = lutData[offset + 1]; // G
+                    data[i + 2] = lutData[offset + 2]; // B
+                    data[i + 3] = Math.min(235, Math.round(alpha * 0.9)); // Luminous neon alpha
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        } catch {
+            // DOM / Canvas fallback
+        }
+    }
+
+    const CustomLayer = L.Layer.extend({
+        onAdd(m: L.Map) {
+            mapInstance = m;
+            const pane = m.getPanes().overlayPane;
+            pane.appendChild(canvas);
+            m.on('moveend zoomend resize', render);
+            render();
+            return this;
+        },
+        onRemove(m: L.Map) {
+            if (canvas.parentNode) {
+                canvas.parentNode.removeChild(canvas);
+            }
+            m.off('moveend zoomend resize', render);
+            mapInstance = null;
+            return this;
+        },
+    });
+
+    return new (CustomLayer as any)();
+}
+
 function syncHeatmapLayer() {
     if (!map) return;
     const isEnabled = Boolean(props.layerStates?.heatmapPopulasi);
@@ -615,94 +826,435 @@ function syncHeatmapLayer() {
     }
 
     if (isEnabled && props.selectedMetric.kategori !== 'Penyakit') {
-        const markers: L.Layer[] = [];
-        const metricKey = props.selectedMetric.id as keyof KecamatanData;
-        const maxVal = Math.max(...KECAMATAN_LIST.map((k) => Number(k[metricKey]) || 0), 1);
+        const points: Array<[number, number, number]> = [];
 
+        // 1. Data point per kecamatan
+        const maxKecVal = Math.max(
+            ...KECAMATAN_LIST.map((k) => getKecamatanMetricValue(k, props.selectedMetric.id)),
+            1
+        );
         KECAMATAN_LIST.forEach((kec) => {
-            const val = Number(kec[metricKey]) || 0;
+            const val = getKecamatanMetricValue(kec, props.selectedMetric.id);
             if (val > 0) {
-                const ratio = val / maxVal;
-                const radius = Math.max(14, Math.min(46, Math.round(14 + ratio * 32)));
-
-                const halo = L.circleMarker([kec.lat, kec.lng], {
-                    radius: radius * 1.5,
-                    fillColor: '#39D6C0',
-                    fillOpacity: 0.18,
-                    stroke: false,
-                    interactive: false,
-                });
-                markers.push(halo);
-
-                const core = L.circleMarker([kec.lat, kec.lng], {
-                    radius: radius,
-                    fillColor: '#159B78',
-                    fillOpacity: 0.45,
-                    color: '#39D6C0',
-                    weight: 1.5,
-                    interactive: true,
-                });
-                core.bindTooltip(
-                    `
-                    <div style="font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:#E8F0F6;text-align:center;">
-                        ${kec.nama}
-                        <div style="color:#39D6C0;font-family:monospace;font-size:10px;">${formatAngka(val)} ${props.selectedMetric.satuan}</div>
-                    </div>
-                `,
-                    { className: 'custom-leaflet-tooltip' }
-                );
-                core.on('click', () => focusKecamatan(kec));
-                markers.push(core);
+                const ratio = val / maxKecVal;
+                points.push([kec.lat, kec.lng, Math.min(1.0, Math.max(0.2, ratio))]);
             }
         });
 
-        heatmapLayer = L.layerGroup(markers).addTo(map);
+        // 2. Data point per desa untuk kanopi termal yang halus dan rapat
+        const maxDesaVal = Math.max(
+            ...BANYUMAS_DESA_LIST.map((d) => getDesaMetricValue(d, props.selectedMetric.id)),
+            1
+        );
+        BANYUMAS_DESA_LIST.forEach((desa) => {
+            const val = getDesaMetricValue(desa, props.selectedMetric.id);
+            if (val > 0) {
+                const ratio = val / maxDesaVal;
+                points.push([desa.lat, desa.lng, Math.min(1.0, Math.max(0.15, ratio))]);
+            }
+        });
+
+        if (points.length > 0) {
+            if (typeof (L as any).heatLayer === 'function') {
+                heatmapLayer = (L as any).heatLayer(points, HEATMAP_CONFIG).addTo(map);
+            } else {
+                heatmapLayer = createHeatCanvasLayer(points, HEATMAP_CONFIG).addTo(map);
+            }
+        }
     }
 }
 
-// 5. Fasilitas Peternakan Layer (Prop layerStates.fasilitasPeternakan)
+// 5. Fasilitas Peternakan Master Data & Layer Management (11 Fasilitas Resmi Kabupaten Banyumas)
+const BANYUMAS_FACILITIES: FacilityItem[] = [
+    // 6 RPH (Rumah Potong Hewan) Resmi
+    {
+        id: 'RPH-01',
+        nama: 'RPH Sokaraja',
+        tipe_fasilitas: 'RPH',
+        alamat: 'Sokaraja Kidul, Kecamatan Sokaraja, Kabupaten Banyumas',
+        status_operasional: 'Aktif',
+        lat: -7.4562,
+        lng: 109.2645,
+        kecamatan: 'Sokaraja',
+        kapasitas_potong_ekor_hari: 20,
+        jenis_hewan_potong: 'Sapi, Kambing',
+        nomor_kontak: '(0281) 644201',
+    },
+    {
+        id: 'RPH-02',
+        nama: 'RPH Ajibarang',
+        tipe_fasilitas: 'RPH',
+        alamat: 'Pancasan, Kecamatan Ajibarang, Kabupaten Banyumas',
+        status_operasional: 'Aktif',
+        lat: -7.4125,
+        lng: 109.0732,
+        kecamatan: 'Ajibarang',
+        kapasitas_potong_ekor_hari: 15,
+        jenis_hewan_potong: 'Sapi, Kambing',
+        nomor_kontak: '081391234567',
+    },
+    {
+        id: 'RPH-03',
+        nama: 'RPH Wangon',
+        tipe_fasilitas: 'RPH',
+        alamat: 'Wangon, Kecamatan Wangon, Kabupaten Banyumas',
+        status_operasional: 'Aktif',
+        lat: -7.5187,
+        lng: 109.0521,
+        kecamatan: 'Wangon',
+        kapasitas_potong_ekor_hari: 15,
+        jenis_hewan_potong: 'Sapi, Kambing',
+        nomor_kontak: '(0281) 657190',
+    },
+    {
+        id: 'RPH-04',
+        nama: 'RPH Cilongok',
+        tipe_fasilitas: 'RPH',
+        alamat: 'Pernasidi, Kecamatan Cilongok, Kabupaten Banyumas',
+        status_operasional: 'Aktif',
+        lat: -7.4150,
+        lng: 109.1350,
+        kecamatan: 'Cilongok',
+        kapasitas_potong_ekor_hari: 20,
+        jenis_hewan_potong: 'Sapi, Kambing',
+        nomor_kontak: '(0281) 655120',
+    },
+    {
+        id: 'RPH-05',
+        nama: 'RPH Sumpiuh',
+        tipe_fasilitas: 'RPH',
+        alamat: 'Kradenan Sumpiuh, Kecamatan Sumpiuh, Kabupaten Banyumas',
+        status_operasional: 'Aktif',
+        lat: -7.6124,
+        lng: 109.3582,
+        kecamatan: 'Sumpiuh',
+        kapasitas_potong_ekor_hari: 15,
+        jenis_hewan_potong: 'Sapi, Kambing',
+        nomor_kontak: '(0281) 689432',
+    },
+    {
+        id: 'RPH-06',
+        nama: 'RPH Purwokerto',
+        tipe_fasilitas: 'RPH',
+        alamat: 'Pasirmuncang, Purwokerto Barat, Kabupaten Banyumas',
+        status_operasional: 'Aktif',
+        lat: -7.4225,
+        lng: 109.2215,
+        kecamatan: 'Purwokerto Barat',
+        kapasitas_potong_ekor_hari: 30,
+        jenis_hewan_potong: 'Sapi, Kerbau, Kambing',
+        nomor_kontak: '(0281) 632111',
+    },
+    // 3 Pasar Hewan Resmi
+    {
+        id: 'PH-01',
+        nama: 'Pasar Hewan Ajibarang',
+        tipe_fasilitas: 'Pasar Hewan',
+        alamat: 'Ajibarang Kulon, Kecamatan Ajibarang, Kabupaten Banyumas',
+        status_operasional: 'Aktif',
+        lat: -7.4112,
+        lng: 109.0768,
+        kecamatan: 'Ajibarang',
+        hari_pasaran: 'Pon, Wage',
+        kapasitas: 1500,
+        kapasitas_tampung_ekor: 1500,
+    },
+    {
+        id: 'PH-02',
+        nama: 'Pasar Hewan Sokaraja',
+        tipe_fasilitas: 'Pasar Hewan',
+        alamat: 'Sokaraja Kidul, Kecamatan Sokaraja, Kabupaten Banyumas',
+        status_operasional: 'Aktif',
+        lat: -7.4589,
+        lng: 109.2612,
+        kecamatan: 'Sokaraja',
+        hari_pasaran: 'Pon, Kliwon',
+        kapasitas: 1000,
+        kapasitas_tampung_ekor: 1000,
+    },
+    {
+        id: 'PH-03',
+        nama: 'Pasar Hewan Cilongok / Manisan',
+        tipe_fasilitas: 'Pasar Hewan',
+        alamat: 'Pernasidi Cilongok, Kecamatan Cilongok, Kabupaten Banyumas',
+        status_operasional: 'Aktif',
+        lat: -7.4089,
+        lng: 109.1362,
+        kecamatan: 'Cilongok',
+        hari_pasaran: 'Legi / Manis',
+        kapasitas: 800,
+        kapasitas_tampung_ekor: 800,
+    },
+    // 2 UPT Puskeswan Resmi
+    {
+        id: 'PKW-01',
+        nama: 'UPT Puskeswan Banyumas',
+        tipe_fasilitas: 'Puskeswan',
+        alamat: 'Kejawar, Kecamatan Banyumas, Kabupaten Banyumas',
+        status_operasional: 'Aktif',
+        lat: -7.5142,
+        lng: 109.2985,
+        kecamatan: 'Banyumas',
+        wilayah_binaan: 'Banyumas, Somagede, Kalibagor, Patikraja, Tambak, Sumpiuh, Kemranjen',
+        penanggung_jawab: 'drh. Heni Puspitasari',
+        nomor_kontak: '(0281) 796123',
+    },
+    {
+        id: 'PKW-02',
+        nama: 'UPT Puskeswan Cilongok',
+        tipe_fasilitas: 'Puskeswan',
+        alamat: 'Pernasidi, Kecamatan Cilongok, Kabupaten Banyumas',
+        status_operasional: 'Aktif',
+        lat: -7.4110,
+        lng: 109.1330,
+        kecamatan: 'Cilongok',
+        wilayah_binaan: 'Cilongok, Ajibarang, Gumelar, Pekuncen, Wangon, Lumbir, Jatilawang',
+        penanggung_jawab: 'drh. Agus Santoso',
+        nomor_kontak: '(0281) 655432',
+    },
+];
+
+function resolveFacilityType(f: any): 'RPH' | 'Puskeswan' | 'Pasar Hewan' {
+    const raw = String(
+        f.tipe_fasilitas ||
+        f.tipe ||
+        f.jenis ||
+        f.nama ||
+        f.nama_rph ||
+        f.nama_puskeswan ||
+        f.nama_pasar ||
+        ''
+    ).toLowerCase();
+
+    if (raw.includes('rph') || raw.includes('potong')) return 'RPH';
+    if (raw.includes('puskeswan') || raw.includes('poskeswan')) return 'Puskeswan';
+    if (raw.includes('pasar')) return 'Pasar Hewan';
+    return 'Puskeswan';
+}
+
+function getFacilityColor(type: 'RPH' | 'Puskeswan' | 'Pasar Hewan'): string {
+    switch (type) {
+        case 'RPH':
+            return '#EF4444';
+        case 'Puskeswan':
+            return '#00D084';
+        case 'Pasar Hewan':
+            return '#F59E0B';
+    }
+}
+
+function createFacilityIcon(type: 'RPH' | 'Puskeswan' | 'Pasar Hewan'): L.DivIcon {
+    if (type === 'RPH') {
+        return L.divIcon({
+            className: 'facility-marker-rph',
+            html: `
+                <div style="background:rgba(27,14,18,0.95);border:1.5px solid #EF4444;border-radius:10px;padding:3px 8px;display:inline-flex;align-items:center;gap:5px;box-shadow:0 4px 14px rgba(239,68,68,0.45);backdrop-filter:blur(8px);white-space:nowrap;cursor:pointer;">
+                    <span style="display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:6px;background:rgba(239,68,68,0.2);color:#EF4444;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 18h12"/>
+                            <path d="M3 22h18"/>
+                            <path d="M19 10l-7-7-7 7v11h14V10z"/>
+                            <path d="M12 10v4"/>
+                            <path d="M10 12h4"/>
+                        </svg>
+                    </span>
+                    <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#FCA5A5;letter-spacing:0.02em;">RPH</span>
+                </div>
+            `,
+            iconSize: [68, 28],
+            iconAnchor: [34, 14],
+        });
+    }
+
+    if (type === 'Puskeswan') {
+        return L.divIcon({
+            className: 'facility-marker-puskeswan',
+            html: `
+                <div style="background:rgba(8,28,22,0.95);border:1.5px solid #00D084;border-radius:10px;padding:3px 8px;display:inline-flex;align-items:center;gap:5px;box-shadow:0 4px 14px rgba(0,208,132,0.45);backdrop-filter:blur(8px);white-space:nowrap;cursor:pointer;">
+                    <span style="display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:6px;background:rgba(0,208,132,0.2);color:#00D084;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 4v16"/>
+                            <path d="M4 12h16"/>
+                        </svg>
+                    </span>
+                    <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#6EE7B7;letter-spacing:0.02em;">Puskeswan</span>
+                </div>
+            `,
+            iconSize: [100, 28],
+            iconAnchor: [50, 14],
+        });
+    }
+
+    // Pasar Hewan
+    return L.divIcon({
+        className: 'facility-marker-pasar',
+        html: `
+            <div style="background:rgba(31,22,8,0.95);border:1.5px solid #F59E0B;border-radius:10px;padding:3px 8px;display:inline-flex;align-items:center;gap:5px;box-shadow:0 4px 14px rgba(245,158,11,0.45);backdrop-filter:blur(8px);white-space:nowrap;cursor:pointer;">
+                <span style="display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:6px;background:rgba(245,158,11,0.2);color:#F59E0B;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                        <path d="M3 6h18"/>
+                        <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                </span>
+                <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#FCD34D;letter-spacing:0.02em;">Pasar Hewan</span>
+            </div>
+        `,
+        iconSize: [110, 28],
+        iconAnchor: [55, 14],
+    });
+}
+
+function escapeHtml(str: unknown): string {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function buildFacilityPopupHtml(f: any): string {
+    const type = resolveFacilityType(f);
+    const rawNama = f.nama || f.nama_rph || f.nama_puskeswan || f.nama_pasar || f.id || 'Fasilitas Peternakan';
+    const rawAlamat = f.alamat || f.alamat_lengkap || 'Kabupaten Banyumas';
+    const nama = escapeHtml(rawNama);
+    const alamat = escapeHtml(rawAlamat);
+    const status = escapeHtml(f.status_operasional || 'Aktif');
+
+    let badgeColor = '#00D084';
+    let badgeBg = 'rgba(0, 208, 132, 0.15)';
+    let badgeBorder = 'rgba(0, 208, 132, 0.35)';
+    let extraFieldsHtml = '';
+
+    if (type === 'RPH') {
+        badgeColor = '#EF4444';
+        badgeBg = 'rgba(239, 68, 68, 0.15)';
+        badgeBorder = 'rgba(239, 68, 68, 0.35)';
+        const kap = escapeHtml(f.kapasitas_potong_ekor_hari ?? '-');
+        const jenis = escapeHtml(f.jenis_hewan_potong ?? 'Sapi, Kerbau, Kambing');
+        extraFieldsHtml = `
+            <div style="display:flex;flex-direction:column;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;">
+                <div style="color:#94A3B8;">Kapasitas Potong: <strong style="color:#F8FAFC;">${kap} ekor/hari</strong></div>
+                <div style="color:#94A3B8;">Jenis Hewan: <strong style="color:#F8FAFC;">${jenis}</strong></div>
+            </div>
+        `;
+    } else if (type === 'Puskeswan') {
+        badgeColor = '#00D084';
+        badgeBg = 'rgba(0, 208, 132, 0.15)';
+        badgeBorder = 'rgba(0, 208, 132, 0.35)';
+        const binaan = escapeHtml(f.wilayah_binaan ?? 'Banyumas Raya');
+        const kontak = escapeHtml(f.nomor_kontak ?? f.penanggung_jawab ?? f.dokter_hewan_penanggungjawab ?? '-');
+        extraFieldsHtml = `
+            <div style="display:flex;flex-direction:column;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;">
+                <div style="color:#94A3B8;">Wilayah Binaan: <strong style="color:#F8FAFC;">${binaan}</strong></div>
+                <div style="color:#94A3B8;">Penanggung Jawab / Kontak: <strong style="color:#F8FAFC;">${kontak}</strong></div>
+            </div>
+        `;
+    } else if (type === 'Pasar Hewan') {
+        badgeColor = '#F59E0B';
+        badgeBg = 'rgba(245, 158, 11, 0.15)';
+        badgeBorder = 'rgba(245, 158, 11, 0.35)';
+        const pasaran = escapeHtml(f.hari_pasaran ?? '-');
+        const kap = escapeHtml(f.kapasitas ?? f.kapasitas_tampung_ekor ?? '-');
+        extraFieldsHtml = `
+            <div style="display:flex;flex-direction:column;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;">
+                <div style="color:#94A3B8;">Hari Pasaran: <strong style="color:#F8FAFC;">${pasaran}</strong></div>
+                <div style="color:#94A3B8;">Kapasitas: <strong style="color:#F8FAFC;">${kap} ekor</strong></div>
+            </div>
+        `;
+    }
+
+    return `
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;min-width:220px;max-width:280px;background:#0D111A;color:#E2E8F0;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);box-shadow:0 12px 30px rgba(0,0,0,0.65);">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
+                <span style="font-size:10px;font-weight:700;color:${badgeColor};background:${badgeBg};border:1px solid ${badgeBorder};padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:0.04em;">
+                    ${type}
+                </span>
+                <span style="font-size:10px;font-weight:600;color:#10B981;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);padding:2px 7px;border-radius:6px;display:flex;align-items:center;gap:4px;">
+                    <span style="width:5px;height:5px;border-radius:50%;background:#10B981;"></span>
+                    ${status}
+                </span>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:#F8FAFC;line-height:1.35;margin-bottom:4px;">
+                ${nama}
+            </div>
+            <div style="font-size:11px;color:#94A3B8;line-height:1.45;">
+                ${alamat}
+            </div>
+            ${extraFieldsHtml}
+        </div>
+    `;
+}
+
+// 5. Fasilitas Peternakan Layer (Support sub-filters & fallback to all if fasilitasPeternakan is true)
 function syncFacilitiesLayer() {
     if (!map) return;
-    const isEnabled = Boolean(props.layerStates?.fasilitasPeternakan);
+
+    if (!props.layerStates?.fasilitasPeternakan) {
+        if (facilitiesLayer && map) {
+            map.removeLayer(facilitiesLayer);
+            facilitiesLayer = null;
+        }
+        return;
+    }
 
     if (facilitiesLayer) {
         map.removeLayer(facilitiesLayer);
         facilitiesLayer = null;
     }
 
-    if (isEnabled) {
-        const markers: L.Layer[] = [];
+    const filterRph = props.layerStates?.fasilitasRph;
+    const filterPuskeswan = props.layerStates?.fasilitasPuskeswan;
+    const filterPasar = props.layerStates?.fasilitasPasarHewan;
 
-        KECAMATAN_LIST.forEach((kec) => {
-            if (kec.poskeswan > 0) {
-                const icon = L.divIcon({
-                    className: 'facility-marker',
-                    html: `
-                        <div style="background:#101D2B;border:1.5px solid #39D6C0;border-radius:8px;padding:3px 6px;display:flex;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(0,0,0,0.6);white-space:nowrap;">
-                            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#39D6C0;"></span>
-                            <span style="font-size:10px;font-weight:700;color:#E8F0F6;font-family:sans-serif;">${kec.poskeswan} Unit</span>
-                        </div>
-                    `,
-                    iconSize: [60, 24],
-                    iconAnchor: [30, 12],
-                });
-                const marker = L.marker([kec.lat + 0.006, kec.lng + 0.006], { icon });
-                marker.bindTooltip(
-                    `
-                    <div style="font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:#E8F0F6;text-align:center;">
-                        Poskeswan / RPH ${kec.nama}
-                        <div style="color:#39D6C0;font-size:10px;font-family:monospace;">${kec.poskeswan} Unit Fasilitas Resmi</div>
-                    </div>
-                `,
-                    { className: 'custom-leaflet-tooltip' }
-                );
-                marker.on('click', () => focusKecamatan(kec));
-                markers.push(marker);
-            }
+    const isRphActive = filterRph !== undefined ? Boolean(filterRph) : true;
+    const isPuskeswanActive = filterPuskeswan !== undefined ? Boolean(filterPuskeswan) : true;
+    const isPasarActive = filterPasar !== undefined ? Boolean(filterPasar) : true;
+
+    if (!isRphActive && !isPuskeswanActive && !isPasarActive) {
+        return;
+    }
+
+    const markers: L.Layer[] = [];
+    const facilitySource: FacilityItem[] = (props.facilities && props.facilities.length > 0)
+        ? props.facilities
+        : BANYUMAS_FACILITIES;
+
+    facilitySource.forEach((f) => {
+        const type = resolveFacilityType(f);
+
+        if (type === 'RPH' && !isRphActive) return;
+        if (type === 'Puskeswan' && !isPuskeswanActive) return;
+        if (type === 'Pasar Hewan' && !isPasarActive) return;
+
+        const icon = createFacilityIcon(type);
+        const marker = L.marker([f.lat, f.lng], { icon });
+
+        // Bind interactive detailed popup
+        marker.bindPopup(buildFacilityPopupHtml(f), {
+            className: 'custom-facility-popup',
+            maxWidth: 320,
         });
 
-        facilitiesLayer = L.layerGroup(markers).addTo(map);
-    }
+        const displayName = f.nama || f.nama_rph || f.nama_puskeswan || f.nama_pasar || 'Fasilitas';
+
+        // Hover tooltip for quick identity
+        marker.bindTooltip(
+            `
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#F8FAFC;text-align:center;">
+                ${displayName}
+                <div style="font-size:10px;color:${getFacilityColor(type)};font-weight:600;">${type} · ${f.status_operasional || 'Aktif'}</div>
+            </div>
+            `,
+            { className: 'custom-leaflet-tooltip', offset: [0, -10] }
+        );
+
+        markers.push(marker);
+    });
+
+    facilitiesLayer = L.layerGroup(markers).addTo(map);
 }
 
 // 6. Jalur Transportasi Layer (Prop layerStates.jalurTransportasi)
@@ -739,11 +1291,27 @@ function syncDiseaseMarkers() {
         const markers: L.Layer[] = [];
 
         KECAMATAN_LIST.forEach((kec) => {
-            const count = props.selectedMetric.id === 'pmk' ? kec.pmk : kec.lsd;
+            const count =
+                props.selectedMetric.id === 'pmk'
+                    ? kec.pmk
+                    : props.selectedMetric.id === 'lsd'
+                      ? kec.lsd
+                      : getKecamatanMetricValue(kec, 'kasus_total');
             if (count > 0) {
                 const radius = Math.min(8 + Math.sqrt(count) * 6, 26);
 
-                if (props.selectedMetric.id === 'pmk') {
+                if (props.selectedMetric.id === 'lsd') {
+                    const icon = L.divIcon({
+                        className: 'lsd-diamond-marker',
+                        html: `<div style="width:${radius * 1.8}px;height:${radius * 1.8}px;background:#DC625F;opacity:0.85;border:2px solid #F5F5F5;transform:rotate(45deg);"></div>`,
+                        iconSize: [radius * 1.8, radius * 1.8],
+                        iconAnchor: [radius * 0.9, radius * 0.9],
+                    });
+                    const marker = L.marker([kec.lat, kec.lng], { icon });
+                    marker.bindTooltip(`${kec.nama}: ${count} kasus LSD`, { className: 'custom-leaflet-tooltip' });
+                    marker.on('click', () => focusKecamatan(kec));
+                    markers.push(marker);
+                } else if (props.selectedMetric.id === 'pmk') {
                     const circle = L.circleMarker([kec.lat, kec.lng], {
                         radius: radius,
                         fillColor: '#DC625F',
@@ -755,16 +1323,16 @@ function syncDiseaseMarkers() {
                     circle.on('click', () => focusKecamatan(kec));
                     markers.push(circle);
                 } else {
-                    const icon = L.divIcon({
-                        className: 'lsd-diamond-marker',
-                        html: `<div style="width:${radius * 1.8}px;height:${radius * 1.8}px;background:#DC625F;opacity:0.85;border:2px solid #F5F5F5;transform:rotate(45deg);"></div>`,
-                        iconSize: [radius * 1.8, radius * 1.8],
-                        iconAnchor: [radius * 0.9, radius * 0.9],
+                    const circle = L.circleMarker([kec.lat, kec.lng], {
+                        radius: radius,
+                        fillColor: '#DC625F',
+                        fillOpacity: 0.85,
+                        color: '#F5F5F5',
+                        weight: 2,
                     });
-                    const marker = L.marker([kec.lat, kec.lng], { icon });
-                    marker.bindTooltip(`${kec.nama}: ${count} kasus LSD`, { className: 'custom-leaflet-tooltip' });
-                    marker.on('click', () => focusKecamatan(kec));
-                    markers.push(marker);
+                    circle.bindTooltip(`${kec.nama}: ${count} total kasus (${kec.pmk || 0} PMK, ${kec.lsd || 0} LSD)`, { className: 'custom-leaflet-tooltip' });
+                    circle.on('click', () => focusKecamatan(kec));
+                    markers.push(circle);
                 }
             }
         });
@@ -787,7 +1355,7 @@ function syncSelectedBadge() {
     const kec = KECAMATAN_LIST.find((k) => k.id === props.selectedKecamatanId);
     if (!kec) return;
 
-    const metricVal = Number(kec[props.selectedMetric.id as keyof KecamatanData]) || 0;
+    const metricVal = getKecamatanMetricValue(kec, props.selectedMetric.id);
     const isPublic = props.currentRole === 'publik';
 
     let displayVal: string;
@@ -850,7 +1418,6 @@ function focusDesa(desa: DesaData) {
     if (props.selectedKecamatanId !== desa.kecamatan_id) {
         emit('selectKecamatan', desa.kecamatan_id);
     }
-    emit('selectDesa', desa);
     map?.flyTo([desa.lat, desa.lng], 13.5, { animate: true, duration: 0.8 });
 }
 
@@ -932,6 +1499,12 @@ watch(
         syncFacilitiesLayer();
         syncTransportLayer();
     },
+    { deep: true }
+);
+
+watch(
+    () => props.facilities,
+    () => syncFacilitiesLayer(),
     { deep: true }
 );
 
@@ -1247,5 +1820,24 @@ onUnmounted(() => {
 .selected-polygon-badge-icon {
     background: transparent !important;
     border: none !important;
+}
+
+/* Custom Facility Popup Styling */
+.custom-facility-popup .leaflet-popup-content-wrapper {
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border-radius: 12px !important;
+}
+.custom-facility-popup .leaflet-popup-content {
+    margin: 0 !important;
+    line-height: inherit !important;
+}
+.custom-facility-popup .leaflet-popup-tip-container {
+    display: none !important;
+}
+.custom-facility-popup a.leaflet-popup-close-button {
+    color: #94A3B8 !important;
+    padding: 6px 8px !important;
 }
 </style>

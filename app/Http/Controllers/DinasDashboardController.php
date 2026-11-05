@@ -2,20 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use App\Services\CarryingCapacityService;
 use App\Services\DinasAnalyticsService;
 use App\Services\ZoningEngineService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DinasDashboardController extends Controller
 {
     public function __construct(
         protected DinasAnalyticsService $analyticsService,
-        protected ZoningEngineService $zoningService
+        protected ZoningEngineService $zoningService,
+        protected CarryingCapacityService $carryingCapacityService
     ) {}
 
     /**
@@ -25,221 +27,415 @@ class DinasDashboardController extends Controller
     public function index(Request $request): Response
     {
         $tahun = (int) $request->query('tahun', 2026);
-        $triwulan = $request->has('triwulan') && $request->query('triwulan') !== '' ? (int) $request->query('triwulan') : 3;
-        $komoditasKode = strtoupper($request->query('komoditas', 'SAPI_POTONG'));
+        $rawTriwulan = $request->query('triwulan');
+        $triwulan = ($rawTriwulan === null || $rawTriwulan === '' || strtoupper((string) $rawTriwulan) === 'SEMUA')
+            ? null
+            : (int) $rawTriwulan;
+        $komoditasKode = strtoupper((string) $request->query('komoditas', 'SAPI_POTONG'));
 
         try {
-            // 1. KPI CARDS DATA
-            $summary = $this->analyticsService->getSummaryMetrics($tahun, $triwulan);
+            // Cek ketersediaan data di database PostgreSQL / SQLite
+            $hasPopulasiRecords = DB::table('populasi_ternak')->exists();
+            $hasKecamatanRecords = DB::table('kecamatan')->exists();
 
-            // Rincian spesifik produksi per kategori (Daging, Susu, Telur)
-            $prodTotals = DB::table('produksi_ternak as pt')
-                ->join('kategori_produksi as kp', 'kp.id', '=', 'pt.kategori_produksi_id')
-                ->where('pt.tahun', $tahun)
-                ->when($triwulan !== null, fn($q) => $q->where('pt.triwulan', $triwulan))
-                ->select(
-                    DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'daging' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_daging"),
-                    DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'susu' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_susu"),
-                    DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'telur' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_telur")
-                )
-                ->first();
-
-            $kpi = $summary['kpi'] ?? [];
-            $kpiCards = [
-                'total_populasi_ternak' => (int) ($kpi['populasi']['total'] ?? 0),
-                'total_produksi_daging_kg' => round((float) ($kpi['produksi']['daging_kg'] ?? ($prodTotals->total_daging ?? 0)), 2),
-                'total_produksi_susu_liter' => round((float) ($kpi['produksi']['susu_liter'] ?? ($prodTotals->total_susu ?? 0)), 2),
-                'total_produksi_telur_butir' => round((float) ($kpi['produksi']['telur_kg'] ?? ($prodTotals->total_telur ?? 0)), 2),
-                'total_kasus_aktif' => (int) ($kpi['kesehatan_hewan']['total_kasus_aktif'] ?? 0),
-                'total_rph_aktif' => (int) ($kpi['fasilitas_rph']['total_aktif'] ?? 0),
-            ];
-
-            // 2. CHART DATA (VUE-ECHARTS FORMAT)
-            // a. Bar Chart: Ranking 27 Kecamatan berdasarkan populasi komoditas terpilih
-            $rankingData = $this->analyticsService->getCommodityRankings($tahun, $triwulan, $komoditasKode, 27);
-            $rankedCollection = collect($rankingData['top'] ?? []);
-
-            $chartRanking = [
-                'categories' => $rankedCollection->pluck('nama_kecamatan')->toArray(),
-                'series' => [
-                    [
-                        'name' => 'Populasi ' . str_replace('_', ' ', $komoditasKode),
-                        'data' => $rankedCollection->pluck('total')->toArray(),
-                    ]
-                ],
-            ];
-
-            // b. Donut Chart: Proporsi 6 Komoditas Ternak
-            $proporsiData = DB::table('populasi_ternak as p')
-                ->join('komoditas as k', 'k.id', '=', 'p.komoditas_id')
-                ->where('p.tahun', $tahun)
-                ->when($triwulan !== null, fn($q) => $q->where('p.triwulan', $triwulan))
-                ->groupBy('k.nama', 'k.kode')
-                ->select('k.nama as name', 'k.kode', DB::raw('SUM(p.jumlah_total) as value'))
-                ->orderByDesc('value')
-                ->get()
-                ->map(fn($item) => [
-                    'name' => $item->name,
-                    'kode' => $item->kode,
-                    'value' => (int) $item->value,
-                ])
-                ->toArray();
-
-            // c. Line Chart: Tren Triwulanan Kasus Penyakit (PMK & LSD)
-            $trends = $this->analyticsService->getDiseaseTrends($tahun);
-            $pmkData = array_map(fn($item) => $item['aktif'] ?? 0, $trends['series']['PMK'] ?? []);
-            $lsdData = array_map(fn($item) => $item['aktif'] ?? 0, $trends['series']['LSD'] ?? []);
-
-            $chartTren = [
-                'categories' => $trends['categories'] ?? [],
-                'series' => [
-                    [
-                        'name' => 'Wabah PMK (Kasus Aktif)',
-                        'kode' => 'PMK',
-                        'data' => $pmkData,
-                        'color' => '#F43F5E',
-                    ],
-                    [
-                        'name' => 'Wabah LSD (Kasus Aktif)',
-                        'kode' => 'LSD',
-                        'data' => $lsdData,
-                        'color' => '#F59E0B',
-                    ]
-                ],
-            ];
-
-            // d. Komparasi Produksi (Susu & Daging)
-            $breakdown = $this->analyticsService->getProductionBreakdown($tahun, $triwulan);
-            $chartKomparasi = [
-                'susu' => array_map(fn($item) => [
-                    'name' => $item['nama'],
-                    'value' => $item['jumlah'],
-                    'kode' => $item['kode'],
-                ], $breakdown['Susu']['items'] ?? []),
-                'daging' => array_map(fn($item) => [
-                    'name' => $item['nama'],
-                    'value' => $item['jumlah'],
-                    'kode' => $item['kode'],
-                ], $breakdown['Daging']['items'] ?? []),
-            ];
-
-            // 3. GEO CHOROPLETH KABUPATEN (27 KECAMATAN DENGAN PALET TOKEN DESIGN_RULE.MD)
-            // Ambil kuantil choropleth 5 tier
-            $choropleth = $this->analyticsService->calculateChoroplethIntervals($tahun, $triwulan, $komoditasKode);
-            $choroLookup = collect($choropleth['data'] ?? [])->keyBy('kecamatan_id');
-
-            // Agregat produksi per kecamatan
-            $prodPerKec = DB::table('produksi_ternak as pt')
-                ->join('desa as d', 'd.id', '=', 'pt.desa_id')
-                ->join('kategori_produksi as kp', 'kp.id', '=', 'pt.kategori_produksi_id')
-                ->where('pt.tahun', $tahun)
-                ->when($triwulan !== null, fn($q) => $q->where('pt.triwulan', $triwulan))
-                ->groupBy('d.kecamatan_id')
-                ->select(
-                    'd.kecamatan_id',
-                    DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'daging' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_daging"),
-                    DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'susu' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_susu"),
-                    DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'telur' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_telur")
-                )
-                ->get()
-                ->keyBy('kecamatan_id');
-
-            // Status zonasi EWS
-            $zonaMap = DB::table('zona_snapshot_kecamatan')
-                ->where('tahun', $tahun)
-                ->when($triwulan !== null, fn($q) => $q->where('triwulan', $triwulan))
-                ->groupBy('kecamatan_id')
-                ->select(
-                    'kecamatan_id',
-                    DB::raw("CASE 
-                        WHEN bool_or(status_zona = 'MERAH') THEN 'MERAH'
-                        WHEN bool_or(status_zona = 'KUNING') THEN 'KUNING'
-                        ELSE 'HIJAU'
-                    END as worst_status")
-                )
-                ->get()
-                ->keyBy('kecamatan_id');
-
-            // Ambil data spasial poligon 27 kecamatan
-            $kecamatans = DB::table('v_kugi_administrasi_ar_peternakan as p')
-                ->select(
-                    'p.objectid', 'p.wadmkc', 'p.kdcpum',
-                    'p.pop_sapipotong', 'p.pop_sapiperah', 'p.pop_kambing', 'p.pop_domba',
-                    'p.pop_ayampotong', 'p.pop_ayamtelur', 'p.pop_total',
-                    DB::raw('ST_AsGeoJSON(p.geom) as geojson')
-                )
-                ->orderBy('p.objectid')
-                ->get();
-
-            // Jika query DB kosong atau view KUGI belum terisi, gunakan fallback berkualitas tinggi
-            if ($kecamatans->isEmpty() || empty($kpiCards['total_populasi_ternak'])) {
+            if (! $hasPopulasiRecords && ! $hasKecamatanRecords) {
                 return Inertia::render('Dinas/Dashboard', $this->getFallbackPayload($tahun, $triwulan, $komoditasKode));
             }
 
-            $geoChoropleth = $kecamatans->map(function ($row) use ($komoditasKode, $choroLookup, $prodPerKec, $zonaMap) {
-                $choroInfo = $choroLookup->get($row->objectid);
-                $prod = $prodPerKec->get($row->objectid);
-                $zona = $zonaMap->get($row->objectid);
+            // Jika periode triwulan spesifik diminta tetapi tidak ada rekaman, gunakan triwulan yang ada dalam tahun tersebut
+            if ($triwulan !== null && $hasPopulasiRecords) {
+                $periodPopulasiExists = DB::table('populasi_ternak')
+                    ->where('tahun', $tahun)
+                    ->where('triwulan', $triwulan)
+                    ->exists();
 
-                $popVal = match ($komoditasKode) {
-                    'SAPI_POTONG' => (int) $row->pop_sapipotong,
-                    'SAPI_PERAH'  => (int) $row->pop_sapiperah,
-                    'KAMBING'     => (int) $row->pop_kambing,
-                    'DOMBA'       => (int) $row->pop_domba,
-                    'AYAM_POTONG' => (int) $row->pop_ayampotong,
-                    'AYAM_TELUR'  => (int) $row->pop_ayamtelur,
-                    default       => (int) $row->pop_total,
-                };
+                if (! $periodPopulasiExists) {
+                    $availableQuarter = DB::table('populasi_ternak')
+                        ->where('tahun', $tahun)
+                        ->whereNotNull('triwulan')
+                        ->orderByDesc('triwulan')
+                        ->value('triwulan');
 
-                return [
-                    'objectid' => (int) $row->objectid,
-                    'kode_kecamatan' => (string) $row->kdcpum,
-                    'nama_kecamatan' => $row->wadmkc,
-                    'total_populasi' => $popVal,
-                    'produksi_daging_kg' => round((float) ($prod->total_daging ?? 0), 2),
-                    'produksi_susu_liter' => round((float) ($prod->total_susu ?? 0), 2),
-                    'produksi_telur_butir' => round((float) ($prod->total_telur ?? 0), 2),
-                    'status_zonasi_ews' => $zona->worst_status ?? 'HIJAU',
-                    'color_hex' => $choroInfo['color_hex'] ?? '#14535E',
-                    'class_tier' => $choroInfo['class_tier'] ?? 1,
-                    'geometry' => json_decode($row->geojson, true),
+                    if ($availableQuarter !== null) {
+                        $triwulan = (int) $availableQuarter;
+                    } else {
+                        $triwulan = null;
+                    }
+                }
+            }
+
+            // Jika tahun yang diminta (default 2026) tidak memiliki data dan tahun tidak diminta secara eksplisit, gunakan tahun terbaru
+            $yearExists = DB::table('populasi_ternak')->where('tahun', $tahun)->exists();
+            if (! $yearExists && $hasPopulasiRecords && ! $request->has('tahun')) {
+                $latest = DB::table('populasi_ternak')
+                    ->select('tahun', 'triwulan')
+                    ->orderByDesc('tahun')
+                    ->orderByDesc('triwulan')
+                    ->first();
+                if ($latest) {
+                    $tahun = (int) $latest->tahun;
+                    $triwulan = $latest->triwulan ? (int) $latest->triwulan : $triwulan;
+                }
+            }
+
+            $isAllCommodities = in_array(strtoupper((string) $komoditasKode), ['SEMUA', 'ALL', ''], true);
+
+            $cacheKey = "dinas_dashboard_payload_{$tahun}_".($triwulan ?? 'all')."_{$komoditasKode}";
+            $dashboardData = Cache::remember($cacheKey, 300, function () use ($tahun, $triwulan, $komoditasKode, $isAllCommodities, $hasKecamatanRecords) {
+                // Hitung live carrying capacity Kabupaten Banyumas & 27 kecamatan
+                $carryingCapacity = $this->carryingCapacityService->calculateKabupaten($tahun, $triwulan);
+
+                // 1. KPI CARDS DATA (LIVE DATABASE QUERIES)
+                $summary = $this->analyticsService->getSummaryMetrics($tahun, $triwulan);
+                $kpi = $summary['kpi'] ?? [];
+
+                // Rincian spesifik produksi per kategori (Daging, Susu, Telur)
+                $prodTotalsQuery = DB::table('produksi_ternak as pt')
+                    ->join('kategori_produksi as kp', 'kp.id', '=', 'pt.kategori_produksi_id')
+                    ->where('pt.tahun', $tahun)
+                    ->when($triwulan !== null, fn ($q) => $q->where('pt.triwulan', $triwulan));
+
+                if (! $isAllCommodities) {
+                    $prodTotalsQuery->join('komoditas as k', 'k.id', '=', 'pt.komoditas_id')
+                        ->where('k.kode', $komoditasKode);
+                }
+
+                $prodTotals = $prodTotalsQuery->select(
+                    DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'daging' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_daging"),
+                    DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'susu' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_susu"),
+                    DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'telur' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_telur")
+                )->first();
+
+                if ($isAllCommodities) {
+                    $totalPopulasiLive = (int) DB::table('populasi_ternak')
+                        ->where('tahun', $tahun)
+                        ->when($triwulan !== null, fn ($q) => $q->where('triwulan', $triwulan))
+                        ->sum('jumlah_total');
+                } else {
+                    $totalPopulasiLive = (int) DB::table('populasi_ternak')
+                        ->join('komoditas', 'komoditas.id', '=', 'populasi_ternak.komoditas_id')
+                        ->where('komoditas.kode', $komoditasKode)
+                        ->where('populasi_ternak.tahun', $tahun)
+                        ->when($triwulan !== null, fn ($q) => $q->where('populasi_ternak.triwulan', $triwulan))
+                        ->sum('populasi_ternak.jumlah_total');
+                }
+
+                $totalKasusAktifLive = (int) DB::table('kasus_penyakit')
+                    ->where('tahun', $tahun)
+                    ->when($triwulan !== null, fn ($q) => $q->where('triwulan', $triwulan))
+                    ->sum('kasus_aktif');
+
+                $totalRphAktifLive = (int) DB::table('fasilitas_rph')
+                    ->where('status_operasional', 'Aktif')
+                    ->count();
+
+                $kpiCards = [
+                    'total_populasi_ternak' => $totalPopulasiLive > 0 ? $totalPopulasiLive : (int) ($kpi['populasi']['total'] ?? 0),
+                    'total_produksi_daging_kg' => round((float) ($prodTotals->total_daging ?? ($kpi['produksi']['daging_kg'] ?? 0)), 2),
+                    'total_produksi_susu_liter' => round((float) ($prodTotals->total_susu ?? ($kpi['produksi']['susu_liter'] ?? 0)), 2),
+                    'total_produksi_telur_butir' => round((float) ($prodTotals->total_telur ?? ($kpi['produksi']['telur_kg'] ?? 0)), 2),
+                    'total_kasus_aktif' => $totalKasusAktifLive > 0 ? $totalKasusAktifLive : (int) ($kpi['kesehatan_hewan']['total_kasus_aktif'] ?? 0),
+                    'total_rph_aktif' => $totalRphAktifLive > 0 ? $totalRphAktifLive : (int) ($kpi['fasilitas_rph']['total_aktif'] ?? 0),
+                    'carrying_capacity' => $carryingCapacity,
+                    'daya_dukung_pakan' => $carryingCapacity,
                 ];
-            })->toArray();
 
-            // 4. INERTIA v2 DEFERRED SPATIAL DATA (331 TITIK BALAI DESA)
-            // Menggunakan Inertia::defer() agar payload awal ringan dan render instan
-            $balaiDesaDeferred = Inertia::defer(function () {
-                try {
-                    $desaList = DB::table('desa as d')
-                        ->join('kecamatan as k', 'k.id', '=', 'd.kecamatan_id')
-                        ->select(
-                            'd.id', 'd.nama_desa', 'd.kode_desa', 'd.jenis',
-                            'k.nama_kecamatan',
-                            DB::raw('ST_AsGeoJSON(d.titik_balai_desa) as geojson')
-                        )
+                // 2. CHART DATA (VUE-ECHARTS FORMAT)
+                // a. Bar Chart: Ranking 27 Kecamatan berdasarkan populasi komoditas terpilih
+                $rankingData = $this->analyticsService->getCommodityRankings($tahun, $triwulan, $komoditasKode, 27);
+                $rankedCollection = collect($rankingData['top'] ?? []);
+
+                if ($rankedCollection->isEmpty() && $hasKecamatanRecords) {
+                    $rankedQuery = DB::table('kecamatan as k')
+                        ->leftJoin('desa as d', 'd.kecamatan_id', '=', 'k.id')
+                        ->leftJoin('populasi_ternak as p', function ($join) use ($tahun, $triwulan) {
+                            $join->on('p.desa_id', '=', 'd.id')
+                                ->where('p.tahun', '=', $tahun);
+
+                            if ($triwulan !== null) {
+                                $join->where('p.triwulan', '=', $triwulan);
+                            }
+                        });
+
+                    if (! $isAllCommodities) {
+                        $rankedQuery->leftJoin('komoditas as km', function ($join) use ($komoditasKode) {
+                            $join->on('km.id', '=', 'p.komoditas_id')
+                                ->where('km.kode', '=', $komoditasKode);
+                        });
+                        $rankedQuery->select('k.nama_kecamatan', DB::raw('COALESCE(SUM(CASE WHEN km.id IS NOT NULL THEN p.jumlah_total ELSE 0 END), 0) as total'));
+                    } else {
+                        $rankedQuery->select('k.nama_kecamatan', DB::raw('COALESCE(SUM(p.jumlah_total), 0) as total'));
+                    }
+
+                    $rankedCollection = $rankedQuery
+                        ->groupBy('k.id', 'k.nama_kecamatan')
+                        ->orderByDesc('total')
+                        ->limit(27)
                         ->get();
+                }
 
-                    return [
-                        'type' => 'FeatureCollection',
-                        'features' => $desaList->map(fn($d) => [
-                            'type' => 'Feature',
-                            'id' => $d->id,
-                            'geometry' => json_decode($d->geojson, true),
-                            'properties' => [
-                                'id' => $d->id,
-                                'nama_desa' => $d->nama_desa,
-                                'kode_desa' => $d->kode_desa,
-                                'jenis' => $d->jenis,
-                                'kecamatan' => $d->nama_kecamatan,
-                            ],
-                        ])->toArray(),
+                $chartRanking = [
+                    'categories' => $rankedCollection->pluck('nama_kecamatan')->toArray(),
+                    'series' => [
+                        [
+                            'name' => $isAllCommodities ? 'Populasi Seluruh Komoditas' : 'Populasi '.str_replace('_', ' ', $komoditasKode),
+                            'data' => $rankedCollection->pluck('total')->map(fn ($v) => (int) $v)->toArray(),
+                        ],
+                    ],
+                ];
+
+                // b. Donut Chart: Proporsi Seluruh Komoditas Ternak (termasuk KAMBING_PERAH)
+                $proporsiData = DB::table('populasi_ternak as p')
+                    ->join('komoditas as k', 'k.id', '=', 'p.komoditas_id')
+                    ->where('p.tahun', $tahun)
+                    ->when($triwulan !== null, fn ($q) => $q->where('p.triwulan', $triwulan))
+                    ->groupBy('k.nama', 'k.kode')
+                    ->select('k.nama as name', 'k.kode', DB::raw('SUM(p.jumlah_total) as value'))
+                    ->orderByDesc('value')
+                    ->get()
+                    ->map(fn ($item) => [
+                        'name' => $item->name,
+                        'kode' => $item->kode,
+                        'value' => (int) $item->value,
+                    ])
+                    ->toArray();
+
+                // c. Line Chart: Tren Triwulanan Kasus Penyakit (PMK & LSD)
+                $trends = $this->analyticsService->getDiseaseTrends($tahun);
+                $pmkData = array_map(fn ($item) => $item['aktif'] ?? 0, $trends['series']['PMK'] ?? []);
+                $lsdData = array_map(fn ($item) => $item['aktif'] ?? 0, $trends['series']['LSD'] ?? []);
+
+                $chartTren = [
+                    'categories' => $trends['categories'] ?? ['TW 1', 'TW 2', 'TW 3', 'TW 4'],
+                    'series' => [
+                        [
+                            'name' => 'Wabah PMK (Kasus Aktif)',
+                            'kode' => 'PMK',
+                            'data' => $pmkData,
+                            'color' => '#F43F5E',
+                        ],
+                        [
+                            'name' => 'Wabah LSD (Kasus Aktif)',
+                            'kode' => 'LSD',
+                            'data' => $lsdData,
+                            'color' => '#F59E0B',
+                        ],
+                    ],
+                ];
+
+                // d. Komparasi Produksi (Susu & Daging) dari Database, termasuk KAMBING_PERAH
+                $prodRows = DB::table('produksi_ternak as pt')
+                    ->join('kategori_produksi as kp', 'kp.id', '=', 'pt.kategori_produksi_id')
+                    ->join('komoditas as k', 'k.id', '=', 'pt.komoditas_id')
+                    ->where('pt.tahun', $tahun)
+                    ->when($triwulan !== null, fn ($q) => $q->where('pt.triwulan', $triwulan))
+                    ->groupBy('kp.nama', 'k.nama', 'k.kode')
+                    ->select(
+                        'kp.nama as kategori',
+                        'k.nama as komoditas_nama',
+                        'k.kode as komoditas_kode',
+                        DB::raw('SUM(pt.jumlah_produksi) as total_produksi')
+                    )
+                    ->get();
+
+                if ($prodRows->isNotEmpty()) {
+                    $chartKomparasi = [
+                        'susu' => $prodRows->filter(fn ($r) => strtolower($r->kategori) === 'susu' && in_array(strtoupper($r->komoditas_kode), ['SAPI_PERAH', 'KAMBING', 'DOMBA', 'KAMBING_PERAH'], true))
+                            ->map(fn ($r) => [
+                                'name' => $r->komoditas_nama,
+                                'value' => round((float) $r->total_produksi, 2),
+                                'kode' => $r->komoditas_kode,
+                            ])->values()->toArray(),
+                        'daging' => $prodRows->filter(fn ($r) => strtolower($r->kategori) === 'daging')
+                            ->map(fn ($r) => [
+                                'name' => $r->komoditas_nama,
+                                'value' => round((float) $r->total_produksi, 2),
+                                'kode' => $r->komoditas_kode,
+                            ])->values()->toArray(),
                     ];
-                } catch (\Throwable) {
-                    return [
-                        'type' => 'FeatureCollection',
-                        'features' => [],
+                } else {
+                    $breakdown = $this->analyticsService->getProductionBreakdown($tahun, $triwulan);
+                    $chartKomparasi = [
+                        'susu' => array_map(fn ($item) => [
+                            'name' => $item['nama'],
+                            'value' => $item['jumlah'],
+                            'kode' => $item['kode'],
+                        ], $breakdown['Susu']['items'] ?? []),
+                        'daging' => array_map(fn ($item) => [
+                            'name' => $item['nama'],
+                            'value' => $item['jumlah'],
+                            'kode' => $item['kode'],
+                        ], $breakdown['Daging']['items'] ?? []),
                     ];
                 }
+
+                // 3. GEO CHOROPLETH KABUPATEN (27 KECAMATAN DENGAN PALET TOKEN DESIGN_RULE.MD)
+                // Ambil kuantil choropleth 5 tier
+                $choropleth = $this->analyticsService->calculateChoroplethIntervals($tahun, $triwulan, $komoditasKode);
+                $choroLookup = collect($choropleth['data'] ?? [])->keyBy('kecamatan_id');
+
+                // Agregat produksi per kecamatan
+                $prodPerKec = DB::table('produksi_ternak as pt')
+                    ->join('desa as d', 'd.id', '=', 'pt.desa_id')
+                    ->join('kategori_produksi as kp', 'kp.id', '=', 'pt.kategori_produksi_id')
+                    ->where('pt.tahun', $tahun)
+                    ->when($triwulan !== null, fn ($q) => $q->where('pt.triwulan', $triwulan))
+                    ->groupBy('d.kecamatan_id')
+                    ->select(
+                        'd.kecamatan_id',
+                        DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'daging' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_daging"),
+                        DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'susu' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_susu"),
+                        DB::raw("COALESCE(SUM(CASE WHEN LOWER(kp.nama) = 'telur' THEN pt.jumlah_produksi ELSE 0 END), 0) as total_telur")
+                    )
+                    ->get()
+                    ->keyBy('kecamatan_id');
+
+                // Status zonasi EWS
+                $zonaMap = DB::table('zona_snapshot_kecamatan')
+                    ->where('tahun', $tahun)
+                    ->when($triwulan !== null, fn ($q) => $q->where('triwulan', $triwulan))
+                    ->groupBy('kecamatan_id')
+                    ->select(
+                        'kecamatan_id',
+                        DB::raw("CASE 
+                            WHEN MAX(CASE WHEN status_zona = 'MERAH' THEN 1 ELSE 0 END) = 1 THEN 'MERAH'
+                            WHEN MAX(CASE WHEN status_zona = 'KUNING' THEN 1 ELSE 0 END) = 1 THEN 'KUNING'
+                            ELSE 'HIJAU'
+                        END as worst_status")
+                    )
+                    ->get()
+                    ->keyBy('kecamatan_id');
+
+                // Ambil data spasial poligon 27 kecamatan
+                $kecamatans = collect();
+                try {
+                    $geomViewSelect = $this->getSpatialSelect('v_kugi_administrasi_ar_peternakan', 'geom', 'geojson', 'p');
+                    $kecamatans = DB::table('v_kugi_administrasi_ar_peternakan as p')
+                        ->select(
+                            'p.objectid', 'p.wadmkc', 'p.kdcpum',
+                            'p.pop_sapipotong', 'p.pop_sapiperah', 'p.pop_kambing', 'p.pop_domba',
+                            'p.pop_ayampotong', 'p.pop_ayamtelur', 'p.pop_total',
+                            DB::raw($geomViewSelect)
+                        )
+                        ->orderBy('p.objectid')
+                        ->get();
+                } catch (\Throwable) {
+                    $kecamatans = collect();
+                }
+
+                if ($kecamatans->isEmpty() && $hasKecamatanRecords) {
+                    try {
+                        $geomSelect = $this->getSpatialSelect('kecamatan', 'geom', 'geojson');
+
+                        $kecamatans = DB::table('kecamatan')
+                            ->select(
+                                'id as objectid',
+                                'nama_kecamatan as wadmkc',
+                                'kode_kecamatan as kdcpum',
+                                DB::raw($geomSelect)
+                            )
+                            ->orderBy('id')
+                            ->get();
+                    } catch (\Throwable) {
+                        $kecamatans = collect();
+                    }
+                }
+
+                // Jika DB benar-benar kosong, gunakan fallback berkualitas tinggi
+                if ($kecamatans->isEmpty()) {
+                    $fallback = $this->getFallbackPayload($tahun, $triwulan, $komoditasKode);
+
+                    return [
+                        'kpiCards' => $fallback['kpiCards'],
+                        'chartData' => $fallback['chartData'],
+                        'geoChoropleth' => $fallback['geoChoropleth'],
+                    ];
+                }
+
+                $ccByKecamatan = collect($carryingCapacity['by_kecamatan'] ?? [])->keyBy('kecamatan_id');
+
+                $geoChoropleth = $kecamatans->map(function ($row) use ($komoditasKode, $choroLookup, $prodPerKec, $zonaMap, $ccByKecamatan) {
+                    $choroInfo = $choroLookup->get($row->objectid);
+                    $prod = $prodPerKec->get($row->objectid);
+                    $zona = $zonaMap->get($row->objectid);
+                    $ccKec = $ccByKecamatan->get($row->objectid);
+
+                    $popVal = match ($komoditasKode) {
+                        'SAPI_POTONG' => (int) ($row->pop_sapipotong ?? ($choroInfo['nilai'] ?? 0)),
+                        'SAPI_PERAH' => (int) ($row->pop_sapiperah ?? ($choroInfo['nilai'] ?? 0)),
+                        'KAMBING' => (int) ($row->pop_kambing ?? ($choroInfo['nilai'] ?? 0)),
+                        'DOMBA' => (int) ($row->pop_domba ?? ($choroInfo['nilai'] ?? 0)),
+                        'AYAM_POTONG' => (int) ($row->pop_ayampotong ?? ($choroInfo['nilai'] ?? 0)),
+                        'AYAM_TELUR' => (int) ($row->pop_ayamtelur ?? ($choroInfo['nilai'] ?? 0)),
+                        default => (int) ($row->pop_total ?? ($choroInfo['nilai'] ?? 0)),
+                    };
+
+                    return [
+                        'objectid' => (int) $row->objectid,
+                        'kode_kecamatan' => (string) ($row->kdcpum ?? ''),
+                        'nama_kecamatan' => $row->wadmkc ?? '',
+                        'total_populasi' => $popVal,
+                        'produksi_daging_kg' => round((float) ($prod->total_daging ?? 0), 2),
+                        'produksi_susu_liter' => round((float) ($prod->total_susu ?? 0), 2),
+                        'produksi_telur_butir' => round((float) ($prod->total_telur ?? 0), 2),
+                        'status_zonasi_ews' => $zona->worst_status ?? 'HIJAU',
+                        'color_hex' => $choroInfo['color_hex'] ?? '#14535E',
+                        'class_tier' => $choroInfo['class_tier'] ?? 1,
+                        'carrying_capacity' => $ccKec,
+                        'indeks_daya_dukung' => $ccKec['indeks'] ?? null,
+                        'status_daya_dukung' => $ccKec['status'] ?? null,
+                        'geometry' => is_string($row->geojson ?? null) ? json_decode($row->geojson, true) : ($row->geojson ?? null),
+                    ];
+                })->toArray();
+
+                return [
+                    'kpiCards' => $kpiCards,
+                    'chartData' => [
+                        'ranking_kecamatan' => $chartRanking,
+                        'proporsi_komoditas' => $proporsiData,
+                        'tren_penyakit' => $chartTren,
+                        'komparasi_produksi' => $chartKomparasi,
+                    ],
+                    'geoChoropleth' => $geoChoropleth,
+                ];
+            });
+
+            // 4. INERTIA v2 DEFERRED SPATIAL DATA (331 TITIK BALAI DESA)
+            $balaiDesaDeferred = Inertia::defer(function () {
+                return Cache::remember('dinas_balai_desa_geojson', 3600, function () {
+                    try {
+                        $balaiGeomSelect = $this->getSpatialSelect('desa', 'titik_balai_desa', 'geojson', 'd');
+                        $desaList = DB::table('desa as d')
+                            ->join('kecamatan as k', 'k.id', '=', 'd.kecamatan_id')
+                            ->select(
+                                'd.id', 'd.nama_desa', 'd.kode_desa', 'd.jenis',
+                                'k.nama_kecamatan',
+                                DB::raw($balaiGeomSelect)
+                            )
+                            ->get();
+
+                        return [
+                            'type' => 'FeatureCollection',
+                            'features' => $desaList->map(fn ($d) => [
+                                'type' => 'Feature',
+                                'id' => $d->id,
+                                'geometry' => is_string($d->geojson ?? null) ? json_decode($d->geojson, true) : ($d->geojson ?? null),
+                                'properties' => [
+                                    'id' => $d->id,
+                                    'nama_desa' => $d->nama_desa,
+                                    'kode_desa' => $d->kode_desa,
+                                    'jenis' => $d->jenis,
+                                    'kecamatan' => $d->nama_kecamatan,
+                                ],
+                            ])->toArray(),
+                        ];
+                    } catch (\Throwable) {
+                        return [
+                            'type' => 'FeatureCollection',
+                            'features' => [],
+                        ];
+                    }
+                });
             });
 
             return Inertia::render('Dinas/Dashboard', [
@@ -248,18 +444,13 @@ class DinasDashboardController extends Controller
                     'triwulan' => $triwulan,
                     'komoditas' => $komoditasKode,
                 ],
-                'kpiCards' => $kpiCards,
-                'chartData' => [
-                    'ranking_kecamatan' => $chartRanking,
-                    'proporsi_komoditas' => $proporsiData,
-                    'tren_penyakit' => $chartTren,
-                    'komparasi_produksi' => $chartKomparasi,
-                ],
-                'geoChoropleth' => $geoChoropleth,
+                'kpiCards' => $dashboardData['kpiCards'],
+                'chartData' => $dashboardData['chartData'],
+                'geoChoropleth' => $dashboardData['geoChoropleth'],
                 'balaiDesaPoints' => $balaiDesaDeferred,
             ]);
         } catch (\Throwable $e) {
-            Log::warning('DinasDashboardController offline fallback engaged: ' . $e->getMessage());
+            Log::warning('DinasDashboardController offline fallback engaged: '.$e->getMessage());
 
             return Inertia::render('Dinas/Dashboard', $this->getFallbackPayload($tahun, $triwulan, $komoditasKode));
         }
@@ -285,6 +476,24 @@ class DinasDashboardController extends Controller
                 'total_produksi_telur_butir' => 842100.00,
                 'total_kasus_aktif' => 84,
                 'total_rph_aktif' => 8,
+                'carrying_capacity' => [
+                    'total_st' => 22000.0,
+                    'luas_hmt_ha' => 2700.0,
+                    'kapasitas_tampung_st' => 16200.0,
+                    'indeks' => 0.74,
+                    'status' => 'WASPADA',
+                    'status_label' => 'Waspada / Daya Tampung Pas-pasan',
+                    'by_kecamatan' => [],
+                ],
+                'daya_dukung_pakan' => [
+                    'total_st' => 22000.0,
+                    'luas_hmt_ha' => 2700.0,
+                    'kapasitas_tampung_st' => 16200.0,
+                    'indeks' => 0.74,
+                    'status' => 'WASPADA',
+                    'status_label' => 'Waspada / Daya Tampung Pas-pasan',
+                    'by_kecamatan' => [],
+                ],
             ],
             'chartData' => [
                 'ranking_kecamatan' => [
@@ -299,7 +508,8 @@ class DinasDashboardController extends Controller
                 'proporsi_komoditas' => [
                     ['name' => 'Sapi Potong', 'value' => 185000, 'kode' => 'SAPI_POTONG'],
                     ['name' => 'Sapi Perah', 'value' => 20642, 'kode' => 'SAPI_PERAH'],
-                    ['name' => 'Kambing', 'value' => 137253, 'kode' => 'KAMBING'],
+                    ['name' => 'Kambing', 'value' => 125000, 'kode' => 'KAMBING'],
+                    ['name' => 'Kambing Perah', 'value' => 12253, 'kode' => 'KAMBING_PERAH'],
                 ],
                 'tren_penyakit' => [
                     'categories' => ['Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt'],
@@ -672,5 +882,42 @@ class DinasDashboardController extends Controller
                 'class_tier' => 1,
             ],
         ];
+    }
+
+    /**
+     * Menghasilkan ekspresi SQL SELECT spasial yang aman untuk PostgreSQL (PostGIS / JSONB) dan SQLite.
+     */
+    protected function getSpatialSelect(string $table, string $column, string $alias = 'geojson', ?string $tableAlias = null): string
+    {
+        $target = $tableAlias ? "{$tableAlias}.{$column}" : $column;
+
+        if (DB::getDriverName() === 'pgsql') {
+            static $hasPostgisGeometry = [];
+            $key = "{$table}.{$column}";
+            if (! array_key_exists($key, $hasPostgisGeometry)) {
+                try {
+                    $hasPostgisExt = ! empty(DB::select("SELECT 1 FROM pg_extension WHERE extname = 'postgis'"));
+                    if ($hasPostgisExt) {
+                        $colType = DB::selectOne(
+                            'SELECT udt_name FROM information_schema.columns WHERE table_name = ? AND column_name = ?',
+                            [$table, $column]
+                        )?->udt_name;
+                        $hasPostgisGeometry[$key] = ($colType === 'geometry');
+                    } else {
+                        $hasPostgisGeometry[$key] = false;
+                    }
+                } catch (\Throwable) {
+                    $hasPostgisGeometry[$key] = false;
+                }
+            }
+
+            if ($hasPostgisGeometry[$key]) {
+                return "ST_AsGeoJSON({$target}) as {$alias}";
+            }
+
+            return "{$target}::text as {$alias}";
+        }
+
+        return "{$target} as {$alias}";
     }
 }

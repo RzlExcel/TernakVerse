@@ -128,7 +128,7 @@ const isActiveRoute = (href: string): boolean => {
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset" class="border-r border-border dark:border-[#1E1E1E] bg-white dark:bg-[#0C0C0C]">
+    <Sidebar collapsible="icon" variant="inset" class="border-r border-border dark:border-[#1E1E1E] bg-white dark:bg-[#111111]">
         <SidebarHeader class="border-b border-border p-2">
             <SidebarMenu>
                 <SidebarMenuItem>
@@ -143,7 +143,7 @@ const isActiveRoute = (href: string): boolean => {
 
         <SidebarContent class="gap-4 p-2">
             <SidebarGroup v-for="group in navGroups" :key="group.label" class="p-0">
-                <SidebarGroupLabel class="px-2 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                <SidebarGroupLabel class="px-2 py-1.5 text-xs font-semibold tracking-normal text-slate-500 dark:text-[#858585]">
                     {{ group.label }}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -156,7 +156,7 @@ const isActiveRoute = (href: string): boolean => {
                                 :class="
                                     isActiveRoute(item.href)
                                         ? 'bg-[#171B17] text-white font-semibold shadow-xs dark:bg-[#181818] dark:text-white'
-                                        : 'border border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100'
+                                        : 'border border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-[#1C1C1C] dark:hover:text-slate-100'
                                 "
                             >
                                 <Link :href="item.href" class="flex items-center gap-2.5">
@@ -171,12 +171,6 @@ const isActiveRoute = (href: string): boolean => {
                                         ]"
                                     />
                                     <span class="truncate">{{ item.title }}</span>
-                                    <span
-                                        v-if="isActiveRoute(item.href)"
-                                        class="ml-auto bg-[#063D2D] text-[#00D084] text-[10px] px-1.5 py-0.5 rounded font-medium group-data-[collapsible=icon]:hidden"
-                                    >
-                                        Aktif
-                                    </span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -197,7 +191,7 @@ const isActiveRoute = (href: string): boolean => {
                                 :class="
                                     isActiveRoute(item.href)
                                         ? 'bg-[#171B17] text-white font-semibold shadow-xs dark:bg-[#181818] dark:text-white'
-                                        : 'border border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100'
+                                        : 'border border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-[#1C1C1C] dark:hover:text-slate-100'
                                 "
                             >
                                 <Link :href="item.href" class="flex items-center gap-2.5">
@@ -212,12 +206,6 @@ const isActiveRoute = (href: string): boolean => {
                                         ]"
                                     />
                                     <span class="truncate">{{ item.title }}</span>
-                                    <span
-                                        v-if="isActiveRoute(item.href)"
-                                        class="ml-auto bg-[#063D2D] text-[#00D084] text-[10px] px-1.5 py-0.5 rounded font-medium group-data-[collapsible=icon]:hidden"
-                                    >
-                                        Aktif
-                                    </span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

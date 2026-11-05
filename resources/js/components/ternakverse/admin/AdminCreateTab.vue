@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import type { AdminFormData } from '../../../composables/ternakverse/admin/useAdminPortal';
+import { KECAMATAN_LIST } from '../../../data/banyumasData';
 
 const props = defineProps<{
     isEditing: boolean;
@@ -10,6 +12,41 @@ const emit = defineEmits<{
     (e: 'save', createAnother: boolean): void;
     (e: 'cancel'): void;
 }>();
+
+watch(
+    () => props.formData,
+    (newData) => {
+        if (!newData) return;
+
+        // Normalize legacy kategori_utama values
+        if (newData.kategori_utama === 'Kambing / Domba') {
+            newData.kategori_utama = 'Kambing Potong';
+        } else if (newData.kategori_utama === 'Ayam Broiler') {
+            newData.kategori_utama = 'Ayam Potong / Broiler';
+        }
+
+        // Auto-populate specific commodity fields when editing if empty
+        if (props.isEditing && (newData.kode_kec || newData.nama)) {
+            const matched = KECAMATAN_LIST.find(
+                (k) =>
+                    (newData.kode_kec && k.kode_kec === newData.kode_kec) ||
+                    (newData.nama && k.nama.toLowerCase() === newData.nama.toLowerCase())
+            );
+            if (matched) {
+                if (!newData.kambing_perah && matched.kambing_perah) {
+                    newData.kambing_perah = matched.kambing_perah;
+                }
+                if (!newData.ayam_petelur && (matched.ayam_petelur || matched.ayam_layer)) {
+                    newData.ayam_petelur = matched.ayam_petelur ?? matched.ayam_layer ?? 0;
+                }
+                if (!newData.luas_hmt_ha && matched.luas_hmt_ha) {
+                    newData.luas_hmt_ha = matched.luas_hmt_ha;
+                }
+            }
+        }
+    },
+    { immediate: true, deep: true }
+);
 </script>
 
 <template>
@@ -41,7 +78,7 @@ const emit = defineEmits<{
                         v-model="props.formData.nama"
                         type="text"
                         placeholder="Contoh: Kecamatan Sumbang"
-                        class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3.5 text-sm text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#858585] outline-none focus:border-[#00D084] focus:ring-1 focus:ring-[#00D084]/30 transition-all"
+                        class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3.5 text-sm text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#858585] outline-none focus:border-[#00D084] focus:ring-1 focus:ring-[#00D084]/30 transition-colors"
                     />
                 </div>
 
@@ -53,7 +90,7 @@ const emit = defineEmits<{
                         v-model="props.formData.kode_kec"
                         type="text"
                         placeholder="Contoh: 33.02.21"
-                        class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3.5 text-sm text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#858585] outline-none focus:border-[#00D084] focus:ring-1 focus:ring-[#00D084]/30 transition-all font-mono tabular-nums"
+                        class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3.5 text-sm text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#858585] outline-none focus:border-[#00D084] focus:ring-1 focus:ring-[#00D084]/30 transition-colors font-mono tabular-nums"
                     />
                 </div>
             </div>
@@ -70,10 +107,13 @@ const emit = defineEmits<{
                             v-model="props.formData.kategori_utama"
                             class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3.5 text-sm text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] cursor-pointer"
                         >
-                            <option value="Sapi Potong" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Sapi Potong Pedaging</option>
-                            <option value="Sapi Perah" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Sapi Perah Penghasil Susu</option>
-                            <option value="Kambing / Domba" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Kambing &amp; Domba</option>
-                            <option value="Ayam Broiler" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Unggas / Ayam Broiler</option>
+                            <option value="Sapi Potong" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Sapi Potong (Pedaging)</option>
+                            <option value="Sapi Perah" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Sapi Perah (Penghasil Susu)</option>
+                            <option value="Kambing Potong" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Kambing Potong (Pedaging)</option>
+                            <option value="Kambing Perah" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Kambing Perah (Susu Kambing)</option>
+                            <option value="Domba" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Domba (Pedaging &amp; Wol)</option>
+                            <option value="Ayam Potong / Broiler" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Ayam Potong / Broiler (Pedaging)</option>
+                            <option value="Ayam Petelur / Layer" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Ayam Petelur / Layer (Penghasil Telur)</option>
                         </select>
                     </div>
 
@@ -96,9 +136,17 @@ const emit = defineEmits<{
                             />
                         </div>
                         <div>
-                            <label class="block text-[11px] font-semibold text-[#6E776D] dark:text-[#B3B3B3] mb-1">Populasi Kambing</label>
+                            <label class="block text-[11px] font-semibold text-[#6E776D] dark:text-[#B3B3B3] mb-1">Populasi Kambing Potong</label>
                             <input
                                 v-model.number="props.formData.kambing"
+                                type="number"
+                                class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3 text-sm text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] font-mono tabular-nums"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-[#6E776D] dark:text-[#B3B3B3] mb-1">Populasi Kambing Perah</label>
+                            <input
+                                v-model.number="props.formData.kambing_perah"
                                 type="number"
                                 class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3 text-sm text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] font-mono tabular-nums"
                             />
@@ -107,6 +155,30 @@ const emit = defineEmits<{
                             <label class="block text-[11px] font-semibold text-[#6E776D] dark:text-[#B3B3B3] mb-1">Populasi Domba</label>
                             <input
                                 v-model.number="props.formData.domba"
+                                type="number"
+                                class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3 text-sm text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] font-mono tabular-nums"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-[#6E776D] dark:text-[#B3B3B3] mb-1">Populasi Ayam Potong / Broiler</label>
+                            <input
+                                v-model.number="props.formData.ayam_broiler"
+                                type="number"
+                                class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3 text-sm text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] font-mono tabular-nums"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-[#6E776D] dark:text-[#B3B3B3] mb-1">Populasi Ayam Petelur / Layer</label>
+                            <input
+                                v-model.number="props.formData.ayam_petelur"
+                                type="number"
+                                class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3 text-sm text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] font-mono tabular-nums"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-[#6E776D] dark:text-[#B3B3B3] mb-1">Luas Lahan HMT (Hektar)</label>
+                            <input
+                                v-model.number="props.formData.luas_hmt_ha"
                                 type="number"
                                 class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3 text-sm text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] font-mono tabular-nums"
                             />
@@ -150,8 +222,8 @@ const emit = defineEmits<{
                     <textarea
                         v-model="props.formData.catatan"
                         rows="9"
-                        placeholder="Tuliskan catatan verifikasi lapangan, riwayat vaksinasi, atau anjuran biosekuriti dinas..."
-                        class="w-full flex-1 min-h-[200px] bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg p-3.5 text-sm text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#858585] outline-none focus:border-[#00D084] focus:ring-1 focus:ring-[#00D084]/30 resize-y transition-all"
+                        placeholder="Tuliskan catatan verifikasi lapangan, riwayat vaksinasi, atau anjuran biosekuriti dinas"
+                        class="w-full flex-1 min-h-48 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg p-3.5 text-sm text-[#171B17] dark:text-[#F5F5F5] placeholder:text-[#858585] outline-none focus:border-[#00D084] focus:ring-1 focus:ring-[#00D084]/30 resize-y transition-colors"
                     ></textarea>
                 </div>
             </div>
@@ -161,9 +233,9 @@ const emit = defineEmits<{
                 <button
                     type="button"
                     @click="emit('save', false)"
-                    class="h-10 px-6 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold tracking-wider transition-colors cursor-pointer"
+                    class="h-10 px-6 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors cursor-pointer"
                 >
-                    SIMPAN PERUBAHAN
+                    Simpan Perubahan
                 </button>
 
                 <button
@@ -177,7 +249,7 @@ const emit = defineEmits<{
                 <button
                     type="button"
                     @click="emit('cancel')"
-                    class="h-10 px-4 rounded-lg bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#444C43] dark:text-[#B3B3B3] hover:bg-[#EDEFEB] dark:hover:bg-[#282828] text-xs font-semibold transition-all cursor-pointer"
+                    class="h-10 px-4 rounded-lg bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-[#444C43] dark:text-[#B3B3B3] hover:bg-[#EDEFEB] dark:hover:bg-[#282828] text-xs font-semibold transition-colors cursor-pointer"
                 >
                     Batal
                 </button>

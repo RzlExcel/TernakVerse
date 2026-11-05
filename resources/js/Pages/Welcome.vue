@@ -73,7 +73,7 @@ onUnmounted(() => {
 <template>
     <Head title="Ternakverse - WebGIS Peternakan Kabupaten Banyumas" />
 
-    <div class="min-h-screen bg-[#090909] text-slate-100 flex flex-col font-ui antialiased selection:bg-emerald-500 selection:text-slate-950">
+    <div class="min-h-screen bg-[#080808] text-slate-100 flex flex-col font-ui antialiased selection:bg-emerald-500 selection:text-slate-950">
         <!-- 1. NAVBAR (AgriTech Command Center Header) -->
         <Navbar
             :current-role="currentRole"
@@ -94,30 +94,30 @@ onUnmounted(() => {
                 <div class="flex flex-wrap items-center gap-2">
                     <Link
                         href="/portal"
-                        class="px-3 py-1 rounded-xl bg-[#103F3A] hover:bg-[#159B78] border border-emerald-500/40 text-emerald-300 hover:text-white font-semibold transition-all inline-flex items-center gap-1.5"
+                        class="px-3 py-1 rounded-xl dark:bg-[#181818] bg-[#F4F5F2] hover:dark:bg-[#1E1E1E] hover:bg-[#EDEFEB] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:border-emerald-500/40 dark:text-slate-200 text-[#171B17] hover:dark:text-emerald-400 hover:text-[#00A86B] font-semibold transition-colors inline-flex items-center gap-1.5"
                     >
-                        <Compass class="w-3.5 h-3.5" />
-                        <span>Portal Publik (100vh)</span>
+                        <Compass class="w-4 h-4 text-emerald-400" />
+                        <span>Portal Publik</span>
                     </Link>
                     <Link
                         href="/internal/dinas"
-                        class="px-3 py-1 rounded-xl bg-[#181818] hover:bg-[#1E1E1E] border border-[#1E1E1E] hover:border-emerald-500/40 text-slate-200 hover:text-emerald-400 font-semibold transition-all inline-flex items-center gap-1.5"
+                        class="px-3 py-1 rounded-xl dark:bg-[#181818] bg-[#F4F5F2] hover:dark:bg-[#1E1E1E] hover:bg-[#EDEFEB] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:border-emerald-500/40 dark:text-slate-200 text-[#171B17] hover:dark:text-emerald-400 hover:text-[#00A86B] font-semibold transition-colors inline-flex items-center gap-1.5"
                     >
-                        <BarChart3 class="w-3.5 h-3.5 text-emerald-400" />
+                        <BarChart3 class="w-4 h-4 text-emerald-400" />
                         <span>Portal Dinas</span>
                     </Link>
                     <Link
                         href="/internal/admin"
-                        class="px-3 py-1 rounded-xl bg-[#181818] hover:bg-[#1E1E1E] border border-[#1E1E1E] hover:border-emerald-500/40 text-slate-200 hover:text-emerald-400 font-semibold transition-all inline-flex items-center gap-1.5"
+                        class="px-3 py-1 rounded-xl dark:bg-[#181818] bg-[#F4F5F2] hover:dark:bg-[#1E1E1E] hover:bg-[#EDEFEB] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:border-emerald-500/40 dark:text-slate-200 text-[#171B17] hover:dark:text-emerald-400 hover:text-[#00A86B] font-semibold transition-colors inline-flex items-center gap-1.5"
                     >
-                        <ShieldCheck class="w-3.5 h-3.5 text-emerald-400" />
+                        <ShieldCheck class="w-4 h-4 text-emerald-400" />
                         <span>Admin Balai</span>
                     </Link>
                     <Link
                         href="/design-rule"
-                        class="px-3 py-1 rounded-xl bg-[#181818] hover:bg-[#1E1E1E] border border-[#1E1E1E] hover:border-emerald-500/40 text-slate-300 hover:text-white font-semibold transition-all inline-flex items-center gap-1.5"
+                        class="px-3 py-1 rounded-xl dark:bg-[#181818] bg-[#F4F5F2] hover:dark:bg-[#1E1E1E] hover:bg-[#EDEFEB] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:border-emerald-500/40 dark:text-slate-300 text-[#444C43] hover:dark:text-white hover:text-[#171B17] font-semibold transition-colors inline-flex items-center gap-1.5"
                     >
-                        <BookOpen class="w-3.5 h-3.5 text-slate-400" />
+                        <BookOpen class="w-4 h-4 text-slate-400" />
                         <span>Design Rule</span>
                     </Link>
                 </div>

@@ -83,6 +83,8 @@ function handleSelectKecamatan(id: string) {
 }
 
 function handleSelectDesa(desa: DesaData) {
+    if (!desa) return;
+    if (selectedDesaId.value === desa.id) return;
     selectedDesaId.value = desa.id;
     if (selectedKecamatanId.value !== desa.kecamatan_id) {
         selectedKecamatanId.value = desa.kecamatan_id;

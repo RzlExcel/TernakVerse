@@ -30,6 +30,17 @@ export interface AdminOperationalRowProps {
     ewsAlerts?: EwsNotificationItem[];
 }
 
+export function formatIndonesianTimestamp(date: Date = new Date(), withComma = true): string {
+    const formatted = new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(date).replace(/\./g, ':');
+    return withComma ? (formatted.includes(',') ? formatted : formatted.replace(/(\d{4})\s+/, '$1, ')) : formatted.replace(',', '');
+}
+
 const defaultActivities: ActivityRow[] = [
     {
         tanggal: '14 Okt 2026 10:24',
@@ -56,7 +67,7 @@ const defaultActivities: ActivityRow[] = [
         petugas: 'Agus Setiawan',
     },
     {
-        tanggal: '13 Okt 2026 11:20',
+        tanggal: formatIndonesianTimestamp(new Date(), false),
         aktivitas: 'Pemeriksaan Kesehatan',
         badgeClass: 'dark:bg-[#DC625F]/15 dark:text-[#DC625F] dark:border-[#DC625F]/30 bg-rose-50 text-rose-800 border border-rose-200 text-[10px] px-2 py-0.5 rounded-full font-semibold',
         komoditas: 'Sapi Potong',
@@ -77,7 +88,7 @@ const defaultFeedItems: HistoryFeedItem[] = [
     {
         icon: 'trending-up',
         title: 'Data populasi sapi potong',
-        timestamp: '14 Okt 2026, 11:20',
+        timestamp: formatIndonesianTimestamp(new Date(), true),
         delta: '+ 1.248 ekor',
         badgeTheme: 'emerald',
     },
@@ -160,6 +171,8 @@ const props = withDefaults(defineProps<AdminOperationalRowProps>(), {
 const emit = defineEmits<{
     (e: 'selectTab', tab: string): void;
 }>();
+
+const liveSyncTimestamp = formatIndonesianTimestamp(new Date(), true);
 </script>
 
 <template>
@@ -339,7 +352,7 @@ const emit = defineEmits<{
 
                 <!-- Footer -->
                 <p class="text-[11px] dark:text-[#858585] text-[#737B71] font-mono mt-1">
-                    Terakhir sync: 14 Okt 2026, 11:20
+                    Terakhir sync: {{ liveSyncTimestamp }}
                 </p>
             </div>
 

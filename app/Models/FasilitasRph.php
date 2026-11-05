@@ -17,11 +17,15 @@ class FasilitasRph extends Model
     protected $fillable = [
         'kecamatan_id',
         'nama_rph',
+        'tipe_fasilitas',
         'alamat_lengkap',
         'jenis_pengelola',
         'jenis_hewan_potong',
         'kapasitas_potong_ekor_hari',
         'status_operasional',
+        'hari_pasaran',
+        'wilayah_binaan',
+        'penanggung_jawab',
         'geom_titik',
         'nomor_kontak',
     ];
@@ -32,6 +36,30 @@ class FasilitasRph extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    /**
+     * Scope fasilitas Rumah Potong Hewan (RPH).
+     */
+    public function scopeRph($query)
+    {
+        return $query->where('tipe_fasilitas', 'RPH');
+    }
+
+    /**
+     * Scope fasilitas Pusat Kesehatan Hewan (Puskeswan).
+     */
+    public function scopePuskeswan($query)
+    {
+        return $query->where('tipe_fasilitas', 'Puskeswan');
+    }
+
+    /**
+     * Scope fasilitas Pasar Hewan.
+     */
+    public function scopePasarHewan($query)
+    {
+        return $query->where('tipe_fasilitas', 'Pasar Hewan');
+    }
 
     /**
      * Relasi ke Kecamatan lokasi fasilitas RPH berada.

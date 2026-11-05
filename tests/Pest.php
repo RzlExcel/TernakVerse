@@ -12,5 +12,5 @@
 */
 
 pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->use(Illuminate\Foundation\Testing\DatabaseTransactions::class)
     ->in('Feature');

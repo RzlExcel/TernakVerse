@@ -24,7 +24,7 @@ const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Security settings',
+        title: 'Keamanan & 2FA',
         href: edit().url,
     },
 ];
@@ -47,16 +47,16 @@ const submitPasswordUpdate = (): void => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Security settings" />
+        <Head title="Keamanan & 2FA" />
 
-        <h1 class="sr-only">Security settings</h1>
+        <h1 class="sr-only">Keamanan &amp; 2FA</h1>
 
         <SettingsLayout>
             <div class="space-y-6">
                 <Heading
                     variant="small"
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
+                    title="Perbarui Kata Sandi"
+                    description="Kelola keamanan autentikasi dan pembaruan kata sandi akun Anda."
                 />
 
                 <form
@@ -64,7 +64,7 @@ const submitPasswordUpdate = (): void => {
                     class="space-y-6"
                 >
                     <div class="grid gap-2">
-                        <Label for="current_password">Current password</Label>
+                        <Label for="current_password">Kata Sandi Saat Ini</Label>
                         <PasswordInput
                             id="current_password"
                             name="current_password"
@@ -72,13 +72,13 @@ const submitPasswordUpdate = (): void => {
                             @input="(e: Event) => (form.current_password = (e.target as HTMLInputElement).value)"
                             class="mt-1 block w-full"
                             autocomplete="current-password"
-                            placeholder="Current password"
+                            placeholder="Masukkan kata sandi saat ini"
                         />
                         <InputError :message="form.errors.current_password" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password">New password</Label>
+                        <Label for="password">Kata Sandi Baru</Label>
                         <PasswordInput
                             id="password"
                             name="password"
@@ -86,14 +86,14 @@ const submitPasswordUpdate = (): void => {
                             @input="(e: Event) => (form.password = (e.target as HTMLInputElement).value)"
                             class="mt-1 block w-full"
                             autocomplete="new-password"
-                            placeholder="New password"
+                            placeholder="Masukkan kata sandi baru"
                             :passwordrules="props.passwordRules"
                         />
                         <InputError :message="form.errors.password" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="password_confirmation">Confirm password</Label>
+                        <Label for="password_confirmation">Konfirmasi Kata Sandi</Label>
                         <PasswordInput
                             id="password_confirmation"
                             name="password_confirmation"
@@ -101,7 +101,7 @@ const submitPasswordUpdate = (): void => {
                             @input="(e: Event) => (form.password_confirmation = (e.target as HTMLInputElement).value)"
                             class="mt-1 block w-full"
                             autocomplete="new-password"
-                            placeholder="Confirm password"
+                            placeholder="Konfirmasi kata sandi baru"
                             :passwordrules="props.passwordRules"
                         />
                         <InputError :message="form.errors.password_confirmation" />
@@ -112,7 +112,7 @@ const submitPasswordUpdate = (): void => {
                             :disabled="form.processing"
                             data-test="update-password-button"
                         >
-                            Save
+                            Simpan
                         </Button>
                     </div>
                 </form>

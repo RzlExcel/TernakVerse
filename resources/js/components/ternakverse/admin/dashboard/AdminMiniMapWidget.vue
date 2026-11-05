@@ -1,6 +1,25 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { Compass, ChevronDown, ArrowRight } from 'lucide-vue-next';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import banyumasKecamatanGeoJson from '@/data/banyumas_kecamatan_web.json';
+import {
+    KECAMATAN_LIST,
+    formatAngka,
+    COLOR_CLASSES,
+    type KecamatanData,
+} from '@/data/banyumasData';
+
+interface MiniMapProps {
+    selectedCardId?: string;
+    kecamatanList?: KecamatanData[];
+}
+
+const props = withDefaults(defineProps<MiniMapProps>(), {
+    selectedCardId: 'card-populasi',
+    kecamatanList: () => [],
+});
 
 const emit = defineEmits<{
     (e: 'openWebGis'): void;
@@ -11,36 +30,152 @@ function handleOpenWebGis() {
     emit('openWebGis');
     emit('open-web-gis');
 }
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import banyumasKecamatanGeoJson from '@/data/banyumas_kecamatan_web.json';
-import {
-    KECAMATAN_LIST,
-    calculateQuantiles,
-    getClassLevel,
-    formatAngka,
-    COLOR_CLASSES,
-    type KecamatanData,
-} from '@/data/banyumasData';
 
-type CommodityKey = 'sapi_potong' | 'sapi_perah' | 'kambing' | 'domba' | 'ayam_potong';
+const activeMode = computed<'card-populasi' | 'card-produksi' | 'card-penyakit' | 'card-fasilitas'>(() => {
+    const raw = (props.selectedCardId || '').toLowerCase();
+    if (raw.includes('produksi') || raw.includes('pangan') || raw.includes('daging')) {
+        return 'card-produksi';
+    }
+    if (raw.includes('penyakit') || raw.includes('pmk') || raw.includes('lsd') || raw.includes('wabah')) {
+        return 'card-penyakit';
+    }
+    if (raw.includes('fasilitas') || raw.includes('rph') || raw.includes('poskeswan')) {
+        return 'card-fasilitas';
+    }
+    return 'card-populasi';
+});
 
-interface CommodityOption {
-    id: CommodityKey;
+const mapTitle = computed(() => {
+    switch (activeMode.value) {
+        case 'card-penyakit':
+            return 'Status Kewaspadaan & Zonasi EWS';
+        case 'card-produksi':
+            return 'Sebaran Produksi Pangan';
+        case 'card-fasilitas':
+            return 'Sebaran Fasilitas RPH & Poskeswan';
+        case 'card-populasi':
+        default:
+            return 'Sebaran Populasi Ternak';
+    }
+});
+
+const mapSubtitle = computed(() => {
+    switch (activeMode.value) {
+        case 'card-penyakit':
+            return 'Zonasi persebaran kasus PMK & LSD aktif';
+        case 'card-produksi':
+            return 'Hasil produksi pangan ternak per kecamatan';
+        case 'card-fasilitas':
+            return 'Sebaran poskeswan & rumah potong hewan';
+        case 'card-populasi':
+        default:
+            return 'Sebaran Populasi Wilayah & kondisi ternak per kecamatan';
+    }
+});
+
+interface FilterOption {
+    id: string;
     label: string;
 }
 
-const commodityOptions: CommodityOption[] = [
-    { id: 'sapi_potong', label: 'Sapi Potong' },
-    { id: 'sapi_perah', label: 'Sapi Perah' },
-    { id: 'kambing', label: 'Kambing' },
-    { id: 'domba', label: 'Domba' },
-    { id: 'ayam_potong', label: 'Ayam Potong' },
-];
+const filterOptions = computed<FilterOption[]>(() => {
+    switch (activeMode.value) {
+        case 'card-penyakit':
+            return [
+                { id: 'total_wabah', label: 'PMK & LSD (Total)' },
+                { id: 'pmk', label: 'Kasus PMK' },
+                { id: 'lsd', label: 'Kasus LSD' },
+            ];
+        case 'card-produksi':
+            return [
+                { id: 'total_produksi', label: 'Total Produksi' },
+                { id: 'daging_ayam', label: 'Daging Ayam' },
+                { id: 'daging_sapi', label: 'Daging Sapi' },
+                { id: 'susu_sapi', label: 'Susu Sapi' },
+                { id: 'telur_ayam', label: 'Telur Ayam' },
+            ];
+        case 'card-fasilitas':
+            return [
+                { id: 'poskeswan', label: 'Poskeswan & RPH' },
+            ];
+        case 'card-populasi':
+        default:
+            return [
+                { id: 'populasi_total', label: 'Total Populasi' },
+                { id: 'sapi_potong', label: 'Sapi Potong' },
+                { id: 'sapi_perah', label: 'Sapi Perah' },
+                { id: 'kambing', label: 'Kambing' },
+                { id: 'domba', label: 'Domba' },
+                { id: 'ayam_potong', label: 'Ayam Potong' },
+            ];
+    }
+});
 
-const selectedCommodity = ref<CommodityKey>('sapi_potong');
+const selectedFilter = ref<string>('populasi_total');
 
-// 5 classes Master Prompt multicolor scale
+watch(activeMode, (newMode) => {
+    switch (newMode) {
+        case 'card-penyakit':
+            selectedFilter.value = 'total_wabah';
+            break;
+        case 'card-produksi':
+            selectedFilter.value = 'total_produksi';
+            break;
+        case 'card-fasilitas':
+            selectedFilter.value = 'poskeswan';
+            break;
+        case 'card-populasi':
+        default:
+            selectedFilter.value = 'populasi_total';
+            break;
+    }
+    updateMap();
+});
+
+interface LegendItem {
+    label: string;
+    color: string;
+}
+
+const legendTitle = computed(() => {
+    switch (activeMode.value) {
+        case 'card-penyakit':
+            return 'Status Zonasi';
+        case 'card-fasilitas':
+            return 'Status Fasilitas';
+        default:
+            return 'Tingkat Sebaran';
+    }
+});
+
+const legendItems = computed<LegendItem[]>(() => {
+    switch (activeMode.value) {
+        case 'card-penyakit':
+            return [
+                { label: 'Bahaya (>=6)', color: '#DC625F' },
+                { label: 'Waspada (1-5)', color: '#E8B84C' },
+                { label: 'Aman (0 kasus)', color: '#00D084' },
+            ];
+        case 'card-fasilitas':
+            return [
+                { label: 'Lengkap (>=3)', color: '#00D084' },
+                { label: 'Sedang (2 unit)', color: '#32B9D0' },
+                { label: 'Dasar (1 unit)', color: '#86A65A' },
+                { label: 'Belum Ada (0)', color: '#6E776D' },
+            ];
+        case 'card-produksi':
+        case 'card-populasi':
+        default:
+            return [
+                { label: 'Sangat Tinggi', color: '#D9784D' },
+                { label: 'Tinggi', color: '#D4A34E' },
+                { label: 'Sedang', color: '#86A65A' },
+                { label: 'Rendah', color: '#38A69A' },
+                { label: 'Sangat Rendah', color: '#3B82A0' },
+            ];
+    }
+});
+
 const CHOROPLETH_5_CLASSES: Record<number, string> = COLOR_CLASSES || {
     1: '#3B82A0', // Sangat Rendah
     2: '#38A69A', // Rendah
@@ -49,18 +184,16 @@ const CHOROPLETH_5_CLASSES: Record<number, string> = COLOR_CLASSES || {
     5: '#D9784D', // Sangat Tinggi
 };
 
-const legendItems = [
-    { label: 'Sangat Tinggi', color: '#D9784D', level: 5 },
-    { label: 'Tinggi', color: '#D4A34E', level: 4 },
-    { label: 'Sedang', color: '#86A65A', level: 3 },
-    { label: 'Rendah', color: '#38A69A', level: 2 },
-    { label: 'Sangat Rendah', color: '#3B82A0', level: 1 },
-];
+const activeKecamatanList = computed<KecamatanData[]>(() => {
+    if (props.kecamatanList && props.kecamatanList.length > 0) {
+        return props.kecamatanList;
+    }
+    return KECAMATAN_LIST;
+});
 
-// Map lookup data atribut berdasarkan nama kecamatan
 const kecDataLookup = computed(() => {
     const mapObj = new Map<string, KecamatanData>();
-    KECAMATAN_LIST.forEach((k) => {
+    activeKecamatanList.value.forEach((k) => {
         mapObj.set(k.nama.toLowerCase(), k);
     });
     return mapObj;
@@ -72,22 +205,99 @@ function getKecamatanDataFromFeature(feature: any): KecamatanData | undefined {
     return kecDataLookup.value.get(cleanName) || kecDataLookup.value.get(rawName.toLowerCase());
 }
 
-const quantiles = computed(() => {
-    return calculateQuantiles(KECAMATAN_LIST, selectedCommodity.value as keyof KecamatanData);
+function getMetricValue(kec: KecamatanData): number {
+    const filter = selectedFilter.value;
+    if (activeMode.value === 'card-penyakit') {
+        if (filter === 'pmk') return kec.pmk || 0;
+        if (filter === 'lsd') return kec.lsd || 0;
+        return (kec.pmk || 0) + (kec.lsd || 0);
+    }
+    if (activeMode.value === 'card-produksi') {
+        if (filter === 'daging_ayam') return kec.daging_ayam || 0;
+        if (filter === 'daging_sapi') return kec.daging_sapi || 0;
+        if (filter === 'susu_sapi') return kec.susu_sapi || 0;
+        if (filter === 'telur_ayam') return kec.telur_ayam || 0;
+        return (
+            (kec.telur_ayam || 0) +
+            (kec.daging_ayam || 0) +
+            (kec.daging_sapi || 0) +
+            (kec.daging_kambing || 0) +
+            (kec.daging_domba || 0) +
+            (kec.susu_sapi || 0) +
+            (kec.susu_kambing || 0) +
+            (kec.susu_domba || 0)
+        );
+    }
+    if (activeMode.value === 'card-fasilitas') {
+        return kec.poskeswan || 0;
+    }
+    // card-populasi
+    if (filter === 'populasi_total') {
+        return (
+            kec.populasi_total ??
+            (kec.ayam_potong + kec.ayam_petelur + kec.kambing + kec.domba + kec.sapi_potong + kec.sapi_perah)
+        );
+    }
+    return Number(kec[filter as keyof KecamatanData]) || 0;
+}
+
+const quantiles = computed<number[]>(() => {
+    if (activeMode.value === 'card-penyakit' || activeMode.value === 'card-fasilitas') {
+        return [];
+    }
+    const values = activeKecamatanList.value
+        .map(k => getMetricValue(k))
+        .filter(v => typeof v === 'number' && !isNaN(v))
+        .sort((a, b) => a - b);
+
+    if (values.length === 0) return [0, 0, 0, 0];
+    return [
+        values[Math.floor(values.length * 0.2)] ?? 0,
+        values[Math.floor(values.length * 0.4)] ?? 0,
+        values[Math.floor(values.length * 0.6)] ?? 0,
+        values[Math.floor(values.length * 0.8)] ?? 0,
+    ];
 });
+
+function getQuantileLevel(val: number, q: number[]): number {
+    if (q.length < 4) return 1;
+    if (val > q[3]) return 5;
+    if (val > q[2]) return 4;
+    if (val > q[1]) return 3;
+    if (val > q[0]) return 2;
+    return 1;
+}
 
 function getFeatureStyle(feature: any) {
     const kec = getKecamatanDataFromFeature(feature);
     let fillColor = '#00B98B';
+
     if (kec) {
-        const val = Number(kec[selectedCommodity.value as keyof KecamatanData]) || 0;
-        const lvl = getClassLevel(val, quantiles.value);
-        fillColor = CHOROPLETH_5_CLASSES[lvl] ?? '#00B98B';
+        if (activeMode.value === 'card-penyakit') {
+            const total = (kec.pmk || 0) + (kec.lsd || 0);
+            if (kec.zona === 'bahaya' || total >= 6) {
+                fillColor = '#DC625F';
+            } else if (kec.zona === 'waspada' || total >= 1) {
+                fillColor = '#E8B84C';
+            } else {
+                fillColor = '#00D084';
+            }
+        } else if (activeMode.value === 'card-fasilitas') {
+            const val = kec.poskeswan || 0;
+            if (val >= 3) fillColor = '#00D084';
+            else if (val === 2) fillColor = '#32B9D0';
+            else if (val === 1) fillColor = '#86A65A';
+            else fillColor = '#444C43';
+        } else {
+            const val = getMetricValue(kec);
+            const lvl = getQuantileLevel(val, quantiles.value);
+            fillColor = CHOROPLETH_5_CLASSES[lvl] ?? '#00B98B';
+        }
     }
 
     return {
         fillColor,
-        fillOpacity: 0.5,
+        fillOpacity: 0.55,
         color: '#00B98B',
         weight: 1.5,
         opacity: 0.9,
@@ -97,13 +307,43 @@ function getFeatureStyle(feature: any) {
 function getTooltipContent(feature: any): string {
     const kec = getKecamatanDataFromFeature(feature);
     if (!kec) return '';
-    const val = Number(kec[selectedCommodity.value as keyof KecamatanData]) || 0;
+
+    let detailHtml = '';
+    if (activeMode.value === 'card-penyakit') {
+        const total = (kec.pmk || 0) + (kec.lsd || 0);
+        const color = total >= 6 ? '#DC625F' : total >= 1 ? '#E8B84C' : '#00D084';
+        const zonaLabel = total >= 6 ? 'Bahaya' : total >= 1 ? 'Waspada' : 'Aman';
+        detailHtml = `
+            <div style="font-size:11px;color:${color};font-weight:600;margin-top:2px;">
+                PMK: ${kec.pmk} · LSD: ${kec.lsd} (Zona ${zonaLabel})
+            </div>
+        `;
+    } else if (activeMode.value === 'card-fasilitas') {
+        detailHtml = `
+            <div style="font-size:11px;color:#32B9D0;font-weight:600;margin-top:2px;">
+                ${kec.poskeswan || 0} unit fasilitas
+            </div>
+        `;
+    } else if (activeMode.value === 'card-produksi') {
+        const val = getMetricValue(kec);
+        detailHtml = `
+            <div style="font-size:11px;color:#39D6C0;font-weight:600;margin-top:2px;">
+                ${formatAngka(val)} kg/lt
+            </div>
+        `;
+    } else {
+        const val = getMetricValue(kec);
+        detailHtml = `
+            <div style="font-size:11px;color:#39D6C0;font-weight:600;margin-top:2px;">
+                ${formatAngka(val)} ekor
+            </div>
+        `;
+    }
+
     return `
         <div style="font-family:'Inter',sans-serif;font-size:12px;font-weight:700;color:#E8F0F6;text-align:center;">
             ${kec.nama}
-            <div style="font-size:11px;color:#39D6C0;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px;">
-                ${formatAngka(val)} ekor
-            </div>
+            ${detailHtml}
         </div>
     `;
 }
@@ -131,6 +371,24 @@ function onEachFeature(feature: any, layer: L.Layer) {
         (layer as L.Path).setStyle(getFeatureStyle(feature));
     });
 }
+
+function updateMap() {
+    if (!geojsonLayer) return;
+    geojsonLayer.setStyle(getFeatureStyle);
+    geojsonLayer.eachLayer((layer: any) => {
+        if (layer.feature) {
+            layer.setTooltipContent(getTooltipContent(layer.feature));
+        }
+    });
+}
+
+watch(selectedFilter, () => {
+    updateMap();
+});
+
+watch(() => props.selectedCardId, () => {
+    updateMap();
+});
 
 function initMap() {
     if (!mapContainer.value) return;
@@ -182,16 +440,6 @@ function initMap() {
     }
 }
 
-watch(selectedCommodity, () => {
-    if (!geojsonLayer) return;
-    geojsonLayer.setStyle(getFeatureStyle);
-    geojsonLayer.eachLayer((layer: any) => {
-        if (layer.feature) {
-            layer.setTooltipContent(getTooltipContent(layer.feature));
-        }
-    });
-});
-
 onMounted(() => {
     initMap();
     setTimeout(() => {
@@ -224,22 +472,22 @@ onUnmounted(() => {
                 </div>
                 <div>
                     <h3 class="font-display font-bold text-sm dark:text-[#F5F5F5] text-[#171B17] leading-snug">
-                        Sebaran Populasi Wilayah
+                        {{ mapTitle }}
                     </h3>
                     <p class="text-xs dark:text-[#858585] text-[#737B71] mt-0.5">
-                        Kondisi populasi ternak per kecamatan
+                        {{ mapSubtitle }}
                     </p>
                 </div>
             </div>
 
-            <!-- Commodity Select Dropdown -->
+            <!-- Filter Select Dropdown -->
             <div class="relative shrink-0">
                 <select
-                    v-model="selectedCommodity"
+                    v-model="selectedFilter"
                     class="appearance-none dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-lg px-2.5 py-1.5 pr-7 text-xs dark:text-[#F5F5F5] text-[#171B17] focus:outline-none focus:border-[#00D084] transition-colors cursor-pointer"
                 >
                     <option
-                        v-for="opt in commodityOptions"
+                        v-for="opt in filterOptions"
                         :key="opt.id"
                         :value="opt.id"
                         class="dark:bg-[#111111] bg-white dark:text-[#F5F5F5] text-[#171B17]"
@@ -259,10 +507,10 @@ onUnmounted(() => {
                 class="relative flex-1 h-[220px] rounded-lg overflow-hidden border dark:border-[#1E1E1E] border-[#E0E4DD] shadow-inner bg-[#090909] z-0"
             ></div>
 
-            <!-- Right side: 5-class Legend -->
+            <!-- Right side: Legend -->
             <div class="flex flex-col gap-2 shrink-0 dark:bg-[#181818] bg-[#F4F5F2] p-2.5 rounded-lg border dark:border-[#1E1E1E] border-[#E0E4DD]">
                 <div class="text-[10px] font-bold uppercase tracking-wider dark:text-[#858585] text-[#737B71] mb-0.5">
-                    Tingkat Sebaran
+                    {{ legendTitle }}
                 </div>
                 <div
                     v-for="item in legendItems"

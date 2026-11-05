@@ -25,7 +25,7 @@ const emit = defineEmits<{
 
         <div class="w-full bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-6 md:p-8 space-y-6 shadow-sm">
             <div class="flex items-center gap-5">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 flex items-center justify-center font-display font-black text-2xl text-emerald-600 dark:text-[#00D084] shadow-md shadow-emerald-950/20">
+                <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center font-display font-bold text-2xl text-emerald-600 dark:text-[#00D084]">
                     S
                 </div>
                 <div>
@@ -83,7 +83,7 @@ const emit = defineEmits<{
                 <button
                     type="button"
                     @click="emit('saveSettings')"
-                    class="h-10 px-5 rounded-lg bg-[#171B17] dark:bg-[#00D084] hover:bg-[#2A2E2A] dark:hover:bg-[#00B98B] text-white dark:text-[#090909] font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                    class="h-10 px-5 rounded-lg bg-[#171B17] dark:bg-[#00D084] hover:bg-[#2A2E2A] dark:hover:bg-[#00B98B] text-white dark:text-[#090909] font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
                 >
                     <Check class="w-4 h-4 stroke-[2.5]" />
                     <span>Simpan Preferensi</span>
@@ -91,10 +91,10 @@ const emit = defineEmits<{
                 <button
                     type="button"
                     @click="emit('logout')"
-                    class="h-10 px-6 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    class="h-10 px-6 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20 font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
                     <LogOut class="w-4 h-4" />
-                    <span>Sign Out Dari Sesi Ini</span>
+                    <span>Keluar Sesi</span>
                 </button>
             </div>
         </div>

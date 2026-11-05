@@ -10,7 +10,7 @@
         </div>
         <div class="min-w-0">
           <div class="flex items-center gap-2">
-            <span class="font-display font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-[#F5F5F5] truncate">
+            <span class="font-display font-bold text-base sm:text-lg tracking-tight text-slate-900 dark:text-[#F5F5F5] truncate">
               TERNAK<span class="text-emerald-600 dark:text-emerald-400">VERSE</span>
             </span>
             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-wider shrink-0">
@@ -31,12 +31,13 @@
             <span>Peta Interaktif</span>
           </Link>
           <Link
-            v-if="!auth?.user || auth?.user?.role === 'admin' || auth?.user?.is_admin"
-            href="/admin/panel"
-            class="px-3 py-1.5 rounded-lg font-semibold text-slate-700 dark:text-[#B3B3B3] hover:text-emerald-600 dark:hover:text-[#F5F5F5] hover:bg-white dark:hover:bg-[#111111] transition-colors flex items-center gap-1.5"
+            v-if="isAdmin"
+            href="/internal/admin"
+            class="px-3 py-1.5 rounded-lg font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors flex items-center gap-1.5 cursor-pointer"
+            title="Kembali ke Dashboard Super Admin"
           >
-            <Database class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-            <span>Panel Admin</span>
+            <Database class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>&larr; Kembali ke Panel Admin</span>
           </Link>
         </nav>
 
@@ -44,13 +45,13 @@
           <ThemeToggle size="sm" compact />
           <span
             class="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border"
-            :class="auth?.user?.role === 'admin' ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30' : 'bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30'"
+            :class="isAdmin ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30' : 'bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30'"
           >
-            {{ auth?.user?.role?.toUpperCase() || 'STAKEHOLDER' }}
+            {{ isAdmin ? 'SUPER ADMIN' : (auth?.user?.role?.toUpperCase() || 'STAKEHOLDER') }}
           </span>
           <div class="hidden sm:flex flex-col text-right leading-tight">
-            <span class="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5]">{{ auth?.user?.nama || 'Petugas Dinas' }}</span>
-            <span class="text-[11px] font-mono text-slate-500 dark:text-[#858585]">{{ auth?.user?.email || 'dinas@banyumaskab.go.id' }}</span>
+            <span class="text-xs font-semibold text-slate-800 dark:text-[#F5F5F5]">{{ currentUserName }}</span>
+            <span class="text-[11px] font-mono text-slate-500 dark:text-[#858585]">{{ currentUserEmail }}</span>
           </div>
         </div>
       </div>
@@ -78,7 +79,7 @@
           <div class="flex flex-wrap items-center gap-3">
             <div class="flex items-center gap-2">
               <Filter class="w-4 h-4 text-emerald-600 dark:text-[#00D084]" />
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3]">Filter Analitik:</span>
+              <span class="text-xs font-semibold tracking-normal text-slate-500 dark:text-[#B3B3B3]">Filter Analitik:</span>
             </div>
 
             <!-- Tahun Anggaran Selector -->
@@ -119,7 +120,7 @@
                 class="bg-transparent font-semibold text-emerald-700 dark:text-[#00D084] focus:outline-none cursor-pointer"
               >
                 <option v-for="kom in commodityOptions" :key="kom.kode" :value="kom.kode" class="bg-white dark:bg-[#181818] text-slate-900 dark:text-[#F5F5F5]">
-                  {{ kom.label }} ({{ kom.kode }})
+                  {{ kom.label }}
                 </option>
               </select>
             </div>
@@ -138,7 +139,7 @@
             </button>
 
             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
               <span>LIVE POSTGIS SYNC</span>
             </div>
 
@@ -146,7 +147,7 @@
               <CheckCircle2 class="w-3.5 h-3.5 text-teal-500 shrink-0" />
               <span>Deferred Spasial: <strong class="font-mono tabular-nums">{{ balaiDesaCount.toLocaleString('id-ID') }}</strong> Titik Balai Desa Aktif</span>
             </div>
-            <div v-else class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold animate-pulse">
+            <div v-else class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold">
               <Loader2 class="w-3.5 h-3.5 animate-spin text-amber-500 shrink-0" />
               <span>Streaming 331 Titik Balai Desa (Inertia Defer)...</span>
             </div>
@@ -159,8 +160,8 @@
         <!-- 1. Total Populasi Ternak -->
         <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm flex flex-col justify-between">
           <div class="flex items-center justify-between gap-2 mb-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3]">Total Populasi Ternak</span>
-            <span class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <span class="text-xs font-semibold tracking-normal text-slate-500 dark:text-[#B3B3B3]">Total Populasi Ternak</span>
+            <span class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] flex items-center justify-center text-slate-700 dark:text-[#F5F5F5]">
               <Layers class="w-4 h-4" />
             </span>
           </div>
@@ -176,8 +177,8 @@
         <!-- 2. Produksi Daging -->
         <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm flex flex-col justify-between">
           <div class="flex items-center justify-between gap-2 mb-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3]">Produksi Daging</span>
-            <span class="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+            <span class="text-xs font-semibold tracking-normal text-slate-500 dark:text-[#B3B3B3]">Produksi Daging</span>
+            <span class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] flex items-center justify-center text-slate-700 dark:text-[#F5F5F5]">
               <TrendingUp class="w-4 h-4" />
             </span>
           </div>
@@ -193,8 +194,8 @@
         <!-- 3. Produksi Susu -->
         <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm flex flex-col justify-between">
           <div class="flex items-center justify-between gap-2 mb-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3]">Produksi Susu Segar</span>
-            <span class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400">
+            <span class="text-xs font-semibold tracking-normal text-slate-500 dark:text-[#B3B3B3]">Produksi Susu Segar</span>
+            <span class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] flex items-center justify-center text-slate-700 dark:text-[#F5F5F5]">
               <Droplets class="w-4 h-4" />
             </span>
           </div>
@@ -210,8 +211,8 @@
         <!-- 4. Produksi Telur -->
         <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm flex flex-col justify-between">
           <div class="flex items-center justify-between gap-2 mb-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3]">Produksi Telur</span>
-            <span class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
+            <span class="text-xs font-semibold tracking-normal text-slate-500 dark:text-[#B3B3B3]">Produksi Telur</span>
+            <span class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] flex items-center justify-center text-slate-700 dark:text-[#F5F5F5]">
               <BarChart3 class="w-4 h-4" />
             </span>
           </div>
@@ -224,21 +225,27 @@
           </div>
         </div>
 
-        <!-- 5. Kasus Aktif Wabah (Semantic Rose #E11D48 when > 0, Emerald when 0) -->
+        <!-- 5. Kasus Aktif Wabah (Semantic Rose #E11D48 when > 0, Neutral when 0) -->
         <div
           class="rounded-xl p-4 shadow-sm flex flex-col justify-between border transition-colors"
           :class="(kpiCards?.total_kasus_aktif ?? 0) > 0 ? 'bg-rose-500/5 dark:bg-rose-950/25 border-rose-500/40' : 'bg-white dark:bg-[#111111] border-[#E0E4DD] dark:border-[#1E1E1E]'"
         >
           <div class="flex items-center justify-between gap-2 mb-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider" :class="(kpiCards?.total_kasus_aktif ?? 0) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-[#B3B3B3]'">
+            <span class="text-xs font-semibold tracking-normal" :class="(kpiCards?.total_kasus_aktif ?? 0) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-[#B3B3B3]'">
               Kasus Aktif Wabah
             </span>
-            <span class="w-8 h-8 rounded-lg border flex items-center justify-center" :class="(kpiCards?.total_kasus_aktif ?? 0) > 0 ? 'bg-rose-500/15 border-rose-500/30 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'">
+            <span
+              class="w-8 h-8 rounded-lg border flex items-center justify-center"
+              :class="(kpiCards?.total_kasus_aktif ?? 0) > 0 ? 'bg-rose-500/15 border-rose-500/30 text-rose-600 dark:text-rose-400' : 'bg-slate-100 dark:bg-[#181818] border-[#E0E4DD] dark:border-[#1E1E1E] text-slate-700 dark:text-[#F5F5F5]'"
+            >
               <ShieldAlert class="w-4 h-4" />
             </span>
           </div>
           <div>
-            <div class="text-2xl font-bold font-mono tabular-nums" :class="(kpiCards?.total_kasus_aktif ?? 0) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'">
+            <div
+              class="text-2xl font-bold font-mono tabular-nums"
+              :class="(kpiCards?.total_kasus_aktif ?? 0) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-[#F5F5F5]'"
+            >
               {{ (kpiCards?.total_kasus_aktif ?? 0).toLocaleString('id-ID') }}
               <span class="text-xs font-normal font-ui text-slate-500 dark:text-[#B3B3B3]">kasus</span>
             </div>
@@ -249,13 +256,13 @@
         <!-- 6. Fasilitas RPH Aktif -->
         <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-4 shadow-sm flex flex-col justify-between">
           <div class="flex items-center justify-between gap-2 mb-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3]">Fasilitas RPH Aktif</span>
-            <span class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <span class="text-xs font-semibold tracking-normal text-slate-500 dark:text-[#B3B3B3]">Fasilitas RPH Aktif</span>
+            <span class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] flex items-center justify-center text-slate-700 dark:text-[#F5F5F5]">
               <Building2 class="w-4 h-4" />
             </span>
           </div>
           <div>
-            <div class="text-2xl font-bold font-mono tabular-nums text-emerald-600 dark:text-emerald-400">
+            <div class="text-2xl font-bold font-mono tabular-nums text-slate-900 dark:text-[#F5F5F5]">
               {{ (kpiCards?.total_rph_aktif ?? 0).toLocaleString('id-ID') }}
               <span class="text-xs font-normal font-ui text-slate-500 dark:text-[#B3B3B3]">unit</span>
             </div>
@@ -273,7 +280,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
               <div>
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-[#00D084]">Zonasi Spasial Choropleth</span>
+                  <span class="text-xs font-semibold tracking-normal text-emerald-600 dark:text-[#00D084]">Zonasi Spasial Choropleth</span>
                   <span class="text-[11px] font-mono tabular-nums px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] text-slate-600 dark:text-[#B3B3B3]">
                     {{ geoChoropleth?.length || 0 }} Kecamatan
                   </span>
@@ -330,16 +337,16 @@
             </div>
 
             <!-- Choropleth Tabular / Card Grid -->
-            <div class="overflow-x-auto max-h-[420px] overflow-y-auto rounded-lg border border-[#E0E4DD] dark:border-[#1E1E1E]">
+            <div class="overflow-x-auto max-h-96 overflow-y-auto rounded-lg border border-[#E0E4DD] dark:border-[#1E1E1E]">
               <table class="w-full text-left border-collapse text-xs">
                 <thead class="bg-slate-100 dark:bg-[#181818] text-slate-500 dark:text-[#B3B3B3] sticky top-0 z-10 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
                   <tr>
-                    <th class="py-2.5 px-3 font-bold uppercase tracking-wider">Kecamatan</th>
-                    <th class="py-2.5 px-3 font-bold uppercase tracking-wider">Kuantil</th>
-                    <th class="py-2.5 px-3 font-bold uppercase tracking-wider">Zonasi EWS</th>
-                    <th class="py-2.5 px-3 font-bold uppercase tracking-wider text-right">Populasi</th>
-                    <th class="py-2.5 px-3 font-bold uppercase tracking-wider text-right hidden md:table-cell">Daging (kg)</th>
-                    <th class="py-2.5 px-3 font-bold uppercase tracking-wider text-right hidden xl:table-cell">Susu (L)</th>
+                    <th class="py-2.5 px-3 text-xs font-semibold tracking-normal">Kecamatan</th>
+                    <th class="py-2.5 px-3 text-xs font-semibold tracking-normal">Kuantil</th>
+                    <th class="py-2.5 px-3 text-xs font-semibold tracking-normal">Zonasi EWS</th>
+                    <th class="py-2.5 px-3 text-xs font-semibold tracking-normal text-right">Populasi</th>
+                    <th class="py-2.5 px-3 text-xs font-semibold tracking-normal text-right hidden md:table-cell">Daging (kg)</th>
+                    <th class="py-2.5 px-3 text-xs font-semibold tracking-normal text-right hidden xl:table-cell">Susu (L)</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 dark:divide-[#1E1E1E]">
@@ -382,7 +389,7 @@
               <div>
                 <div class="flex items-center justify-between gap-2 pb-3 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
                   <div>
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Surveilans Kesehatan Hewan</span>
+                    <span class="text-xs font-semibold tracking-normal text-rose-600 dark:text-rose-400">Surveilans Kesehatan Hewan</span>
                     <h3 class="font-display font-bold text-sm text-slate-900 dark:text-[#F5F5F5] mt-0.5">Tren Kasus Wabah ({{ filterState.tahun }})</h3>
                   </div>
                   <div class="flex items-center gap-2">
@@ -425,7 +432,7 @@
               <div>
                 <div class="flex items-center justify-between gap-2 pb-3 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
                   <div>
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">Komparasi Komoditas</span>
+                    <span class="text-xs font-semibold tracking-normal text-teal-600 dark:text-teal-400">Komparasi Komoditas</span>
                     <h3 class="font-display font-bold text-sm text-slate-900 dark:text-[#F5F5F5] mt-0.5">Rincian Produksi Daging &amp; Susu</h3>
                   </div>
                   <div class="flex items-center gap-2">
@@ -444,7 +451,7 @@
 
                 <div class="mt-4 space-y-4">
                   <div>
-                    <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3] mb-2">Kontribusi Daging (kg)</div>
+                    <div class="text-xs font-semibold tracking-normal text-slate-500 dark:text-[#B3B3B3] mb-2">Kontribusi Daging (kg)</div>
                     <div class="space-y-1.5">
                       <div v-for="item in chartData?.komparasi_produksi?.daging?.slice(0, 4) || []" :key="item.name" class="flex items-center justify-between text-xs py-1 px-2.5 rounded bg-slate-50 dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E]">
                         <span class="text-slate-700 dark:text-[#B3B3B3] truncate">{{ item.name }}</span>
@@ -454,7 +461,7 @@
                   </div>
 
                   <div>
-                    <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#B3B3B3] mb-2">Kontribusi Susu Segar (liter)</div>
+                    <div class="text-xs font-semibold tracking-normal text-slate-500 dark:text-[#B3B3B3] mb-2">Kontribusi Susu Segar (liter)</div>
                     <div class="space-y-1.5">
                       <div v-for="item in chartData?.komparasi_produksi?.susu || []" :key="item.name" class="flex items-center justify-between text-xs py-1 px-2.5 rounded bg-slate-50 dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E]">
                         <span class="text-slate-700 dark:text-[#B3B3B3] truncate">{{ item.name }}</span>
@@ -474,7 +481,7 @@
           <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-5 shadow-sm">
             <div class="flex items-center justify-between gap-2 pb-3 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
               <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-[#00D084]">Peringkat Wilayah</span>
+                <span class="text-xs font-semibold tracking-normal text-emerald-600 dark:text-[#00D084]">Peringkat Wilayah</span>
                 <h3 class="font-display font-bold text-base text-slate-900 dark:text-[#F5F5F5] mt-0.5">Top Kecamatan ({{ formatKomoditasLabel(filterState.komoditas) }})</h3>
               </div>
               <div class="flex items-center gap-2">
@@ -493,7 +500,7 @@
               </div>
             </div>
 
-            <div class="mt-4 space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+            <div class="mt-4 space-y-2.5 max-h-96 overflow-y-auto pr-1">
               <div v-for="(item, idx) in displayedRankingItems" :key="item.name" class="space-y-1">
                 <div class="flex items-center justify-between text-xs">
                   <div class="flex items-center gap-2 min-w-0">
@@ -508,7 +515,7 @@
                   <span class="font-mono tabular-nums font-semibold text-slate-900 dark:text-[#F5F5F5] shrink-0">{{ item.value.toLocaleString('id-ID') }} ekor</span>
                 </div>
                 <div class="w-full h-1.5 bg-slate-100 dark:bg-[#181818] rounded-full overflow-hidden">
-                  <div class="h-full bg-emerald-500 rounded-full transition-all duration-300" :style="{ width: `${ item.percent }%` }"></div>
+                  <div class="h-full bg-emerald-500 rounded-full transition-[width] duration-300 ease-out" :style="{ width: `${ item.percent }%` }"></div>
                 </div>
               </div>
             </div>
@@ -517,7 +524,7 @@
           <div class="bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-5 shadow-sm">
             <div class="flex items-center justify-between gap-2 pb-3 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
               <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">Distribusi Komoditas</span>
+                <span class="text-xs font-semibold tracking-normal text-teal-600 dark:text-teal-400">Distribusi Komoditas</span>
                 <h3 class="font-display font-bold text-base text-slate-900 dark:text-[#F5F5F5] mt-0.5">Proporsi Populasi 6 Komoditas</h3>
               </div>
               <div class="flex items-center gap-2">
@@ -544,7 +551,7 @@
                   </div>
                 </div>
                 <div class="w-full h-1.5 bg-slate-200 dark:bg-[#1E1E1E] rounded-full overflow-hidden">
-                  <div class="h-full bg-teal-500 rounded-full transition-all duration-300" :style="{ width: `${ kom.shareNum }%` }"></div>
+                  <div class="h-full bg-teal-500 rounded-full transition-[width] duration-300 ease-out" :style="{ width: `${ kom.shareNum }%` }"></div>
                 </div>
               </div>
             </div>
@@ -557,7 +564,7 @@
         <div class="px-5 py-3.5 flex items-center justify-between gap-4">
           <div class="flex items-center gap-2.5">
             <Terminal class="w-4 h-4 text-emerald-600 dark:text-[#00D084] shrink-0" />
-            <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-[#B3B3B3]">Inspektor Kontrak Data Inertia ($props)</span>
+            <span class="text-xs font-mono font-semibold tracking-normal text-slate-700 dark:text-[#B3B3B3]">Inspektor Kontrak Data Inertia ($props)</span>
           </div>
           <button
             type="button"
@@ -677,6 +684,26 @@ const props = defineProps<{
   appName?: string
 }>()
 
+const isAdmin = computed(() => {
+  return props.auth?.user?.role === 'admin'
+    || props.auth?.user?.is_admin
+    || (typeof window !== 'undefined' ? localStorage.getItem('ternakverse_role') === 'admin' : false)
+})
+
+const currentUserName = computed(() => {
+  if (isAdmin.value) {
+    return props.auth?.user?.nama || (typeof window !== 'undefined' ? localStorage.getItem('ternakverse_name') : null) || 'Satrio Wibowo'
+  }
+  return props.auth?.user?.nama || (typeof window !== 'undefined' ? localStorage.getItem('ternakverse_name') : null) || 'drh. Sulistyo'
+})
+
+const currentUserEmail = computed(() => {
+  if (isAdmin.value) {
+    return props.auth?.user?.email || 'admin.diskanak@banyumaskab.go.id'
+  }
+  return props.auth?.user?.email || 'drh.sulistyo@banyumaskab.go.id'
+})
+
 // Developer JSON Contract Inspector — closed by default for Executive UI
 const showRaw = ref(false)
 const showAllRanking = ref(false)
@@ -684,6 +711,7 @@ const searchKecamatan = ref('')
 const selectedZoneFilter = ref<'SEMUA' | 'HIJAU' | 'KUNING' | 'MERAH'>('SEMUA')
 
 const commodityOptions = [
+  { kode: 'SEMUA', label: 'Semua Komoditas' },
   { kode: 'SAPI_POTONG', label: 'Sapi Potong' },
   { kode: 'SAPI_PERAH', label: 'Sapi Perah' },
   { kode: 'KAMBING', label: 'Kambing' },
@@ -693,7 +721,7 @@ const commodityOptions = [
 ]
 
 function formatKomoditasLabel(kode?: string): string {
-  if (!kode) return 'Sapi Potong'
+  if (!kode || kode === 'SEMUA') return 'Semua Komoditas'
   const found = commodityOptions.find((c) => c.kode === kode)
   return found ? found.label : kode.replace(/_/g, ' ')
 }
@@ -708,6 +736,7 @@ function updateFilter(key: keyof FilterState, value: number | string | null) {
   router.get('/dinas/dashboard', nextQuery, {
     preserveState: true,
     preserveScroll: true,
+    only: ['filterState', 'kpiCards', 'chartData', 'geoChoropleth'],
   })
 }
 

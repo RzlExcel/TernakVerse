@@ -1,0 +1,93 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.0782,
+          -7.414
+        ]
+      },
+      "properties": {
+        "id_pasar": "PH-01",
+        "nama_pasar": "Pasar Hewan Ajibarang (Pasar Wage)",
+        "kode_kecamatan": "33.02.14",
+        "nama_kecamatan": "Ajibarang",
+        "alamat_lengkap": "Jl. Raya Pancasan-Ajibarang, Ajibarang, Kabupaten Banyumas",
+        "hari_pasaran": "Wage (Penanggalan Jawa)",
+        "komoditas_utama": "Sapi Potong, Sapi Perah, Kambing, Domba",
+        "kapasitas_tampung_ekor": 1500,
+        "pos_pos_pemeriksaan_keswan": "Tersedia Pos Pengawasan Dinkannak",
+        "status_operasional": "Aktif"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.268,
+          -7.455
+        ]
+      },
+      "properties": {
+        "id_pasar": "PH-02",
+        "nama_pasar": "Pasar Hewan Sokaraja",
+        "kode_kecamatan": "33.02.19",
+        "nama_kecamatan": "Sokaraja",
+        "alamat_lengkap": "Jl. Suparjo Rustam, Sokaraja, Kabupaten Banyumas",
+        "hari_pasaran": "Kliwon / Pahing",
+        "komoditas_utama": "Kambing, Domba, Unggas",
+        "kapasitas_tampung_ekor": 800,
+        "pos_pos_pemeriksaan_keswan": "Tersedia Pos Pengawasan Dinkannak",
+        "status_operasional": "Aktif"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.359,
+          -7.613
+        ]
+      },
+      "properties": {
+        "id_pasar": "PH-03",
+        "nama_pasar": "Pasar Hewan Sumpiuh",
+        "kode_kecamatan": "33.02.07",
+        "nama_kecamatan": "Sumpiuh",
+        "alamat_lengkap": "Jl. Raya Barat Sumpiuh, Sumpiuh, Kabupaten Banyumas",
+        "hari_pasaran": "Pon / Legi",
+        "komoditas_utama": "Sapi, Kambing, Unggas",
+        "kapasitas_tampung_ekor": 600,
+        "pos_pos_pemeriksaan_keswan": "Tersedia Pos Pengawasan Dinkannak",
+        "status_operasional": "Aktif"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.054,
+          -7.521
+        ]
+      },
+      "properties": {
+        "id_pasar": "PH-04",
+        "nama_pasar": "Pasar Hewan Wangon",
+        "kode_kecamatan": "33.02.02",
+        "nama_kecamatan": "Wangon",
+        "alamat_lengkap": "Jl. Raya Selatan Wangon, Wangon, Kabupaten Banyumas",
+        "hari_pasaran": "Manis / Wage",
+        "komoditas_utama": "Sapi, Kambing, Domba",
+        "kapasitas_tampung_ekor": 750,
+        "pos_pos_pemeriksaan_keswan": "Tersedia Pos Pengawasan Dinkannak",
+        "status_operasional": "Aktif"
+      }
+    }
+  ]
+}

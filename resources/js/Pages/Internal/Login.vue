@@ -23,11 +23,23 @@ function selectRole(role: 'dinas' | 'admin'): void {
 function handleLogin(): void {
     isLoading.value = true;
     errorMessage.value = '';
+    const role = selectedRole.value;
+    const name = role === 'admin' ? 'Satrio Wibowo' : 'drh. Sulistyo';
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('ternakverse_role', role);
+        localStorage.setItem('ternakverse_name', name);
+    }
     router.post('/internal/login', {
         role: selectedRole.value,
         email: username.value,
         password: password.value,
     }, {
+        onSuccess: () => {
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('ternakverse_role', role);
+                localStorage.setItem('ternakverse_name', name);
+            }
+        },
         onFinish: () => {
             isLoading.value = false;
         },
@@ -50,10 +62,10 @@ function handleLogin(): void {
 
         <!-- Logo & Header (AgriTech Emerald & Slate Style) -->
         <div class="text-center mb-8 relative z-10">
-            <div class="inline-flex w-14 h-14 rounded-2xl bg-emerald-600 items-center justify-center text-white font-black text-2xl shadow-lg shadow-emerald-950/50 border border-emerald-500/30 mb-3">
+            <div class="inline-flex w-14 h-14 rounded-2xl bg-emerald-600 items-center justify-center text-white font-black text-2xl border border-emerald-500/30 mb-3">
                 T
             </div>
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-[#00D084] text-[11px] font-semibold tracking-wide uppercase mb-2 block mx-auto w-fit">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-[#00D084] text-[11px] font-medium tracking-normal mb-2 block mx-auto w-fit">
                 Portal Otorisasi Aparatur
             </div>
             <h1 class="font-display font-black text-2xl text-[#171B17] dark:text-white tracking-tight">
@@ -65,7 +77,7 @@ function handleLogin(): void {
         </div>
 
         <!-- Card Login (AgriTech High-Contrast Pure Obsidian & Slate) -->
-        <div class="w-full max-w-md bg-[#F4F5F2] dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-2xl p-6 sm:p-8 shadow-2xl relative z-10 transition-colors">
+        <div class="w-full max-w-md bg-[#F4F5F2] dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-2xl p-6 sm:p-8 shadow-sm dark:shadow-none relative z-10 transition-colors">
             <h2 class="font-display font-bold text-lg text-[#171B17] dark:text-white mb-1">Masuk Sesi Petugas</h2>
             <p class="text-xs text-[#444C43] dark:text-[#B3B3B3] mb-5">Pilih peran terotorisasi untuk mengakses modul operasional geospasial dan komoditas.</p>
 
@@ -74,7 +86,7 @@ function handleLogin(): void {
                 <button
                     type="button"
                     @click="selectRole('dinas')"
-                    class="py-2 px-3 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    class="py-2 px-3 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                     :class="selectedRole === 'dinas' ? 'bg-[#171B17] text-white font-bold shadow-xs dark:bg-[#181818] dark:text-[#00D084]' : 'text-[#444C43] hover:text-[#171B17] hover:bg-[#EDEFEB] dark:text-[#B3B3B3] dark:hover:text-[#F5F5F5] dark:hover:bg-[#1E1E1E]'"
                 >
                     <UserCheck class="w-3.5 h-3.5" />
@@ -83,11 +95,11 @@ function handleLogin(): void {
                 <button
                     type="button"
                     @click="selectRole('admin')"
-                    class="py-2 px-3 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    class="py-2 px-3 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                     :class="selectedRole === 'admin' ? 'bg-[#171B17] text-white font-bold shadow-xs dark:bg-[#181818] dark:text-[#00D084]' : 'text-[#444C43] hover:text-[#171B17] hover:bg-[#EDEFEB] dark:text-[#B3B3B3] dark:hover:text-[#F5F5F5] dark:hover:bg-[#1E1E1E]'"
                 >
                     <ShieldCheck class="w-3.5 h-3.5" />
-                    <span>Super Admin</span>
+                    <span>Admin</span>
                 </button>
             </div>
 
@@ -107,7 +119,7 @@ function handleLogin(): void {
                             v-model="username"
                             type="text"
                             required
-                            class="w-full h-10 bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg pl-9 pr-3 text-xs text-[#171B17] dark:text-[#F5F5F5] placeholder-slate-400 dark:placeholder-[#858585] outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-mono"
+                            class="w-full h-10 bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg pl-9 pr-3 text-xs text-[#171B17] dark:text-[#F5F5F5] placeholder-slate-400 dark:placeholder-[#858585] outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
                         />
                     </div>
                 </div>
@@ -121,7 +133,7 @@ function handleLogin(): void {
                             v-model="password"
                             type="password"
                             required
-                            class="w-full h-10 bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg pl-9 pr-3 text-xs text-[#171B17] dark:text-[#F5F5F5] placeholder-slate-400 dark:placeholder-[#858585] outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-mono"
+                            class="w-full h-10 bg-white dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg pl-9 pr-3 text-xs text-[#171B17] dark:text-[#F5F5F5] placeholder-slate-400 dark:placeholder-[#858585] outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
                         />
                     </div>
                 </div>
@@ -130,9 +142,9 @@ function handleLogin(): void {
                     <button
                         type="submit"
                         :disabled="isLoading"
-                        class="w-full h-10 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+                        class="w-full h-10 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
                     >
-                        <span>{{ isLoading ? 'Memverifikasi...' : 'Masuk ke Panel Operasional' }}</span>
+                        <span>{{ isLoading ? 'Memverifikasi' : 'Masuk ke Panel Operasional' }}</span>
                         <ArrowRight class="w-4 h-4" />
                     </button>
                 </div>

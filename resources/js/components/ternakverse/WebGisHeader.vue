@@ -41,18 +41,18 @@ const displayRoleTitle = computed(() => {
         <!-- Sisi Kiri: Brand Logo, Judul & Status Badge -->
         <div class="flex items-center gap-3 md:gap-4 min-w-0">
             <!-- Brand Icon -->
-            <div class="w-9 h-9 rounded-xl dark:bg-[#111111] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] flex items-center justify-center dark:text-[#00D084] text-[#00A86B] shadow-xs shrink-0">
-                <Compass class="w-5 h-5 dark:text-[#00D084] text-[#00A86B] stroke-[2.2]" />
+            <div class="w-9 h-9 rounded-xl dark:bg-[#111111] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] flex items-center justify-center dark:text-[#00D084] text-[#171B17] shadow-xs shrink-0">
+                <Compass class="w-5 h-5 dark:text-[#00D084] text-[#171B17] stroke-[2.2]" />
             </div>
 
             <!-- Brand Name & Subtitle -->
             <div class="flex flex-col min-w-0">
                 <div class="flex items-center gap-2">
-                    <span class="font-display font-extrabold text-base sm:text-lg dark:text-[#F5F5F5] text-[#171B17] tracking-wider leading-none">
+                    <span class="font-display font-bold text-base sm:text-lg dark:text-[#F5F5F5] text-[#171B17] tracking-normal leading-none">
                         TERNAKVERSE
                     </span>
                     <!-- Status Badge -->
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border dark:bg-[#00D084]/15 dark:text-[#00D084] dark:border-[#00D084]/30 bg-[#E8F8F1] text-[#00A86B] border-[#00A86B]/30">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border dark:bg-[#181818] bg-[#F4F5F2] dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#00D084] text-[#171B17]">
                         WebGIS
                     </span>
                 </div>
@@ -65,8 +65,8 @@ const displayRoleTitle = computed(() => {
         <!-- Sisi Kanan: Basemap Toggle, Reset Filter, Bantuan & Profil Pengguna -->
         <div class="flex items-center gap-2 sm:gap-3 shrink-0">
             <!-- Basemap Indicator (Peta Satelit Tunggal Aktif) -->
-            <div class="h-8 px-3 rounded-xl border dark:border-[#1E1E1E] border-[#E0E4DD] dark:bg-[#111111] bg-[#F4F5F2] flex items-center gap-1.5 text-xs font-semibold dark:text-[#00D084] text-[#00A86B] shadow-xs">
-                <Satellite class="w-3.5 h-3.5 dark:text-[#00D084] text-[#00A86B]" />
+            <div class="h-8 px-3 rounded-xl border dark:border-[#1E1E1E] border-[#E0E4DD] dark:bg-[#111111] bg-[#F4F5F2] flex items-center gap-1.5 text-xs font-semibold dark:text-[#00D084] text-[#171B17] shadow-xs">
+                <Satellite class="w-4 h-4 stroke-2 dark:text-[#00D084] text-[#171B17]" />
                 <span>Peta Satelit</span>
                 <!-- Kontrak pengujian UI/UX: Peta Vektor telah dinonaktifkan -->
                 <span class="hidden" aria-hidden="true">Peta Vektor (Nonaktif)</span>
@@ -76,10 +76,10 @@ const displayRoleTitle = computed(() => {
             <button
                 type="button"
                 @click="emit('resetFilter')"
-                class="h-8 px-2.5 sm:px-3 rounded-xl border dark:border-[#1E1E1E] border-[#E0E4DD] dark:bg-[#111111] bg-[#F4F5F2] hover:dark:bg-[#181818] hover:bg-[#EDEFEB] text-xs font-medium dark:text-[#B3B3B3] text-[#444C43] hover:dark:text-[#F5F5F5] hover:text-[#171B17] flex items-center gap-1.5 transition-colors cursor-pointer"
+                class="h-8 px-2.5 sm:px-3 rounded-xl border dark:border-[#1E1E1E] border-[#E0E4DD] dark:bg-[#111111] bg-[#F4F5F2] hover:dark:bg-[#181818] hover:bg-[#EDEFEB] text-xs font-medium dark:text-[#B3B3B3] text-[#444C43] hover:dark:text-[#F5F5F5] hover:text-[#171B17] hover:border-[#171B17] flex items-center gap-1.5 transition-colors cursor-pointer"
                 title="Reset Filter"
             >
-                <RotateCcw class="w-3.5 h-3.5 dark:text-[#B3B3B3] text-[#6E776D]" />
+                <RotateCcw class="w-4 h-4 stroke-2 dark:text-[#B3B3B3] text-[#171B17]" />
                 <span class="hidden sm:inline">Reset Filter</span>
             </button>
 
@@ -87,35 +87,35 @@ const displayRoleTitle = computed(() => {
             <button
                 type="button"
                 @click="emit('openHelp')"
-                class="h-8 px-2.5 sm:px-3 rounded-xl border dark:border-[#1E1E1E] border-[#E0E4DD] dark:bg-[#111111] bg-[#F4F5F2] hover:dark:bg-[#181818] hover:bg-[#EDEFEB] text-xs font-medium dark:text-[#B3B3B3] text-[#444C43] hover:dark:text-[#F5F5F5] hover:text-[#171B17] flex items-center gap-1.5 transition-colors cursor-pointer"
+                class="h-8 px-2.5 sm:px-3 rounded-xl border dark:border-[#1E1E1E] border-[#E0E4DD] dark:bg-[#111111] bg-[#F4F5F2] hover:dark:bg-[#181818] hover:bg-[#EDEFEB] text-xs font-medium dark:text-[#B3B3B3] text-[#444C43] hover:dark:text-[#F5F5F5] hover:text-[#171B17] hover:border-[#171B17] flex items-center gap-1.5 transition-colors cursor-pointer"
                 title="Bantuan Penggunaan Peta"
             >
-                <HelpCircle class="w-3.5 h-3.5 dark:text-[#B3B3B3] text-[#6E776D]" />
+                <HelpCircle class="w-4 h-4 stroke-2 dark:text-[#B3B3B3] text-[#171B17]" />
                 <span class="hidden sm:inline">Bantuan</span>
             </button>
 
             <!-- Theme Switcher Toggle (Pure Obsidian & High-Contrast Light) -->
             <ThemeToggle size="sm" compact />
 
-            <!-- Quick Navigation Portal Internal (Admin / Dinas) -->
             <Link
                 v-if="currentRole === 'admin'"
                 href="/internal/admin"
-                class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg dark:bg-[#00D084]/15 bg-[#E8F8F1] hover:dark:bg-[#00D084]/25 hover:bg-[#D4F2E4] border dark:border-[#00D084]/40 border-[#00A86B]/40 dark:text-[#00D084] text-[#00A86B] text-xs font-semibold transition-colors"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg dark:bg-[#00D084]/15 bg-[#171B17] hover:dark:bg-[#00D084]/25 hover:bg-[#282828] border dark:border-[#00D084]/40 border-[#171B17] dark:text-[#00D084] text-white text-xs font-semibold transition-colors cursor-pointer"
+                title="Kembali ke Panel Admin"
             >
-                <span>Dashboard Admin</span>
+                <span>&larr; Kembali ke Panel Admin</span>
             </Link>
             <Link
                 v-else-if="currentRole === 'dinas'"
                 href="/internal/dinas"
-                class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg dark:bg-[#00D084]/15 bg-[#E8F8F1] hover:dark:bg-[#00D084]/25 hover:bg-[#D4F2E4] border dark:border-[#00D084]/40 border-[#00A86B]/40 dark:text-[#00D084] text-[#00A86B] text-xs font-semibold transition-colors"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg dark:bg-[#00D084]/15 bg-[#171B17] hover:dark:bg-[#00D084]/25 hover:bg-[#282828] border dark:border-[#00D084]/40 border-[#171B17] dark:text-[#00D084] text-white text-xs font-semibold transition-colors"
             >
                 <span>Portal Dinas</span>
             </Link>
 
             <!-- Profil Pengguna Pill -->
             <div class="flex items-center gap-2 pl-2 sm:pl-3 border-l dark:border-[#1E1E1E] border-[#E0E4DD]">
-                <div class="w-8 h-8 rounded-full dark:bg-[#00D084]/15 bg-[#E8F8F1] border dark:border-[#00D084]/40 border-[#00A86B]/40 flex items-center justify-center text-xs font-bold dark:text-[#00D084] text-[#00A86B] shrink-0">
+                <div class="w-8 h-8 rounded-full dark:bg-[#00D084]/15 bg-[#171B17] border dark:border-[#00D084]/40 border-[#171B17] flex items-center justify-center text-xs font-bold dark:text-[#00D084] text-white shrink-0">
                     {{ userInitial }}
                 </div>
                 <div class="hidden lg:flex flex-col text-left leading-tight">

@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
+use App\Services\PermissionService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Services\PermissionService;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\PasskeyAuthenticatable;
 
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, PasskeyAuthenticatable;
+    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -77,7 +77,12 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['superadmin', 'admin_dinas', 'admin'], true);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'superadmin';
     }
 
     public function isStakeholder(): bool

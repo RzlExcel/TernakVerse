@@ -1,0 +1,272 @@
+[
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.01",
+    "nama_kecamatan": "Lumbir",
+    "produksi_daging_kg": 97150,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 3600,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.02",
+    "nama_kecamatan": "Wangon",
+    "produksi_daging_kg": 289515,
+    "produksi_susu_liter": 2365,
+    "produksi_telur_kg": 8640,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.03",
+    "nama_kecamatan": "Jatilawang",
+    "produksi_daging_kg": 71406,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 2880,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.04",
+    "nama_kecamatan": "Rawalo",
+    "produksi_daging_kg": 86322,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 1800,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.05",
+    "nama_kecamatan": "Kebasen",
+    "produksi_daging_kg": 76226,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 2160,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.06",
+    "nama_kecamatan": "Kemranjen",
+    "produksi_daging_kg": 81107,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 4320,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.07",
+    "nama_kecamatan": "Sumpiuh",
+    "produksi_daging_kg": 60912,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 3600,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.08",
+    "nama_kecamatan": "Tambak",
+    "produksi_daging_kg": 47893,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 2304,
+    "status_ketersediaan": "Cukup"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.09",
+    "nama_kecamatan": "Somagede",
+    "produksi_daging_kg": 100446,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 5400,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.10",
+    "nama_kecamatan": "Kalibagor",
+    "produksi_daging_kg": 161106,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 10080,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.11",
+    "nama_kecamatan": "Banyumas",
+    "produksi_daging_kg": 63458,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 3240,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.12",
+    "nama_kecamatan": "Patikraja",
+    "produksi_daging_kg": 55424,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 3024,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.13",
+    "nama_kecamatan": "Purwojati",
+    "produksi_daging_kg": 50884,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 2232,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.14",
+    "nama_kecamatan": "Ajibarang",
+    "produksi_daging_kg": 170861,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 6480,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.15",
+    "nama_kecamatan": "Gumelar",
+    "produksi_daging_kg": 60701,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 2448,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.16",
+    "nama_kecamatan": "Pekuncen",
+    "produksi_daging_kg": 108242,
+    "produksi_susu_liter": 108145,
+    "produksi_telur_kg": 6120,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.17",
+    "nama_kecamatan": "Cilongok",
+    "produksi_daging_kg": 199383,
+    "produksi_susu_liter": 75035,
+    "produksi_telur_kg": 10800,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.18",
+    "nama_kecamatan": "Karanglewas",
+    "produksi_daging_kg": 77720,
+    "produksi_susu_liter": 22790,
+    "produksi_telur_kg": 3960,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.23",
+    "nama_kecamatan": "Kedungbanteng",
+    "produksi_daging_kg": 115041,
+    "produksi_susu_liter": 13545,
+    "produksi_telur_kg": 5040,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.22",
+    "nama_kecamatan": "Baturraden",
+    "produksi_daging_kg": 106880,
+    "produksi_susu_liter": 312395,
+    "produksi_telur_kg": 4680,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.21",
+    "nama_kecamatan": "Sumbang",
+    "produksi_daging_kg": 297446,
+    "produksi_susu_liter": 33970,
+    "produksi_telur_kg": 15840,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.20",
+    "nama_kecamatan": "Kembaran",
+    "produksi_daging_kg": 165604,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 7920,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.19",
+    "nama_kecamatan": "Sokaraja",
+    "produksi_daging_kg": 132162,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 5760,
+    "status_ketersediaan": "Surplus"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.24",
+    "nama_kecamatan": "Purwokerto Selatan",
+    "produksi_daging_kg": 19707,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 576,
+    "status_ketersediaan": "Cukup"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.25",
+    "nama_kecamatan": "Purwokerto Barat",
+    "produksi_daging_kg": 13607,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 432,
+    "status_ketersediaan": "Cukup"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.26",
+    "nama_kecamatan": "Purwokerto Timur",
+    "produksi_daging_kg": 16297,
+    "produksi_susu_liter": 0,
+    "produksi_telur_kg": 648,
+    "status_ketersediaan": "Cukup"
+  },
+  {
+    "tahun": 2026,
+    "periode": "Triwulan 3 (September)",
+    "kode_kecamatan": "33.02.27",
+    "nama_kecamatan": "Purwokerto Utara",
+    "produksi_daging_kg": 19136,
+    "produksi_susu_liter": 3010,
+    "produksi_telur_kg": 792,
+    "status_ketersediaan": "Cukup"
+  }
+]

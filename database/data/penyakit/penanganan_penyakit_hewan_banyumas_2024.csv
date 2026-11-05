@@ -1,0 +1,15 @@
+kode,nama_penyakit,nama_latin,jumlah_kasus,satuan,tingkat_bahaya
+PMK,Penyakit Mulut dan Kuku (PMK),Aphtae Epizooticae,316,kasus,Tinggi
+LSD,Lumpy Skin Disease (LSD),Lumpy Skin Disease Virus,19,kasus,Sedang
+BEF,Bovine Ephemeral Fever (Demam 3 Hari),Bovine Ephemeral Fever Virus,1716,kasus,Sedang
+SCABIES,Scabies (Kudis),Sarcoptes scabiei,667,kasus,Rendah
+MASTITIS,Mastitis (Radang Ambing),Streptococcus / Staphylococcus,138,kasus,Sedang
+HELMINTH,Helminthiasis (Cacingan),Fasciola hepatica / Nematoda,1591,kasus,Rendah
+DERMATITIS,Dermatitis,Cutaneous inflammation,103,kasus,Rendah
+ENTERITIS,Enteritis (Radang Usus),Enteric infection,196,kasus,Sedang
+ISPA,Infeksi Saluran Nafas,Upper Respiratory Infection,104,kasus,Sedang
+MYASIS,Myasis (Belatungan),Chrysomya bezziana,247,kasus,Sedang
+CONJUNCTIVITIS,Conjunctivitis (Sakit Mata),Pinkeye / Moraxella bovis,127,kasus,Rendah
+ORF,Orf (Dakangan/Ektima Kontagiosa),Parapoxvirus,35,kasus,Sedang
+DIARE,Diare Akut,Diarrhea non-specific,176,kasus,Rendah
+LAINNYA,Penyakit Hewan Lainnya,Various etiology,238,kasus,Rendah

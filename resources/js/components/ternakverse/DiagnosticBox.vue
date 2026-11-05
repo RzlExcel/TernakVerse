@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { AlertCircle, CheckCircle, Terminal, ChevronUp, ChevronDown } from 'lucide-vue-next';
+
+const isDebugMode = computed(() => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('debug') === '1' || params.get('debug') === 'true';
+});
 
 const isExpanded = ref(false);
 const systemStatus = ref<'ok' | 'error'>('ok');
@@ -41,6 +47,7 @@ function clearError() {
 <template>
     <!-- Kotak Diagnostik Kanan Bawah -->
     <div
+        v-if="isDebugMode"
         class="fixed bottom-3 right-4 z-50 select-none font-ui"
     >
         <!-- Status Normal / Collapsed Pill -->

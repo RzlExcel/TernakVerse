@@ -115,7 +115,7 @@ const modules = [
                             <span>Dinas Perikanan dan Peternakan Kabupaten Banyumas</span>
                         </div>
                         <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#F5F5F5]">
-                            Pusat Komando Spasial &amp; Komoditas TernakVerse
+                            Dasbor Terpadu Peternakan Banyumas
                         </h1>
                         <p class="max-w-2xl text-sm text-slate-600 dark:text-[#B3B3B3]">
                             Pilih modul operasional di bawah untuk menavigasi peta geospasial peternakan, dasbor analitik eksekutif, maupun pengelolaan basis data komoditas Kabupaten Banyumas.
@@ -181,22 +181,22 @@ const modules = [
 
             <!-- Module Navigation Bento Grid -->
             <div>
-                <h2 class="mb-3 text-sm font-semibold tracking-wide uppercase text-slate-500 dark:text-[#B3B3B3]">
-                    Direktori Modul Sistem
+                <h2 class="mb-3 text-xs font-semibold text-slate-500 dark:text-[#858585] tracking-normal">
+                    Direktori modul sistem
                 </h2>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Link
                         v-for="mod in modules"
                         :key="mod.href"
                         :href="mod.href"
-                        class="group flex flex-col justify-between rounded-2xl border border-[#E0E4DD] bg-white p-5 shadow-xs transition-all duration-150 hover:border-emerald-500/60 hover:shadow-md focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none dark:border-[#1E1E1E] dark:bg-[#111111] dark:hover:border-emerald-500/60"
+                        class="group flex flex-col justify-between rounded-2xl border border-[#E0E4DD] bg-white p-5 shadow-xs transition-colors duration-150 hover:border-emerald-500/60 hover:shadow-md focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none dark:border-[#1E1E1E] dark:bg-[#111111] dark:hover:border-emerald-500/60"
                     >
                         <div>
                             <div class="flex items-center justify-between gap-2">
                                 <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-[#00D084]">
                                     <component :is="mod.icon" class="h-5 w-5" />
                                 </div>
-                                <span class="rounded-full border border-[#E0E4DD] bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600 dark:border-[#282828] dark:bg-[#181818] dark:text-[#B3B3B3]">
+                                <span class="rounded-md border border-[#E0E4DD] bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:border-[#282828] dark:bg-[#181818] dark:text-[#B3B3B3]">
                                     {{ mod.badge }}
                                 </span>
                             </div>
@@ -210,7 +210,7 @@ const modules = [
 
                         <div class="mt-5 flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-[#00D084]">
                             <span>Buka Modul</span>
-                            <ArrowUpRight class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            <ArrowUpRight class="h-3.5 w-3.5" />
                         </div>
                     </Link>
                 </div>

@@ -1,0 +1,110 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.2415,
+          -7.3812
+        ]
+      },
+      "properties": {
+        "id_puskeswan": "PKW-01",
+        "nama_puskeswan": "Puskeswan Purwokerto / Baturraden",
+        "kode_kecamatan": "33.02.22",
+        "nama_kecamatan": "Baturraden",
+        "alamat_lengkap": "Jl. Raya Baturraden No. 45, Baturraden, Kabupaten Banyumas",
+        "wilayah_binaan": "Baturraden, Sumbang, Kedungbanteng, Purwokerto Utara, Purwokerto Timur",
+        "layanan": "Pengobatan Hewan Ternak & Peliharaan, Vaksinasi PMK/Rabies, Konsultasi Keswan",
+        "dokter_hewan_penanggungjawab": "drh. Hendro Suryo, M.Si",
+        "nomor_kontak": "(0281) 681729"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.0745,
+          -7.411
+        ]
+      },
+      "properties": {
+        "id_puskeswan": "PKW-02",
+        "nama_puskeswan": "Puskeswan Ajibarang",
+        "kode_kecamatan": "33.02.14",
+        "nama_kecamatan": "Ajibarang",
+        "alamat_lengkap": "Jl. Pancasan No. 15, Ajibarang, Kabupaten Banyumas",
+        "wilayah_binaan": "Ajibarang, Pekuncen, Gumelar, Cilongok",
+        "layanan": "Pelayanan Medik Veteriner, IB, Penanganan Kasus PMK & LSD",
+        "dokter_hewan_penanggungjawab": "drh. Anjar Wibowo",
+        "nomor_kontak": "(0281) 657331"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.265,
+          -7.458
+        ]
+      },
+      "properties": {
+        "id_puskeswan": "PKW-03",
+        "nama_puskeswan": "Puskeswan Sokaraja",
+        "kode_kecamatan": "33.02.19",
+        "nama_kecamatan": "Sokaraja",
+        "alamat_lengkap": "Jl. Suparjo Rustam No. 20, Sokaraja, Kabupaten Banyumas",
+        "wilayah_binaan": "Sokaraja, Kembaran, Kalibagor, Banyumas, Purwokerto Selatan",
+        "layanan": "Klinik Hewan, Vaksinasi, Pemeriksaan Kebuntingan, Pengawasan Pasar Hewan",
+        "dokter_hewan_penanggungjawab": "drh. Nurul Hidayati",
+        "nomor_kontak": "(0281) 644512"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.357,
+          -7.6115
+        ]
+      },
+      "properties": {
+        "id_puskeswan": "PKW-04",
+        "nama_puskeswan": "Puskeswan Sumpiuh",
+        "kode_kecamatan": "33.02.07",
+        "nama_kecamatan": "Sumpiuh",
+        "alamat_lengkap": "Jl. Raya Barat No. 8, Sumpiuh, Kabupaten Banyumas",
+        "wilayah_binaan": "Sumpiuh, Tambak, Kemranjen, Somagede",
+        "layanan": "Pemeriksaan Ternak Ruminansia, Vaksinasi, Respon Cepat Wabah",
+        "dokter_hewan_penanggungjawab": "drh. Bambang Triyono",
+        "nomor_kontak": "(0281) 689104"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          109.053,
+          -7.5195
+        ]
+      },
+      "properties": {
+        "id_puskeswan": "PKW-05",
+        "nama_puskeswan": "Puskeswan Wangon",
+        "kode_kecamatan": "33.02.02",
+        "nama_kecamatan": "Wangon",
+        "alamat_lengkap": "Jl. Raya Timur No. 14, Wangon, Kabupaten Banyumas",
+        "wilayah_binaan": "Wangon, Lumbir, Jatilawang, Rawalo, Purwojati",
+        "layanan": "Pengobatan Ternak, Inseminasi Buatan, Pengendalian Parasit & Helminthiasis",
+        "dokter_hewan_penanggungjawab": "drh. Eko Prasetyo",
+        "nomor_kontak": "(0281) 657802"
+      }
+    }
+  ]
+}

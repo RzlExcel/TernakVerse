@@ -74,7 +74,7 @@ const ariaLabelText = computed(() => {
         :class="[
             buttonSizeClasses,
             'inline-flex items-center justify-center font-medium rounded-lg border transition-colors duration-150 cursor-pointer select-none',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D084]',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#171B17] dark:focus-visible:ring-[#00D084]',
             'dark:bg-[#111111] dark:hover:bg-[#181818] dark:active:bg-[#1E1E1E] dark:border-[#1E1E1E] dark:hover:border-[#282828] dark:text-[#B3B3B3] dark:hover:text-[#F5F5F5]',
             'bg-[#FFFFFF] hover:bg-[#F4F5F2] active:bg-[#E8EBE5] border-[#E0E4DD] hover:border-[#C8CEC4] text-[#444C43] hover:text-[#171B17]',
             'shadow-xs'
@@ -83,7 +83,7 @@ const ariaLabelText = computed(() => {
         :aria-label="ariaLabelText"
     >
         <span class="inline-flex items-center justify-center transition-transform duration-150">
-            <Sun v-if="isDark" :class="[iconSizeClasses, 'text-[#00D084] transition-colors']" />
+            <Sun v-if="isDark" :class="[iconSizeClasses, 'dark:text-[#00D084] text-[#00D084] transition-colors']" />
             <Moon v-else :class="[iconSizeClasses, 'text-[#171B17] transition-colors']" />
         </span>
         <span v-if="!compact" class="select-none leading-none font-semibold">

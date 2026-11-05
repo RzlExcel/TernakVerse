@@ -18,7 +18,7 @@ const emit = defineEmits<{
     <div class="w-full space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-                <h1 class="font-display font-extrabold text-2xl md:text-3xl tracking-tight text-[#171B17] dark:text-[#F5F5F5]">
+                <h1 class="font-display font-bold text-2xl md:text-3xl tracking-tight text-[#171B17] dark:text-[#F5F5F5]">
                     Monitoring Kewaspadaan Dini Wabah (EWS)
                 </h1>
                 <p class="text-xs text-[#6E776D] dark:text-[#B3B3B3] mt-1">
@@ -35,12 +35,12 @@ const emit = defineEmits<{
             </button>
         </div>
 
-        <!-- Parameter Konfigurasi Ambang Batas (PRD FR-SYS-02) -->
+        <!-- Parameter Konfigurasi Ambang Batas -->
         <div class="w-full bg-white dark:bg-[#111111] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-xl p-6 shadow-sm space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E0E4DD] dark:border-[#1E1E1E]">
                 <h3 class="font-display font-bold text-lg text-[#171B17] dark:text-[#F5F5F5] flex items-center gap-2">
                     <ShieldAlert class="w-5 h-5 text-[#00D084]" />
-                    <span>Konfigurasi Ambang Batas Zonasi Risiko (FR-SYS-02)</span>
+                    <span>Konfigurasi Ambang Batas Zonasi Risiko</span>
                 </h3>
                 <button
                     type="button"
@@ -58,7 +58,7 @@ const emit = defineEmits<{
                     <input
                         v-model.number="props.ewsParams.jendelaHari"
                         type="number"
-                        class="w-full bg-transparent text-[#171B17] dark:text-[#F5F5F5] font-mono tabular-nums font-extrabold text-2xl outline-none"
+                        class="w-full bg-transparent text-[#171B17] dark:text-[#F5F5F5] font-mono tabular-nums font-bold text-2xl outline-none"
                     />
                     <span class="text-[10px] text-[#6E776D] dark:text-[#B3B3B3] font-mono tabular-nums">Default: 14 hari terakhir</span>
                 </div>
@@ -68,7 +68,7 @@ const emit = defineEmits<{
                     <input
                         v-model.number="props.ewsParams.ambangKuningMaks"
                         type="number"
-                        class="w-full bg-transparent text-amber-700 dark:text-amber-400 font-mono tabular-nums font-extrabold text-2xl outline-none"
+                        class="w-full bg-transparent text-amber-700 dark:text-amber-400 font-mono tabular-nums font-bold text-2xl outline-none"
                     />
                     <span class="text-[10px] text-[#6E776D] dark:text-[#B3B3B3] font-mono tabular-nums">1 s.d. 5 kasus aktif</span>
                 </div>
@@ -78,7 +78,7 @@ const emit = defineEmits<{
                     <input
                         v-model.number="props.ewsParams.ambangMerahMin"
                         type="number"
-                        class="w-full bg-transparent text-rose-700 dark:text-rose-400 font-mono tabular-nums font-extrabold text-2xl outline-none"
+                        class="w-full bg-transparent text-rose-700 dark:text-rose-400 font-mono tabular-nums font-bold text-2xl outline-none"
                     />
                     <span class="text-[10px] text-[#6E776D] dark:text-[#B3B3B3] font-mono tabular-nums">&gt; 5 kasus aktif</span>
                 </div>
@@ -105,7 +105,7 @@ const emit = defineEmits<{
                 >
                     <div class="flex items-center justify-between gap-1">
                         <span class="font-semibold truncate">{{ kec.nama }}</span>
-                        <span class="text-[9px] uppercase font-bold tracking-wider opacity-85">{{ kec.zona }}</span>
+                        <span class="text-[9px] capitalize font-semibold opacity-85">{{ kec.zona }}</span>
                     </div>
                     <div class="text-[10px] font-mono tabular-nums opacity-75">
                         PMK: {{ kec.pmk }} • LSD: {{ kec.lsd }}

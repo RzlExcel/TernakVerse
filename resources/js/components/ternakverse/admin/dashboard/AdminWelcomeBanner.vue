@@ -19,11 +19,10 @@ const emit = defineEmits<{
 
 <template>
     <div class="dark:bg-[#111111] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-5 md:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 w-full transition-colors">
-        <!-- Left Side: Greeting & Subtitle -->
+        <!-- Left Side: Page Title & Subtitle (Selamat Datang) -->
         <div>
             <h1 class="font-display font-bold text-2xl md:text-3xl dark:text-[#F5F5F5] text-[#171B17] tracking-tight flex items-center gap-2">
-                <span>Selamat Datang, {{ props.userName }}</span>
-                <span class="inline-block select-none" aria-hidden="true">👋</span>
+                <span>Ringkasan Operasional Peternakan</span>
             </h1>
             <p class="text-xs md:text-sm dark:text-[#858585] text-[#737B71] mt-1">
                 {{ props.subtitle }}

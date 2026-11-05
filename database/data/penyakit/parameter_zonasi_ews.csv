@@ -1,0 +1,3 @@
+kode_penyakit,nama_penyakit,ambang_hijau,ambang_kuning_min,ambang_kuning_max,ambang_merah_min,jendela_hari_evaluasi
+PMK,Penyakit Mulut dan Kuku,0,1,5,6,14
+LSD,Lumpy Skin Disease,0,1,5,6,14

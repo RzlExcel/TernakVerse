@@ -3,9 +3,11 @@
 use App\Http\Controllers\AdminAuditLogController;
 use App\Http\Controllers\AdminPanelController;
 use App\Http\Controllers\DinasDashboardController;
+use App\Http\Controllers\Internal\MasterDataManagementController;
 use App\Http\Middleware\EnsureUserRole;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -28,7 +30,7 @@ $publicPortalHandler = function (Request $request) {
         $user = Auth::user() ?? $request->user();
         $role = $user?->role ?? ($request->hasSession() ? $request->session()->get('authenticated_role') : null);
 
-        if ($role === 'admin') {
+        if ($role && in_array($role, ['superadmin', 'admin', 'admin_dinas'], true)) {
             return redirect()->route('internal.admin');
         }
 
@@ -57,10 +59,15 @@ Route::get('/internal', function () {
     return redirect()->route('internal.login');
 });
 
+Route::get('/login', function () {
+    return redirect()->route('internal.login');
+})->name('login');
+
 Route::post('/internal/login', function (Request $request) {
     $roleInput = (string) $request->input('role', 'dinas');
     $roleSlug = ($roleInput === 'admin') ? 'admin' : 'stakeholder';
-    $email = (string) $request->input('email', $roleSlug === 'admin' ? 'admin.diskanak@banyumaskab.go.id' : 'drh.sulistyo@banyumaskab.go.id');
+    $emailInput = trim((string) $request->input('email', ''));
+    $email = $emailInput !== '' ? $emailInput : ($roleSlug === 'admin' ? 'admin.diskanak@banyumaskab.go.id' : 'drh.sulistyo@banyumaskab.go.id');
     $password = (string) $request->input('password', '');
 
     $authenticatedUser = null;
@@ -75,6 +82,14 @@ Route::post('/internal/login', function (Request $request) {
 
     if (! $dbOffline) {
         try {
+            // Jika akun aparatur standar belum ada di database pada environment local/testing, lakukan auto-seed
+            if (app()->environment('local', 'testing')
+                && ! User::where('email', $email)->exists()
+                && in_array($email, ['drh.sulistyo@banyumaskab.go.id', 'admin.diskanak@banyumaskab.go.id', 'superadmin@banyumaskab.go.id', 'admin@banyumaskab.go.id', 'dinas@banyumaskab.go.id'], true)
+            ) {
+                Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\UserRoleSeeder', '--force' => true]);
+            }
+
             if (Auth::attempt(['email' => $email, 'password' => $password])) {
                 $authenticatedUser = Auth::user();
             } else {
@@ -114,7 +129,7 @@ Route::post('/internal/login', function (Request $request) {
 
     $request->session()->regenerate();
 
-    if ($authenticatedUser->role === 'admin') {
+    if (in_array($authenticatedUser->role, ['superadmin', 'admin', 'admin_dinas'], true)) {
         return redirect()->route('internal.admin');
     }
 
@@ -141,17 +156,21 @@ Route::get('/design-rule', function () {
 })->name('design.rule');
 
 // 4. PORTAL DINAS (Analisis Kuantitatif & Kewaspadaan Wabah)
-Route::middleware([EnsureUserRole::class.':stakeholder,admin'])->group(function () {
+Route::middleware([EnsureUserRole::class.':superadmin,admin_dinas,admin,stakeholder'])->group(function () {
     Route::get('/internal/dinas', function () {
         return Inertia::render('Internal/DinasPortal');
     })->name('internal.dinas');
 
     // Route Dinas Dashboard Handshake Data (DinasAnalyticsService + ZoningEngineService)
     Route::get('/dinas/dashboard', [DinasDashboardController::class, 'index'])->name('dinas.dashboard');
+
+    // Unduh Laporan Resmi Eksekutif (PDF & Excel)
+    Route::get('/internal/laporan/ekspor-pdf', [App\Http\Controllers\Internal\DinasDashboardController::class, 'downloadLaporan'])->name('internal.laporan.pdf');
+    Route::get('/internal/laporan/ekspor-excel', fn (Request $r) => app(App\Http\Controllers\Internal\DinasDashboardController::class)->downloadLaporan($r->merge(['format' => 'excel'])))->name('internal.laporan.excel');
 });
 
 // 5. PANEL ADMIN TEKNIS (Staf Teknis - Tata Letak 1160px & CRUD Data)
-Route::middleware([EnsureUserRole::class.':admin'])->group(function () {
+Route::middleware([EnsureUserRole::class.':superadmin,admin_dinas,admin'])->group(function () {
     Route::get('/internal/admin', function () {
         return Inertia::render('Internal/AdminPortal');
     })->name('internal.admin');
@@ -160,13 +179,41 @@ Route::middleware([EnsureUserRole::class.':admin'])->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/panel', [AdminPanelController::class, 'index'])->name('panel');
         Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs');
+
+        // Master Data Management API (Komoditas, Fasilitas RPH, Lahan HMT, Penyakit, Produksi, Maintenance)
+        Route::prefix('api')->name('api.')->group(function () {
+            Route::get('/master-data', [MasterDataManagementController::class, 'index'])->name('master-data');
+            Route::post('/commodities', [MasterDataManagementController::class, 'storeKomoditas'])->name('commodities.store');
+            Route::put('/commodities/{id}', [MasterDataManagementController::class, 'updateKomoditas'])->name('commodities.update');
+            Route::delete('/commodities/{id}', [MasterDataManagementController::class, 'destroyKomoditas'])->name('commodities.destroy');
+            Route::post('/facilities', [MasterDataManagementController::class, 'storeFasilitas'])->name('facilities.store');
+            Route::put('/facilities/{id}', [MasterDataManagementController::class, 'updateFasilitas'])->name('facilities.update');
+            Route::delete('/facilities/{id}', [MasterDataManagementController::class, 'destroyFasilitas'])->name('facilities.destroy');
+            Route::put('/kecamatan/{id}/hmt', [MasterDataManagementController::class, 'updateKecamatanHmt'])->name('kecamatan.hmt.update');
+
+            // CRUD Penyakit & Parameter EWS
+            Route::get('/diseases', [MasterDataManagementController::class, 'indexDiseases'])->name('diseases.index');
+            Route::post('/diseases', [MasterDataManagementController::class, 'storeDisease'])->name('diseases.store');
+            Route::put('/diseases/{id}', [MasterDataManagementController::class, 'updateDisease'])->name('diseases.update');
+            Route::delete('/diseases/{id}', [MasterDataManagementController::class, 'destroyDisease'])->name('diseases.destroy');
+
+            // CRUD Kategori Produksi
+            Route::get('/production-categories', [MasterDataManagementController::class, 'indexProductionCategories'])->name('production-categories.index');
+            Route::post('/production-categories', [MasterDataManagementController::class, 'storeProductionCategory'])->name('production-categories.store');
+            Route::put('/production-categories/{id}', [MasterDataManagementController::class, 'updateProductionCategory'])->name('production-categories.update');
+            Route::delete('/production-categories/{id}', [MasterDataManagementController::class, 'destroyProductionCategory'])->name('production-categories.destroy');
+
+            // Maintenance & Operasional Server
+            Route::get('/maintenance/status', [MasterDataManagementController::class, 'maintenanceStatus'])->name('maintenance.status');
+            Route::post('/maintenance/clear-cache', [MasterDataManagementController::class, 'clearCache'])->name('maintenance.clear-cache');
+        });
     });
 });
 
 // 6. DISPATCHER DASHBOARD (Redirect cerdas sesuai peran pengguna setelah autentikasi)
 Route::get('/dashboard', function (Request $request) {
     $user = $request->user();
-    if ($user && $user->role === 'admin') {
+    if ($user && in_array($user->role, ['superadmin', 'admin', 'admin_dinas'], true)) {
         return redirect()->route('internal.admin');
     }
 

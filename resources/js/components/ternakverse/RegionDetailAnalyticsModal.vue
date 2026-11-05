@@ -22,7 +22,8 @@ import {
     Activity,
     FileSpreadsheet,
     Lock,
-    ExternalLink
+    ExternalLink,
+    Leaf
 } from 'lucide-vue-next';
 
 const props = withDefaults(defineProps<{
@@ -116,6 +117,7 @@ const totalPopulasi = computed<number>(() => {
         (k.sapi_potong || 0) +
         (k.sapi_perah || 0) +
         (k.kambing || 0) +
+        (k.kambing_perah || 0) +
         (k.domba || 0) +
         (k.ayam_potong || 0) +
         (k.ayam_petelur || 0)
@@ -132,7 +134,13 @@ const animalDensity = computed<number>(() => {
 const totalRuminansia = computed<number>(() => {
     if (!props.kecamatan) return 0;
     const k = props.kecamatan;
-    return (k.sapi_potong || 0) + (k.sapi_perah || 0) + (k.kambing || 0) + (k.domba || 0);
+    return (
+        (k.sapi_potong || 0) +
+        (k.sapi_perah || 0) +
+        (k.kambing || 0) +
+        (k.kambing_perah || 0) +
+        (k.domba || 0)
+    );
 });
 
 const totalUnggas = computed<number>(() => {
@@ -141,23 +149,165 @@ const totalUnggas = computed<number>(() => {
     return (k.ayam_potong || 0) + (k.ayam_petelur || 0);
 });
 
-// Proporsi Komoditas untuk Visual Bars
-const commodityProportions = computed(() => {
-    if (!props.kecamatan) return [];
+// 3 Kategori Mandiri (Eliminasi Dominasi Skala Unggas)
+const categoryGroups = computed(() => {
+    if (!props.kecamatan) return null;
     const k = props.kecamatan;
-    const items = [
-        { label: 'Sapi Potong', value: k.sapi_potong || 0, color: 'bg-emerald-500', textColor: 'text-emerald-400' },
-        { label: 'Sapi Perah', value: k.sapi_perah || 0, color: 'bg-teal-400', textColor: 'text-teal-400' },
-        { label: 'Kambing', value: k.kambing || 0, color: 'bg-amber-400', textColor: 'text-amber-400' },
-        { label: 'Domba', value: k.domba || 0, color: 'bg-orange-400', textColor: 'text-orange-400' },
-        { label: 'Unggas (Ayam)', value: (k.ayam_potong || 0) + (k.ayam_petelur || 0), color: 'bg-cyan-400', textColor: 'text-cyan-400' }
+
+    // A. Ternak Ruminansia Besar
+    const sapiPotong = k.sapi_potong || 0;
+    const sapiPerah = k.sapi_perah || 0;
+    const totalBesar = sapiPotong + sapiPerah;
+    const besarItems = [
+        {
+            label: 'Sapi Potong',
+            sublabel: 'Simmental, Limousin, PO (Pedaging)',
+            value: sapiPotong,
+            percentage: totalBesar > 0 ? ((sapiPotong / totalBesar) * 100).toFixed(1) : '0.0',
+            barColor: 'dark:bg-[#00D084] bg-[#171B17]',
+            textColor: 'dark:text-[#00D084] text-[#171B17]'
+        },
+        {
+            label: 'Sapi Perah',
+            sublabel: 'Friesian Holstein (Penghasil Susu)',
+            value: sapiPerah,
+            percentage: totalBesar > 0 ? ((sapiPerah / totalBesar) * 100).toFixed(1) : '0.0',
+            barColor: 'dark:bg-[#39D6C0] bg-[#0E7490]',
+            textColor: 'dark:text-[#39D6C0] text-[#0E7490]'
+        }
     ];
 
-    const sum = items.reduce((acc, cur) => acc + cur.value, 0) || 1;
-    return items.map(item => ({
-        ...item,
-        percentage: ((item.value / sum) * 100).toFixed(1)
-    }));
+    // B. Ternak Ruminansia Kecil
+    const kambingPotong = k.kambing || 0;
+    const kambingPerah = k.kambing_perah || 0;
+    const domba = k.domba || 0;
+    const totalKecil = kambingPotong + kambingPerah + domba;
+    const kecilItems = [
+        {
+            label: 'Kambing Potong',
+            sublabel: 'Jawa Randu / Kacang (Pedaging)',
+            value: kambingPotong,
+            percentage: totalKecil > 0 ? ((kambingPotong / totalKecil) * 100).toFixed(1) : '0.0',
+            barColor: 'dark:bg-[#20D6A0] bg-[#0F766E]',
+            textColor: 'dark:text-[#20D6A0] text-[#0F766E]'
+        },
+        {
+            label: 'Kambing Perah',
+            sublabel: 'Saanen, Sapera, PE (Penghasil Susu)',
+            value: kambingPerah,
+            percentage: totalKecil > 0 ? ((kambingPerah / totalKecil) * 100).toFixed(1) : '0.0',
+            barColor: 'dark:bg-[#38BDF8] bg-[#0284C7]',
+            textColor: 'dark:text-[#38BDF8] text-[#0284C7]'
+        },
+        {
+            label: 'Domba',
+            sublabel: 'Batur / Ekor Gemuk / Garut',
+            value: domba,
+            percentage: totalKecil > 0 ? ((domba / totalKecil) * 100).toFixed(1) : '0.0',
+            barColor: 'dark:bg-[#FBBF24] bg-[#D97706]',
+            textColor: 'dark:text-[#FBBF24] text-[#D97706]'
+        }
+    ];
+
+    // C. Unggas
+    const ayamPotong = k.ayam_potong || 0;
+    const ayamPetelur = k.ayam_petelur || 0;
+    const totalUnggasVal = ayamPotong + ayamPetelur;
+    const unggasItems = [
+        {
+            label: 'Ayam Potong / Broiler',
+            sublabel: 'Ayam ras pedaging komersial',
+            value: ayamPotong,
+            percentage: totalUnggasVal > 0 ? ((ayamPotong / totalUnggasVal) * 100).toFixed(1) : '0.0',
+            barColor: 'dark:bg-[#FB923C] bg-[#EA580C]',
+            textColor: 'dark:text-[#FB923C] text-[#EA580C]'
+        },
+        {
+            label: 'Ayam Petelur / Layer',
+            sublabel: 'Ayam ras produksi konsumsi telur',
+            value: ayamPetelur,
+            percentage: totalUnggasVal > 0 ? ((ayamPetelur / totalUnggasVal) * 100).toFixed(1) : '0.0',
+            barColor: 'dark:bg-[#FACC15] bg-[#CA8A04]',
+            textColor: 'dark:text-[#FACC15] text-[#CA8A04]'
+        }
+    ];
+
+    return {
+        besar: {
+            title: 'Ternak Ruminansia Besar',
+            badge: 'Bovidae Besar',
+            total: totalBesar,
+            items: besarItems
+        },
+        kecil: {
+            title: 'Ternak Ruminansia Kecil',
+            badge: 'Kambing & Domba',
+            total: totalKecil,
+            items: kecilItems
+        },
+        unggas: {
+            title: 'Unggas Komersial',
+            badge: 'Aves Pedaging & Petelur',
+            total: totalUnggasVal,
+            items: unggasItems
+        }
+    };
+});
+
+// Dedicated Status Daya Dukung Pakan (Carrying Capacity)
+const carryingCapacity = computed(() => {
+    if (!props.kecamatan) return null;
+    const k = props.kecamatan;
+
+    const sapi = (k.sapi_potong || 0) + (k.sapi_perah || 0);
+    const kecil = (k.kambing || 0) + (k.domba || 0) + (k.kambing_perah || 0);
+    const unggas = (k.ayam_potong || 0) + (k.ayam_petelur || 0);
+
+    const stSapi = sapi * 1.0;
+    const stKecil = kecil * 0.14;
+    const stUnggas = unggas * 0.01;
+    const totalST = Number((stSapi + stKecil + stUnggas).toFixed(1));
+    const stRuminansia = Number((stSapi + stKecil).toFixed(1));
+
+    const luasHmt = k.luas_hmt_ha || 0;
+    const kapasitasTampungST = Number((luasHmt * 6).toFixed(1));
+    const indeks = totalST > 0 ? Number((kapasitasTampungST / totalST).toFixed(2)) : 1.0;
+
+    let statusLabel = 'Surplus Pakan Hijauan';
+    let statusDesc = 'Kapasitas lahan pakan mencukupi seluruh kebutuhan ternak wilayah';
+    let badgeClass = 'bg-[#20D6A0]/15 border-[#20D6A0]/40 text-[#20D6A0] dark:bg-[#00D084]/15 dark:border-[#00D084]/40 dark:text-[#00D084]';
+    let dotClass = 'bg-[#20D6A0] dark:bg-[#00D084]';
+    let indicatorColor = 'text-emerald-500 dark:text-[#00D084]';
+
+    if (indeks < 0.7) {
+        statusLabel = 'Defisit Pakan (Perlu Suplai Eksternal / Konsentrat)';
+        statusDesc = 'Daya tampung lahan pakan hijauan di bawah kebutuhan populasi, membutuhkan suplai konsentrat atau pakan dari luar wilayah';
+        badgeClass = 'bg-[#DC625F]/15 border-[#DC625F]/40 text-[#DC625F] dark:bg-rose-500/15 dark:border-rose-500/40 dark:text-rose-400';
+        dotClass = 'bg-[#DC625F] dark:bg-rose-400';
+        indicatorColor = 'text-rose-500 dark:text-rose-400';
+    } else if (indeks < 1.0) {
+        statusLabel = 'Waspada / Daya Tampung Pas-pasan';
+        statusDesc = 'Daya tampung pakan mendekati batas optimal, disarankan peremajaan kebun rumput unggul dan pemanfaatan limbah pertanian';
+        badgeClass = 'bg-[#E8B84C]/15 border-[#E8B84C]/40 text-[#E8B84C] dark:bg-amber-500/15 dark:border-amber-500/40 dark:text-amber-400';
+        dotClass = 'bg-[#E8B84C] dark:bg-amber-400';
+        indicatorColor = 'text-amber-500 dark:text-amber-400';
+    }
+
+    return {
+        totalST,
+        stRuminansia,
+        stSapi,
+        stKecil,
+        stUnggas,
+        luasHmt,
+        kapasitasTampungST,
+        indeks,
+        statusLabel,
+        statusDesc,
+        badgeClass,
+        dotClass,
+        indicatorColor
+    };
 });
 
 // Status Zonasi
@@ -255,13 +405,15 @@ function exportRegionCsv() {
         'Status Zonasi EWS',
         'Sapi Potong (ekor)',
         'Sapi Perah (ekor)',
-        'Kambing (ekor)',
+        'Kambing Potong (ekor)',
+        'Kambing Perah (ekor)',
         'Domba (ekor)',
         'Ayam Potong (ekor)',
         'Ayam Petelur (ekor)',
         'Kasus Aktif PMK',
         'Kasus Aktif LSD',
         'Fasilitas Poskeswan / RPH',
+        'Luas Kebun HMT (Ha)',
         'Latitude Centroid',
         'Longitude Centroid'
     ];
@@ -278,12 +430,14 @@ function exportRegionCsv() {
         k.sapi_potong || 0,
         k.sapi_perah || 0,
         k.kambing || 0,
+        k.kambing_perah || 0,
         k.domba || 0,
         k.ayam_potong || 0,
         k.ayam_petelur || 0,
         k.pmk || 0,
         k.lsd || 0,
         k.poskeswan || 0,
+        k.luas_hmt_ha || 0,
         k.lat,
         k.lng
     ]);
@@ -300,12 +454,14 @@ function exportRegionCsv() {
             d.sapi_potong || 0,
             d.sapi_perah || 0,
             d.kambing || 0,
+            0,
             d.domba || 0,
             d.ayam_potong || 0,
             d.ayam_petelur || 0,
             d.pmk || 0,
             d.lsd || 0,
             d.poskeswan || 0,
+            0,
             d.lat,
             d.lng
         ]);
@@ -359,7 +515,7 @@ onUnmounted(() => {
                     <!-- Left: Region Title, Code & EWS Zone Badge -->
                     <div class="space-y-1.5 min-w-0">
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full inline-block shadow-[0_0_8px_rgba(0,185,139,0.7)]" :class="zonaConfig.dotClass"></span>
+                            <span class="w-2.5 h-2.5 rounded-full inline-block border border-black/10 dark:border-white/15" :class="zonaConfig.dotClass"></span>
                             <h2 class="text-xl sm:text-2xl font-display font-bold dark:text-white text-[#171B17] tracking-tight leading-tight">
                                 Kecamatan {{ kecamatan.nama }}
                             </h2>
@@ -373,7 +529,7 @@ onUnmounted(() => {
                             <span>•</span>
                             <span>Pembaruan: <strong class="dark:text-slate-200 text-[#171B17]">{{ kecamatan.last_updated }}</strong></span>
                             <span>•</span>
-                            <span class="px-2 py-0.5 rounded dark:bg-[#063D2D] bg-[#E8F8F1] dark:text-[#00D084] text-[#00A86B] font-semibold border dark:border-[#00D084]/30 border-[#00A86B]/30">
+                            <span class="px-2 py-0.5 rounded dark:bg-[#063D2D] bg-[#F4F5F2] dark:text-[#00D084] text-[#171B17] font-semibold border dark:border-[#00D084]/30 border-[#E0E4DD]">
                                 {{ currentRole === 'admin' ? 'Akses Super Admin' : currentRole === 'dinas' ? 'Akses Dinas Peternakan' : 'Portal Publik' }}
                             </span>
                         </div>
@@ -386,10 +542,10 @@ onUnmounted(() => {
                             v-if="currentRole !== 'publik'"
                             type="button"
                             @click="exportRegionCsv"
-                            class="h-9 px-3 rounded-xl dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:dark:border-[#00D084]/40 hover:border-[#00A86B]/40 dark:text-[#F5F5F5] text-[#171B17] hover:dark:text-[#00D084] hover:text-[#00A86B] text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                            class="h-9 px-3 rounded-xl dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:hover:border-[#00D084]/40 hover:border-[#171B17] dark:text-[#F5F5F5] text-[#171B17] dark:hover:text-[#00D084] hover:text-black text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                             title="Ekspor Data Wilayah (CSV)"
                         >
-                            <Download class="w-3.5 h-3.5 dark:text-[#00D084] text-[#00A86B]" />
+                            <Download class="w-3.5 h-3.5 dark:text-[#00D084] text-[#171B17]" />
                             <span class="hidden sm:inline">Ekspor CSV</span>
                         </button>
 
@@ -422,7 +578,7 @@ onUnmounted(() => {
                 <div class="grid grid-cols-3 gap-2.5 sm:gap-3 mt-4 pt-3 border-t dark:border-[#1E1E1E] border-[#E0E4DD]">
                     <!-- Luas Wilayah -->
                     <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5 flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+                        <div class="w-9 h-9 rounded-lg dark:bg-[#181818] dark:text-[#00D084] dark:border-[#1E1E1E] bg-[#F4F5F2] text-[#171B17] border border-[#E0E4DD] flex items-center justify-center shrink-0">
                             <MapPin class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -435,7 +591,7 @@ onUnmounted(() => {
 
                     <!-- Total Desa -->
                     <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5 flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                        <div class="w-9 h-9 rounded-lg dark:bg-[#181818] dark:text-[#00D084] dark:border-[#1E1E1E] bg-[#F4F5F2] text-[#171B17] border border-[#E0E4DD] flex items-center justify-center shrink-0">
                             <Building2 class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
@@ -448,15 +604,12 @@ onUnmounted(() => {
 
                     <!-- Total Peternak -->
                     <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5 flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 shrink-0">
+                        <div class="w-9 h-9 rounded-lg dark:bg-[#181818] dark:text-[#00D084] dark:border-[#1E1E1E] bg-[#F4F5F2] text-[#171B17] border border-[#E0E4DD] flex items-center justify-center shrink-0">
                             <Users class="w-4 h-4" />
                         </div>
                         <div class="min-w-0">
                             <span class="text-[10px] uppercase font-semibold dark:text-[#B3B3B3] text-[#6E776D] block tracking-wider">Peternak Terdata</span>
-                            <span v-if="currentRole === 'publik'" class="text-xs sm:text-sm font-bold text-emerald-500 dark:text-emerald-400 block truncate">
-                                Terdaftar Resmi
-                            </span>
-                            <span v-else class="text-sm sm:text-base font-bold font-mono dark:text-white text-[#171B17] tabular-nums block">
+                            <span class="text-sm sm:text-base font-bold font-mono dark:text-white text-[#171B17] tabular-nums block">
                                 {{ formatAngka(estimatedFarmers) }} Peternak
                             </span>
                         </div>
@@ -468,9 +621,9 @@ onUnmounted(() => {
                     <button
                         type="button"
                         @click="activeTab = 'ringkasan'"
-                        class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap"
+                        class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap"
                         :class="activeTab === 'ringkasan'
-                            ? 'dark:bg-[#063D2D] bg-[#E8F8F1] border dark:border-[#00D084]/40 border-[#00A86B]/40 dark:text-[#00D084] text-[#00A86B]'
+                            ? 'dark:bg-[#063D2D] bg-[#171B17] text-white border dark:border-[#00D084]/40 border-[#171B17] dark:text-[#00D084]'
                             : 'dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#B3B3B3] text-[#6E776D] hover:dark:text-[#F5F5F5] hover:text-[#171B17]'"
                     >
                         {{ currentRole === 'publik' ? 'Potensi & Komoditas' : 'Ringkasan & Surveilans' }}
@@ -479,9 +632,9 @@ onUnmounted(() => {
                     <button
                         type="button"
                         @click="activeTab = 'desa'"
-                        class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+                        class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5"
                         :class="activeTab === 'desa'
-                            ? 'dark:bg-[#063D2D] bg-[#E8F8F1] border dark:border-[#00D084]/40 border-[#00A86B]/40 dark:text-[#00D084] text-[#00A86B]'
+                            ? 'dark:bg-[#063D2D] bg-[#171B17] text-white border dark:border-[#00D084]/40 border-[#171B17] dark:text-[#00D084]'
                             : 'dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#B3B3B3] text-[#6E776D] hover:dark:text-[#F5F5F5] hover:text-[#171B17]'"
                     >
                         <span>Daftar Desa ({{ desaList.length }})</span>
@@ -491,9 +644,9 @@ onUnmounted(() => {
                         v-if="currentRole !== 'publik'"
                         type="button"
                         @click="activeTab = 'surveilans'"
-                        class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+                        class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5"
                         :class="activeTab === 'surveilans'
-                            ? 'dark:bg-[#063D2D] bg-[#E8F8F1] border dark:border-[#00D084]/40 border-[#00A86B]/40 dark:text-[#00D084] text-[#00A86B]'
+                            ? 'dark:bg-[#063D2D] bg-[#171B17] text-white border dark:border-[#00D084]/40 border-[#171B17] dark:text-[#00D084]'
                             : 'dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#B3B3B3] text-[#6E776D] hover:dark:text-[#F5F5F5] hover:text-[#171B17]'"
                     >
                         <ShieldAlert class="w-3.5 h-3.5" />
@@ -504,9 +657,9 @@ onUnmounted(() => {
                         v-if="currentRole === 'admin'"
                         type="button"
                         @click="activeTab = 'spasial'"
-                        class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+                        class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5"
                         :class="activeTab === 'spasial'
-                            ? 'dark:bg-[#063D2D] bg-[#E8F8F1] border dark:border-[#00D084]/40 border-[#00A86B]/40 dark:text-[#00D084] text-[#00A86B]'
+                            ? 'dark:bg-[#063D2D] bg-[#171B17] text-white border dark:border-[#00D084]/40 border-[#171B17] dark:text-[#00D084]'
                             : 'dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#B3B3B3] text-[#6E776D] hover:dark:text-[#F5F5F5] hover:text-[#171B17]'"
                     >
                         <Globe class="w-3.5 h-3.5" />
@@ -527,7 +680,7 @@ onUnmounted(() => {
                     <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
-                                <Activity class="w-4 h-4 dark:text-[#00D084] text-[#00A86B]" />
+                                <Activity class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
                                 <span class="text-xs font-bold uppercase tracking-wider dark:text-[#F5F5F5] text-[#171B17]">
                                     Status Kluster Spasial Kabupaten Banyumas
                                 </span>
@@ -536,53 +689,258 @@ onUnmounted(() => {
                                 Berdasarkan evaluasi metode Natural Breaks (Kuantil 5 Kelas) resmi Pemerintah Kabupaten Banyumas.
                             </p>
                         </div>
-                        <div class="px-3 py-1.5 rounded-xl dark:bg-[#063D2D] bg-[#E8F8F1] border dark:border-[#00D084]/30 border-[#00A86B]/30 dark:text-[#00D084] text-[#00A86B] font-bold text-xs flex items-center gap-2 shrink-0">
-                            <span class="w-2 h-2 rounded-full dark:bg-[#00D084] bg-[#00A86B]"></span>
+                        <div class="px-3 py-1.5 rounded-xl dark:bg-[#063D2D] dark:text-[#00D084] dark:border-[#00D084]/30 bg-[#F4F5F2] text-[#171B17] border border-[#E0E4DD] font-bold text-xs flex items-center gap-2 shrink-0">
+                            <span class="w-2 h-2 rounded-full dark:bg-[#00D084] bg-[#171B17]"></span>
                             <span>{{ qualitativeStatus.label }}</span>
                         </div>
                     </div>
 
-                    <!-- Visual Bars: Proporsi Komoditas Utama -->
-                    <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-2xl p-4 sm:p-5 space-y-4">
-                        <div class="flex items-center justify-between">
+                    <!-- Proporsi & Distribusi Komoditas (3 Kategori Mandiri) -->
+                    <div class="space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 px-0.5">
                             <div>
                                 <h3 class="font-display font-bold text-sm sm:text-base dark:text-white text-[#171B17]">
                                     Proporsi &amp; Distribusi Komoditas Peternakan
                                 </h3>
                                 <p class="text-xs dark:text-[#B3B3B3] text-[#6E776D] mt-0.5">
-                                    Komposisi populasi ternak besar, ternak kecil, dan unggas di wilayah {{ kecamatan.nama }}.
+                                    Visualisasi terpisah per kelompok komoditas untuk representasi proporsi yang proporsional tanpa distorsi skala populasi unggas.
                                 </p>
                             </div>
-                            <span class="text-xs font-mono font-semibold dark:text-[#B3B3B3] text-[#6E776D]">
-                                Total: {{ currentRole === 'publik' ? 'Sentra Aktif' : formatAngka(totalPopulasi) + ' ekor' }}
+                            <span class="text-xs font-mono font-semibold dark:text-[#00D084] text-[#171B17] shrink-0 self-start sm:self-center">
+                                Total: {{ formatAngka(totalPopulasi) }} ekor
                             </span>
                         </div>
 
-                        <!-- Progress Bar Stacks -->
-                        <div class="space-y-3">
-                            <div
-                                v-for="item in commodityProportions"
-                                :key="item.label"
-                                class="space-y-1.5"
-                            >
-                                <div class="flex items-center justify-between text-xs">
-                                    <span class="dark:text-[#F5F5F5] text-[#171B17] font-medium">{{ item.label }}</span>
-                                    <div class="flex items-center gap-2">
-                                        <span v-if="currentRole !== 'publik'" class="dark:text-[#B3B3B3] text-[#6E776D] font-mono tabular-nums">
-                                            {{ formatAngka(item.value) }} ekor
-                                        </span>
-                                        <span class="font-mono font-bold" :class="item.textColor">
-                                            {{ item.percentage }}%
+                        <!-- 3 Cards Grid: Besar, Kecil, Unggas -->
+                        <div v-if="categoryGroups" class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                            <!-- Card A: Ternak Ruminansia Besar -->
+                            <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-2xl p-4 flex flex-col justify-between space-y-3 shadow-xs">
+                                <div class="space-y-1">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full dark:bg-[#00D084] bg-[#171B17]"></span>
+                                            <h4 class="font-display font-bold text-xs uppercase tracking-wider dark:text-white text-[#171B17]">
+                                                {{ categoryGroups.besar.title }}
+                                            </h4>
+                                        </div>
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold dark:bg-[#00D084]/15 dark:text-[#00D084] bg-[#171B17]/10 text-[#171B17]">
+                                            {{ formatAngka(categoryGroups.besar.total) }} ekor
                                         </span>
                                     </div>
+                                    <p class="text-[11px] dark:text-[#B3B3B3] text-[#6E776D]">
+                                        Proporsi komparatif sapi potong dan sapi perah
+                                    </p>
                                 </div>
-                                <div class="h-2 w-full dark:bg-[#111111] bg-[#E0E4DD] rounded-full overflow-hidden border dark:border-[#1E1E1E] border-[#C8CEC4]">
+
+                                <div class="space-y-3 pt-1">
                                     <div
-                                        class="h-full rounded-full transition-all duration-500"
-                                        :class="item.color"
-                                        :style="{ width: `${item.percentage}%` }"
-                                    ></div>
+                                        v-for="item in categoryGroups.besar.items"
+                                        :key="item.label"
+                                        class="space-y-1.5"
+                                    >
+                                        <div class="flex items-start justify-between gap-2 text-xs">
+                                            <div class="min-w-0">
+                                                <span class="font-semibold dark:text-[#F5F5F5] text-[#171B17] block truncate">
+                                                    {{ item.label }}
+                                                </span>
+                                                <span class="text-[10px] dark:text-[#888888] text-[#8C968B] block truncate">
+                                                    {{ item.sublabel }}
+                                                </span>
+                                            </div>
+                                            <div class="text-right shrink-0">
+                                                <span class="font-mono font-bold dark:text-white text-[#171B17] block tabular-nums">
+                                                    {{ formatAngka(item.value) }} ekor
+                                                </span>
+                                                <span class="font-mono text-[11px] font-bold" :class="item.textColor">
+                                                    {{ item.percentage }}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="h-2 w-full dark:bg-[#111111] bg-[#E0E4DD] rounded-full overflow-hidden border dark:border-[#1E1E1E] border-[#C8CEC4]">
+                                            <div
+                                                class="h-full rounded-full transition-all duration-500"
+                                                :class="item.barColor"
+                                                :style="{ width: `${item.percentage}%` }"
+                                            ></div>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <!-- Card B: Ternak Ruminansia Kecil -->
+                            <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-2xl p-4 flex flex-col justify-between space-y-3 shadow-xs">
+                                <div class="space-y-1">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full dark:bg-[#39D6C0] bg-[#0E7490]"></span>
+                                            <h4 class="font-display font-bold text-xs uppercase tracking-wider dark:text-white text-[#171B17]">
+                                                {{ categoryGroups.kecil.title }}
+                                            </h4>
+                                        </div>
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold dark:bg-[#39D6C0]/15 dark:text-[#39D6C0] bg-[#0E7490]/10 text-[#0E7490]">
+                                            {{ formatAngka(categoryGroups.kecil.total) }} ekor
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] dark:text-[#B3B3B3] text-[#6E776D]">
+                                        Kambing potong, kambing perah, dan domba
+                                    </p>
+                                </div>
+
+                                <div class="space-y-3 pt-1">
+                                    <div
+                                        v-for="item in categoryGroups.kecil.items"
+                                        :key="item.label"
+                                        class="space-y-1.5"
+                                    >
+                                        <div class="flex items-start justify-between gap-2 text-xs">
+                                            <div class="min-w-0">
+                                                <span class="font-semibold dark:text-[#F5F5F5] text-[#171B17] block truncate">
+                                                    {{ item.label }}
+                                                </span>
+                                                <span class="text-[10px] dark:text-[#888888] text-[#8C968B] block truncate">
+                                                    {{ item.sublabel }}
+                                                </span>
+                                            </div>
+                                            <div class="text-right shrink-0">
+                                                <span class="font-mono font-bold dark:text-white text-[#171B17] block tabular-nums">
+                                                    {{ formatAngka(item.value) }} ekor
+                                                </span>
+                                                <span class="font-mono text-[11px] font-bold" :class="item.textColor">
+                                                    {{ item.percentage }}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="h-2 w-full dark:bg-[#111111] bg-[#E0E4DD] rounded-full overflow-hidden border dark:border-[#1E1E1E] border-[#C8CEC4]">
+                                            <div
+                                                class="h-full rounded-full transition-all duration-500"
+                                                :class="item.barColor"
+                                                :style="{ width: `${item.percentage}%` }"
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card C: Unggas Komersial -->
+                            <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-2xl p-4 flex flex-col justify-between space-y-3 shadow-xs">
+                                <div class="space-y-1">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full dark:bg-[#FB923C] bg-[#EA580C]"></span>
+                                            <h4 class="font-display font-bold text-xs uppercase tracking-wider dark:text-white text-[#171B17]">
+                                                {{ categoryGroups.unggas.title }}
+                                            </h4>
+                                        </div>
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold dark:bg-[#FB923C]/15 dark:text-[#FB923C] bg-[#EA580C]/10 text-[#EA580C]">
+                                            {{ formatAngka(categoryGroups.unggas.total) }} ekor
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] dark:text-[#B3B3B3] text-[#6E776D]">
+                                        Ayam ras pedaging (broiler) dan petelur (layer)
+                                    </p>
+                                </div>
+
+                                <div class="space-y-3 pt-1">
+                                    <div
+                                        v-for="item in categoryGroups.unggas.items"
+                                        :key="item.label"
+                                        class="space-y-1.5"
+                                    >
+                                        <div class="flex items-start justify-between gap-2 text-xs">
+                                            <div class="min-w-0">
+                                                <span class="font-semibold dark:text-[#F5F5F5] text-[#171B17] block truncate">
+                                                    {{ item.label }}
+                                                </span>
+                                                <span class="text-[10px] dark:text-[#888888] text-[#8C968B] block truncate">
+                                                    {{ item.sublabel }}
+                                                </span>
+                                            </div>
+                                            <div class="text-right shrink-0">
+                                                <span class="font-mono font-bold dark:text-white text-[#171B17] block tabular-nums">
+                                                    {{ formatAngka(item.value) }} ekor
+                                                </span>
+                                                <span class="font-mono text-[11px] font-bold" :class="item.textColor">
+                                                    {{ item.percentage }}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="h-2 w-full dark:bg-[#111111] bg-[#E0E4DD] rounded-full overflow-hidden border dark:border-[#1E1E1E] border-[#C8CEC4]">
+                                            <div
+                                                class="h-full rounded-full transition-all duration-500"
+                                                :class="item.barColor"
+                                                :style="{ width: `${item.percentage}%` }"
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Daya Dukung Pakan Hijauan (Carrying Capacity) -->
+                    <div v-if="carryingCapacity" class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <Leaf class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
+                                    <h3 class="font-display font-bold text-sm sm:text-base dark:text-white text-[#171B17]">
+                                        Status Daya Dukung Pakan Hijauan (Carrying Capacity)
+                                    </h3>
+                                </div>
+                                <p class="text-xs dark:text-[#B3B3B3] text-[#6E776D] mt-0.5">
+                                    Analisis keseimbangan beban populasi ternak berbasis Satuan Ternak (ST) terhadap ketersediaan luas kebun HMT.
+                                </p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full border text-xs font-semibold flex items-center gap-1.5 shrink-0 self-start sm:self-center" :class="carryingCapacity.badgeClass">
+                                <span class="w-2 h-2 rounded-full" :class="carryingCapacity.dotClass"></span>
+                                <span>{{ carryingCapacity.statusLabel }}</span>
+                            </span>
+                        </div>
+
+                        <!-- 4 Metric Cards Strip -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                            <div class="dark:bg-[#111111] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-3 space-y-1">
+                                <span class="text-[10px] uppercase font-bold dark:text-[#B3B3B3] text-[#6E776D] tracking-wider block">Luas Kebun HMT</span>
+                                <div class="text-base sm:text-lg font-bold font-mono dark:text-[#00D084] text-[#171B17] tabular-nums">
+                                    {{ formatAngka(carryingCapacity.luasHmt) }} <span class="text-xs font-normal dark:text-[#B3B3B3] text-[#6E776D]">Ha</span>
+                                </div>
+                                <span class="text-[10px] dark:text-[#888888] text-[#8C968B] block truncate">Kebun Rumput Pakan</span>
+                            </div>
+
+                            <div class="dark:bg-[#111111] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-3 space-y-1">
+                                <span class="text-[10px] uppercase font-bold dark:text-[#B3B3B3] text-[#6E776D] tracking-wider block">Kapasitas Tampung</span>
+                                <div class="text-base sm:text-lg font-bold font-mono dark:text-[#39D6C0] text-[#0E7490] tabular-nums">
+                                    {{ formatAngka(carryingCapacity.kapasitasTampungST) }} <span class="text-xs font-normal dark:text-[#B3B3B3] text-[#6E776D]">ST</span>
+                                </div>
+                                <span class="text-[10px] dark:text-[#888888] text-[#8C968B] block truncate">Standar 6 ST / Ha HMT</span>
+                            </div>
+
+                            <div class="dark:bg-[#111111] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-3 space-y-1">
+                                <span class="text-[10px] uppercase font-bold dark:text-[#B3B3B3] text-[#6E776D] tracking-wider block">Total Beban Ternak</span>
+                                <div class="text-base sm:text-lg font-bold font-mono dark:text-white text-[#171B17] tabular-nums">
+                                    {{ formatAngka(carryingCapacity.totalST) }} <span class="text-xs font-normal dark:text-[#B3B3B3] text-[#6E776D]">ST</span>
+                                </div>
+                                <span class="text-[10px] dark:text-[#888888] text-[#8C968B] block truncate">Sapi 1.0, Kecil 0.14, Ayam 0.01</span>
+                            </div>
+
+                            <div class="dark:bg-[#111111] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-3 space-y-1">
+                                <span class="text-[10px] uppercase font-bold dark:text-[#B3B3B3] text-[#6E776D] tracking-wider block">Indeks Daya Dukung</span>
+                                <div class="text-base sm:text-lg font-bold font-mono tabular-nums" :class="carryingCapacity.indicatorColor">
+                                    {{ carryingCapacity.indeks }}
+                                </div>
+                                <span class="text-[10px] dark:text-[#888888] text-[#8C968B] block truncate">Kapasitas ÷ Beban ST</span>
+                            </div>
+                        </div>
+
+                        <!-- Carrying capacity explanation note -->
+                        <div class="text-xs dark:text-[#B3B3B3] text-[#6E776D] leading-relaxed dark:bg-[#111111]/60 bg-white/60 rounded-xl p-3 border dark:border-[#1E1E1E] border-[#E0E4DD] flex items-start gap-2">
+                            <Info class="w-4 h-4 dark:text-[#00D084] text-[#171B17] shrink-0 mt-0.5" />
+                            <div>
+                                <strong class="dark:text-white text-[#171B17] font-semibold">{{ carryingCapacity.statusLabel }}:</strong>
+                                <span class="ml-1">{{ carryingCapacity.statusDesc }}.</span>
+                                <span class="block text-[11px] mt-1 dark:text-[#888888] text-[#8C968B]">
+                                    Formula baku: Sapi (1.0 ST), Kambing/Domba (0.14 ST), Unggas (0.01 ST). Kapasitas kebun hijauan: 6 ST/Ha/Tahun.
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -593,14 +951,14 @@ onUnmounted(() => {
                         <!-- Fasilitas Layanan Umum -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-2xl p-4 space-y-2">
-                                <div class="flex items-center gap-2 dark:text-[#00D084] text-[#00A86B]">
+                                <div class="flex items-center gap-2 dark:text-[#00D084] text-[#171B17]">
                                     <Building2 class="w-4 h-4" />
                                     <h4 class="font-bold text-xs uppercase tracking-wider dark:text-slate-200 text-[#171B17]">
                                         Poskeswan &amp; RPH Wilayah
                                     </h4>
                                 </div>
                                 <p class="text-xs dark:text-[#B3B3B3] text-[#6E776D] leading-relaxed">
-                                    Wilayah ini dilayani oleh <strong class="dark:text-[#00D084] text-[#00A86B] font-mono">{{ kecamatan.poskeswan }} Unit</strong> Pos Pelayanan Kesehatan Hewan (Poskeswan) dan Rumah Potong Hewan (RPH) berstandar ASUH (Aman, Sehat, Utuh, dan Halal).
+                                    Wilayah ini dilayani oleh <strong class="dark:text-[#00D084] text-[#171B17] font-mono">{{ kecamatan.poskeswan }} Unit</strong> Pos Pelayanan Kesehatan Hewan (Poskeswan) dan Rumah Potong Hewan (RPH) berstandar ASUH (Aman, Sehat, Utuh, dan Halal).
                                 </p>
                                 <div class="text-[11px] dark:text-slate-300 text-[#444C43] font-mono pt-1">
                                     ✓ Layanan Vaksinasi PMK &amp; LSD Gratis<br />
@@ -610,7 +968,7 @@ onUnmounted(() => {
 
                             <!-- Perlindungan Privasi Perseorangan (UU PDP) -->
                             <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-2xl p-4 space-y-2">
-                                <div class="flex items-center gap-2 text-teal-500 dark:text-teal-400">
+                                <div class="flex items-center gap-2 dark:text-teal-400 text-[#171B17]">
                                     <Lock class="w-4 h-4" />
                                     <h4 class="font-bold text-xs uppercase tracking-wider dark:text-slate-200 text-[#171B17]">
                                         Perlindungan Data Pribadi
@@ -619,7 +977,7 @@ onUnmounted(() => {
                                 <p class="text-xs dark:text-[#B3B3B3] text-[#6E776D] leading-relaxed">
                                     Sesuai UU No. 27/2022 tentang Pelindungan Data Pribadi (UU PDP), identitas nama dan alamat peternak individual dilindungi dan tidak dipublikasikan ke ranah publik.
                                 </p>
-                                <span class="text-[11px] text-teal-600 dark:text-teal-400 block pt-1 font-medium">
+                                <span class="text-[11px] dark:text-teal-400 text-[#6E776D] block pt-1 font-medium">
                                     Data agregat spasial disajikan untuk transparansi dan edukasi publik.
                                 </span>
                             </div>
@@ -632,7 +990,7 @@ onUnmounted(() => {
                             <!-- Densitas Ternak -->
                             <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-3 space-y-1">
                                 <span class="text-[10px] uppercase font-bold dark:text-[#B3B3B3] text-[#6E776D] tracking-wider">Densitas Wilayah</span>
-                                <div class="text-base sm:text-lg font-bold font-mono dark:text-[#00D084] text-[#00A86B] tabular-nums">
+                                <div class="text-base sm:text-lg font-bold font-mono dark:text-[#00D084] text-[#171B17] tabular-nums">
                                     {{ animalDensity }} <span class="text-xs dark:text-[#B3B3B3] text-[#6E776D] font-normal">ekor/km²</span>
                                 </div>
                                 <span class="text-[10px] dark:text-[#B3B3B3] text-[#8C968B] block">Kepadatan Spasial</span>
@@ -641,7 +999,7 @@ onUnmounted(() => {
                             <!-- Rasio Jantan/Betina -->
                             <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-3 space-y-1">
                                 <span class="text-[10px] uppercase font-bold dark:text-[#B3B3B3] text-[#6E776D] tracking-wider">Rasio Seks Ternak</span>
-                                <div class="text-base sm:text-lg font-bold font-mono text-cyan-500 dark:text-cyan-400 tabular-nums">
+                                <div class="text-base sm:text-lg font-bold font-mono dark:text-cyan-400 text-[#171B17] tabular-nums">
                                     1 : 4,2
                                 </div>
                                 <span class="text-[10px] dark:text-[#B3B3B3] text-[#8C968B] block">Jantan : Betina Produktif</span>
@@ -674,31 +1032,31 @@ onUnmounted(() => {
                             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                                 <div class="dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5">
                                     <span class="dark:text-[#B3B3B3] text-[#6E776D] text-[11px] block">Daging Sapi:</span>
-                                    <span class="font-mono font-bold dark:text-[#00D084] text-[#00A86B] text-sm tabular-nums">
+                                    <span class="font-mono font-bold dark:text-[#00D084] text-[#171B17] text-sm tabular-nums">
                                         {{ formatAngka(kecamatan.daging_sapi || 0) }} kg
                                     </span>
                                 </div>
                                 <div class="dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5">
                                     <span class="dark:text-[#B3B3B3] text-[#6E776D] text-[11px] block">Daging Ayam:</span>
-                                    <span class="font-mono font-bold text-cyan-600 dark:text-cyan-400 text-sm tabular-nums">
+                                    <span class="font-mono font-bold dark:text-cyan-400 text-[#171B17] text-sm tabular-nums">
                                         {{ formatAngka(kecamatan.daging_ayam || 0) }} kg
                                     </span>
                                 </div>
                                 <div class="dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5">
                                     <span class="dark:text-[#B3B3B3] text-[#6E776D] text-[11px] block">Telur Ayam:</span>
-                                    <span class="font-mono font-bold text-amber-500 dark:text-amber-400 text-sm tabular-nums">
+                                    <span class="font-mono font-bold dark:text-amber-400 text-[#171B17] text-sm tabular-nums">
                                         {{ formatAngka(kecamatan.telur_ayam || 0) }} kg
                                     </span>
                                 </div>
                                 <div class="dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5">
                                     <span class="dark:text-[#B3B3B3] text-[#6E776D] text-[11px] block">Daging Kambing/Domba:</span>
-                                    <span class="font-mono font-bold text-teal-600 dark:text-teal-400 text-sm tabular-nums">
+                                    <span class="font-mono font-bold dark:text-teal-400 text-[#171B17] text-sm tabular-nums">
                                         {{ formatAngka((kecamatan.daging_kambing || 0) + (kecamatan.daging_domba || 0)) }} kg
                                     </span>
                                 </div>
                                 <div class="dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-2.5">
                                     <span class="dark:text-[#B3B3B3] text-[#6E776D] text-[11px] block">Susu Sapi Segar:</span>
-                                    <span class="font-mono font-bold text-indigo-500 dark:text-indigo-400 text-sm tabular-nums">
+                                    <span class="font-mono font-bold dark:text-indigo-400 text-[#171B17] text-sm tabular-nums">
                                         {{ formatAngka(kecamatan.susu_sapi || 0) }} Liter
                                     </span>
                                 </div>
@@ -721,8 +1079,8 @@ onUnmounted(() => {
                             <input
                                 v-model="searchDesaQuery"
                                 type="text"
-                                :placeholder="`Cari dari ${desaList.length} desa/kelurahan...`"
-                                class="w-full h-9 dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] focus:dark:border-[#00D084] focus:border-[#00A86B] rounded-xl px-3 pr-8 text-xs dark:text-[#F5F5F5] text-[#171B17] outline-none placeholder:dark:text-[#B3B3B3] placeholder:text-[#A2AEA2]"
+                                placeholder="Cari desa atau kelurahan"
+                                class="w-full h-9 dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] focus:dark:border-[#00D084] focus:border-[#171B17] rounded-xl px-3 pr-8 text-xs dark:text-[#F5F5F5] text-[#171B17] outline-none placeholder:dark:text-[#B3B3B3] placeholder:text-[#A2AEA2]"
                             />
                             <Search class="w-4 h-4 dark:text-[#B3B3B3] text-[#A2AEA2] absolute right-2.5 top-2.5 pointer-events-none" />
                         </div>
@@ -764,8 +1122,8 @@ onUnmounted(() => {
                                 @click="filterDesaZona = 'aman'"
                                 class="px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
                                 :class="filterDesaZona === 'aman'
-                                    ? 'dark:bg-[#063D2D] bg-[#E8F8F1] dark:text-[#00D084] text-[#00A86B] border dark:border-[#00D084]/40 border-[#00A86B]/40'
-                                    : 'dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#B3B3B3] text-[#6E776D] hover:dark:text-[#00D084] hover:text-[#00A86B]'"
+                                    ? 'dark:bg-[#063D2D] bg-[#171B17] text-white border dark:border-[#00D084]/40 border-[#171B17] dark:text-[#00D084]'
+                                    : 'dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] dark:text-[#B3B3B3] text-[#6E776D] hover:dark:text-[#00D084] hover:text-[#171B17]'"
                             >
                                 Aman
                             </button>
@@ -794,7 +1152,7 @@ onUnmounted(() => {
                                         class="hover:dark:bg-[#1E1E1E] hover:bg-[#F4F5F2] transition-colors group"
                                     >
                                         <td class="p-3">
-                                            <div class="font-bold dark:text-white text-[#171B17] group-hover:dark:text-[#00D084] group-hover:text-[#00A86B] transition-colors">
+                                            <div class="font-bold dark:text-white text-[#171B17] group-hover:dark:text-[#00D084] group-hover:text-black transition-colors">
                                                 {{ desa.nama }}
                                             </div>
                                             <span class="text-[10px] dark:text-[#B3B3B3] text-[#6E776D] font-mono">{{ desa.jenis }}</span>
@@ -820,17 +1178,17 @@ onUnmounted(() => {
                                                 {{ desa.lsd }}
                                             </span>
                                         </td>
-                                        <td class="p-3 text-right font-mono tabular-nums dark:text-[#00D084] text-[#00A86B] font-bold">
-                                            {{ currentRole === 'publik' ? 'Terdata' : formatAngka(desa.sapi_potong || 0) + ' ekor' }}
+                                        <td class="p-3 text-right font-mono tabular-nums dark:text-[#00D084] text-[#171B17] font-bold">
+                                            {{ formatAngka(desa.sapi_potong || 0) }} ekor
                                         </td>
                                         <td class="p-3 text-center">
                                             <button
                                                 type="button"
                                                 @click="emit('focusDesa', desa); emit('close');"
-                                                class="h-7 px-2.5 rounded-lg dark:bg-[#181818] bg-[#F4F5F2] hover:dark:bg-[#00D084] hover:bg-[#00A86B] hover:text-white hover:dark:text-[#062117] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:dark:border-[#00D084] hover:border-[#00A86B] dark:text-[#F5F5F5] text-[#171B17] text-[11px] font-semibold inline-flex items-center gap-1 transition-all cursor-pointer shadow-xs"
+                                                class="h-7 px-2.5 rounded-lg dark:bg-[#181818] bg-[#F4F5F2] hover:dark:bg-[#00D084] hover:bg-[#171B17] hover:text-white hover:dark:text-[#062117] border dark:border-[#1E1E1E] border-[#E0E4DD] hover:dark:border-[#00D084] hover:border-[#171B17] dark:text-[#F5F5F5] text-[#171B17] text-[11px] font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer shadow-xs"
                                                 title="Fokuskan Peta ke Desa ini"
                                             >
-                                                <ExternalLink class="w-3 h-3" />
+                                                <ExternalLink class="w-3.5 h-3.5" />
                                                 <span>Fokus</span>
                                             </button>
                                         </td>
@@ -861,7 +1219,7 @@ onUnmounted(() => {
                                         Penyakit Mulut &amp; Kuku (PMK)
                                     </h4>
                                 </div>
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold" :class="kecamatan.pmk > 0 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold" :class="kecamatan.pmk > 0 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30 bg-[#F4F5F2] text-[#171B17] border border-[#E0E4DD]'">
                                     {{ kecamatan.pmk > 0 ? `${kecamatan.pmk} Kasus Aktif` : 'Terkendali / Nol Kasus' }}
                                 </span>
                             </div>
@@ -871,7 +1229,7 @@ onUnmounted(() => {
                             <div class="p-3 dark:bg-[#181818] bg-white rounded-xl border dark:border-[#1E1E1E] border-[#E0E4DD] text-[11px] dark:text-slate-300 text-[#444C43] space-y-1 font-mono">
                                 <div class="flex justify-between">
                                     <span>Cakupan Vaksinasi:</span>
-                                    <strong class="dark:text-[#00D084] text-[#00A86B]">92,4% Terpenuhi</strong>
+                                    <strong class="dark:text-[#00D084] text-[#171B17]">92,4% Terpenuhi</strong>
                                 </div>
                                 <div class="flex justify-between">
                                     <span>Isolasi Terpadu:</span>
@@ -891,7 +1249,7 @@ onUnmounted(() => {
                                         Lumpy Skin Disease (LSD)
                                     </h4>
                                 </div>
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold" :class="kecamatan.lsd > 0 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold" :class="kecamatan.lsd > 0 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30 bg-[#F4F5F2] text-[#171B17] border border-[#E0E4DD]'">
                                     {{ kecamatan.lsd > 0 ? `${kecamatan.lsd} Kasus Aktif` : 'Terkendali / Bebas LSD' }}
                                 </span>
                             </div>
@@ -901,7 +1259,7 @@ onUnmounted(() => {
                             <div class="p-3 dark:bg-[#181818] bg-white rounded-xl border dark:border-[#1E1E1E] border-[#E0E4DD] text-[11px] dark:text-slate-300 text-[#444C43] space-y-1 font-mono">
                                 <div class="flex justify-between">
                                     <span>Pengendalian Vektor:</span>
-                                    <strong class="text-teal-600 dark:text-teal-400">Spraying Desinfektan Rutin</strong>
+                                    <strong class="dark:text-teal-400 text-[#171B17]">Spraying Desinfektan Rutin</strong>
                                 </div>
                                 <div class="flex justify-between">
                                     <span>Kesiagaan Obat:</span>
@@ -916,7 +1274,7 @@ onUnmounted(() => {
                 <div v-else-if="activeTab === 'spasial' && currentRole === 'admin'" class="space-y-4">
                     <div class="dark:bg-[#181818] bg-[#F4F5F2] border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-2xl p-4 sm:p-5 space-y-4">
                         <div class="flex items-center gap-2">
-                            <Globe class="w-4 h-4 dark:text-[#00D084] text-[#00A86B]" />
+                            <Globe class="w-4 h-4 dark:text-[#00D084] text-[#171B17]" />
                             <h4 class="font-display font-bold text-sm dark:text-white text-[#171B17]">
                                 Verifikasi Geospasial &amp; Standar BIG/BPS
                             </h4>
@@ -925,13 +1283,13 @@ onUnmounted(() => {
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                             <div class="dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-3 space-y-1">
                                 <span class="dark:text-[#B3B3B3] text-[#6E776D] text-[11px] block font-mono">Centroid Latitude:</span>
-                                <span class="font-mono font-bold dark:text-[#00D084] text-[#00A86B] text-sm">
+                                <span class="font-mono font-bold dark:text-[#00D084] text-[#171B17] text-sm">
                                     {{ kecamatan.lat }}
                                 </span>
                             </div>
                             <div class="dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-3 space-y-1">
                                 <span class="dark:text-[#B3B3B3] text-[#6E776D] text-[11px] block font-mono">Centroid Longitude:</span>
-                                <span class="font-mono font-bold dark:text-[#00D084] text-[#00A86B] text-sm">
+                                <span class="font-mono font-bold dark:text-[#00D084] text-[#171B17] text-sm">
                                     {{ kecamatan.lng }}
                                 </span>
                             </div>
@@ -943,8 +1301,8 @@ onUnmounted(() => {
                             </div>
                             <div class="dark:bg-[#181818] bg-white border dark:border-[#1E1E1E] border-[#E0E4DD] rounded-xl p-3 space-y-1">
                                 <span class="dark:text-[#B3B3B3] text-[#6E776D] text-[11px] block font-mono">Validitas Topologi:</span>
-                                <span class="font-mono font-semibold dark:text-[#00D084] text-[#00A86B] text-xs flex items-center gap-1.5">
-                                    <CheckCircle2 class="w-3.5 h-3.5 dark:text-[#00D084] text-[#00A86B]" />
+                                <span class="font-mono font-semibold dark:text-[#00D084] text-[#171B17] text-xs flex items-center gap-1.5">
+                                    <CheckCircle2 class="w-3.5 h-3.5 dark:text-[#00D084] text-[#171B17]" />
                                     100% Sinkron Poligon BIG/BPS
                                 </span>
                             </div>
