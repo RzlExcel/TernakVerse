@@ -42,27 +42,6 @@ class DinasDashboardController extends Controller
                 return Inertia::render('Dinas/Dashboard', $this->getFallbackPayload($tahun, $triwulan, $komoditasKode));
             }
 
-            // Jika periode triwulan spesifik diminta tetapi tidak ada rekaman, gunakan triwulan yang ada dalam tahun tersebut
-            if ($triwulan !== null && $hasPopulasiRecords) {
-                $periodPopulasiExists = DB::table('populasi_ternak')
-                    ->where('tahun', $tahun)
-                    ->where('triwulan', $triwulan)
-                    ->exists();
-
-                if (! $periodPopulasiExists) {
-                    $availableQuarter = DB::table('populasi_ternak')
-                        ->where('tahun', $tahun)
-                        ->whereNotNull('triwulan')
-                        ->orderByDesc('triwulan')
-                        ->value('triwulan');
-
-                    if ($availableQuarter !== null) {
-                        $triwulan = (int) $availableQuarter;
-                    } else {
-                        $triwulan = null;
-                    }
-                }
-            }
 
             // Jika tahun yang diminta (default 2026) tidak memiliki data dan tahun tidak diminta secara eksplisit, gunakan tahun terbaru
             $yearExists = DB::table('populasi_ternak')->where('tahun', $tahun)->exists();
@@ -130,12 +109,12 @@ class DinasDashboardController extends Controller
                     ->count();
 
                 $kpiCards = [
-                    'total_populasi_ternak' => $totalPopulasiLive > 0 ? $totalPopulasiLive : (int) ($kpi['populasi']['total'] ?? 0),
-                    'total_produksi_daging_kg' => round((float) ($prodTotals->total_daging ?? ($kpi['produksi']['daging_kg'] ?? 0)), 2),
-                    'total_produksi_susu_liter' => round((float) ($prodTotals->total_susu ?? ($kpi['produksi']['susu_liter'] ?? 0)), 2),
-                    'total_produksi_telur_butir' => round((float) ($prodTotals->total_telur ?? ($kpi['produksi']['telur_kg'] ?? 0)), 2),
-                    'total_kasus_aktif' => $totalKasusAktifLive > 0 ? $totalKasusAktifLive : (int) ($kpi['kesehatan_hewan']['total_kasus_aktif'] ?? 0),
-                    'total_rph_aktif' => $totalRphAktifLive > 0 ? $totalRphAktifLive : (int) ($kpi['fasilitas_rph']['total_aktif'] ?? 0),
+                    'total_populasi_ternak' => $totalPopulasiLive,
+                    'total_produksi_daging_kg' => round((float) ($prodTotals->total_daging ?? 0), 2),
+                    'total_produksi_susu_liter' => round((float) ($prodTotals->total_susu ?? 0), 2),
+                    'total_produksi_telur_butir' => round((float) ($prodTotals->total_telur ?? 0), 2),
+                    'total_kasus_aktif' => $totalKasusAktifLive,
+                    'total_rph_aktif' => $totalRphAktifLive,
                     'carrying_capacity' => $carryingCapacity,
                     'daya_dukung_pakan' => $carryingCapacity,
                 ];
@@ -360,15 +339,7 @@ class DinasDashboardController extends Controller
                     $zona = $zonaMap->get($row->objectid);
                     $ccKec = $ccByKecamatan->get($row->objectid);
 
-                    $popVal = match ($komoditasKode) {
-                        'SAPI_POTONG' => (int) ($row->pop_sapipotong ?? ($choroInfo['nilai'] ?? 0)),
-                        'SAPI_PERAH' => (int) ($row->pop_sapiperah ?? ($choroInfo['nilai'] ?? 0)),
-                        'KAMBING' => (int) ($row->pop_kambing ?? ($choroInfo['nilai'] ?? 0)),
-                        'DOMBA' => (int) ($row->pop_domba ?? ($choroInfo['nilai'] ?? 0)),
-                        'AYAM_POTONG' => (int) ($row->pop_ayampotong ?? ($choroInfo['nilai'] ?? 0)),
-                        'AYAM_TELUR' => (int) ($row->pop_ayamtelur ?? ($choroInfo['nilai'] ?? 0)),
-                        default => (int) ($row->pop_total ?? ($choroInfo['nilai'] ?? 0)),
-                    };
+                    $popVal = (int) ($choroInfo['nilai'] ?? 0);
 
                     return [
                         'objectid' => (int) $row->objectid,

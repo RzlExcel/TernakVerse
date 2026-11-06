@@ -13,11 +13,10 @@ import {
     LogOut,
     X,
     Database,
-    Wrench,
 } from 'lucide-vue-next';
 import type { AdminTab } from '../../../composables/ternakverse/admin/useAdminPortal';
 
-export type ExtendedAdminTab = AdminTab | 'maintenance';
+export type ExtendedAdminTab = AdminTab;
 
 const props = defineProps<{
     currentTab: ExtendedAdminTab;
@@ -52,9 +51,9 @@ const mainNavItems: NavItem[] = [
 
 const allMonitoringNavItems: NavItem[] = [
     { id: 'ews', label: 'Monitoring EWS', group: 'monitoring', icon: ShieldAlert },
-    { id: 'rph', label: 'Fasilitas Peternakan', group: 'monitoring', icon: Building2 },
+    { id: 'rph', label: 'Fasilitas RPH', group: 'monitoring', icon: Building2 },
     { id: 'master_data', label: 'Master Data', group: 'monitoring', icon: Database },
-    { id: 'maintenance', label: 'Pemeliharaan Sistem', group: 'monitoring', icon: Wrench },
+    { id: 'governance', label: 'Tata Kelola & Keamanan', group: 'monitoring', icon: ShieldCheck },
     { id: 'laporan', label: 'Ekspor Laporan', group: 'monitoring', icon: FileDown },
     { id: 'profile', label: 'Pengaturan Akun', group: 'monitoring', icon: User },
     { id: 'rbac', label: 'Role & Permission', group: 'monitoring', icon: ShieldCheck },
@@ -64,7 +63,7 @@ const monitoringNavItems = computed<NavItem[]>(() => {
     if (props.isSuperAdmin) {
         return allMonitoringNavItems;
     }
-    const superAdminTabs: ExtendedAdminTab[] = ['master_data', 'maintenance', 'rbac'];
+    const superAdminTabs: ExtendedAdminTab[] = ['master_data', 'rbac', 'governance'];
     return allMonitoringNavItems.filter((item) => !superAdminTabs.includes(item.id));
 });
 
@@ -177,6 +176,12 @@ function handleNavClick(tab: ExtendedAdminTab): void {
                         />
                         <span v-if="!props.isSidebarCollapsed" class="truncate">{{ item.label }}</span>
                     </div>
+                    <span
+                        v-if="!props.isSidebarCollapsed && (item.id === 'governance' || item.id === 'rbac')"
+                        class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-[#00D084] border border-emerald-500/20 shrink-0"
+                    >
+                        SA
+                    </span>
                 </button>
             </div>
         </div>
@@ -344,6 +349,12 @@ function handleNavClick(tab: ExtendedAdminTab): void {
                             />
                             <span class="truncate">{{ item.label }}</span>
                         </div>
+                        <span
+                            v-if="item.id === 'governance' || item.id === 'rbac'"
+                            class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-[#00D084] border border-emerald-500/20 shrink-0"
+                        >
+                            SA
+                        </span>
                     </button>
                 </div>
             </div>

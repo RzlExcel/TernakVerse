@@ -49,10 +49,12 @@ export interface KecamatanData {
     lat: number;
     lng: number;
     last_updated: string;
+    tahun?: number;
+    triwulan?: number;
 }
 
 export interface MetricDefinition {
-    id: keyof Omit<KecamatanData, 'id' | 'nama' | 'kode_kec' | 'zona' | 'lat' | 'lng' | 'last_updated'>;
+    id: keyof Omit<KecamatanData, 'id' | 'nama' | 'kode_kec' | 'zona' | 'lat' | 'lng' | 'last_updated' | 'tahun' | 'triwulan'>;
     label: string;
     kategori: 'Populasi' | 'Produksi' | 'Penyakit' | 'Fasilitas';
     satuan: string;

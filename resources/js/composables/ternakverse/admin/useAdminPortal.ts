@@ -4,7 +4,7 @@ import { KECAMATAN_LIST, type KecamatanData } from '../../../data/banyumasData';
 
 export type KecamatanDataSource = Ref<KecamatanData[]> | ComputedRef<KecamatanData[]> | (() => KecamatanData[]);
 
-export type AdminTab = 'dashboard' | 'webgis' | 'data' | 'create' | 'ews' | 'rph' | 'laporan' | 'profile' | 'rbac' | 'master_data';
+export type AdminTab = 'dashboard' | 'webgis' | 'data' | 'create' | 'ews' | 'rph' | 'laporan' | 'profile' | 'rbac' | 'master_data' | 'maintenance' | 'governance';
 
 export interface AuditLogItem {
     id: number;
@@ -50,6 +50,8 @@ export interface AdminFormData {
     poskeswan: number;
     luas_hmt_ha?: number;
     catatan: string;
+    tahun?: number;
+    triwulan?: number;
 }
 
 export interface EwsParameters {
@@ -537,6 +539,8 @@ export function useAdminPortal(customKecamatanSource?: KecamatanDataSource) {
         kode_kec: '',
         zona: 'aman',
         kategori_utama: 'Sapi Potong',
+        tahun: 2026,
+        triwulan: 3,
         sapi_potong: 1000,
         sapi_perah: 150,
         kambing: 1200,
@@ -561,6 +565,8 @@ export function useAdminPortal(customKecamatanSource?: KecamatanDataSource) {
             kode_kec: '33.02.',
             zona: 'aman',
             kategori_utama: 'Sapi Potong',
+            tahun: 2026,
+            triwulan: 3,
             sapi_potong: 500,
             sapi_perah: 0,
             kambing: 300,
@@ -587,6 +593,8 @@ export function useAdminPortal(customKecamatanSource?: KecamatanDataSource) {
             kode_kec: kec.kode_kec,
             zona: kec.zona,
             kategori_utama: kec.sapi_perah > 100 ? 'Sapi Perah' : 'Sapi Potong',
+            tahun: kec.tahun ?? 2026,
+            triwulan: kec.triwulan ?? 3,
             sapi_potong: kec.sapi_potong,
             sapi_perah: kec.sapi_perah,
             kambing: kec.kambing,
@@ -614,12 +622,17 @@ export function useAdminPortal(customKecamatanSource?: KecamatanDataSource) {
         const existingIndex = kecamatanList.value.findIndex(k => k.id === formKecamatanId.value);
         const existingRecord = existingIndex !== -1 ? kecamatanList.value[existingIndex] : undefined;
 
+        const thn = Number(formData.value.tahun || 2026);
+        const tw = Number(formData.value.triwulan || 3);
+
         if (isEditing.value && existingRecord && existingIndex !== -1) {
             kecamatanList.value[existingIndex] = {
                 ...existingRecord,
                 nama: formData.value.nama,
                 kode_kec: formData.value.kode_kec,
                 zona: formData.value.zona,
+                tahun: thn,
+                triwulan: tw,
                 sapi_potong: Number(formData.value.sapi_potong),
                 sapi_perah: Number(formData.value.sapi_perah),
                 kambing: Number(formData.value.kambing),
@@ -642,7 +655,7 @@ export function useAdminPortal(customKecamatanSource?: KecamatanDataSource) {
                 user: 'Satrio (Super Admin)',
                 action: 'UPDATE',
                 table: 'populasi_ternak',
-                detail: `Pembaruan data Kecamatan ${formData.value.nama}`,
+                detail: `Pembaruan data Kecamatan ${formData.value.nama} (Tahun ${thn} TW ${tw})`,
                 time: 'Baru saja',
                 status: 'SUCCESS',
             });
@@ -656,6 +669,8 @@ export function useAdminPortal(customKecamatanSource?: KecamatanDataSource) {
                 nama: formData.value.nama,
                 kode_kec: formData.value.kode_kec,
                 zona: formData.value.zona,
+                tahun: thn,
+                triwulan: tw,
                 ayam_potong: broilerCount,
                 ayam_petelur: Number(formData.value.ayam_petelur),
                 kambing: Number(formData.value.kambing),
@@ -686,12 +701,42 @@ export function useAdminPortal(customKecamatanSource?: KecamatanDataSource) {
                 user: 'Satrio (Super Admin)',
                 action: 'INSERT',
                 table: 'populasi_ternak',
-                detail: `Penambahan kecamatan baru ${formData.value.nama}`,
+                detail: `Penambahan kecamatan baru ${formData.value.nama} (Tahun ${thn} TW ${tw})`,
                 time: 'Baru saja',
                 status: 'SUCCESS',
             });
             showToast(`Kecamatan ${formData.value.nama} berhasil ditambahkan.`);
         }
+
+        // Sinkronisasi data survei triwulanan ke API backend
+        const payload = {
+            ...formData.value,
+            tahun: thn,
+            triwulan: tw,
+        };
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        void (async () => {
+            try {
+                const response = await fetch('/admin/api/survey-quarterly', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken,
+                    },
+                    body: JSON.stringify(payload),
+                });
+                const result = (await response.json().catch(() => null)) as { status?: string; message?: string } | null;
+                if (!response.ok) {
+                    showToast(result?.message || 'Gagal menyinkronkan data ke basis data.');
+                } else if (result?.message) {
+                    showToast(result.message);
+                }
+            } catch {
+                // Jangan memblokir interaksi antarmuka jika offline
+            }
+        })();
 
         if (createAnother) {
             startCreateNew();

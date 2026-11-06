@@ -95,6 +95,46 @@ watch(
                 </div>
             </div>
 
+            <!-- Periode Data Pencatatan (Tahun & Triwulan) -->
+            <div class="border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg p-4 bg-[#F8F9F6] dark:bg-[#151515] space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-[#00D084]"></span>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-[#171B17] dark:text-[#F5F5F5]">
+                        Periode Data Pencatatan (Tahun &amp; Triwulan)
+                    </h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                    <div>
+                        <label class="block text-xs font-semibold text-[#171B17] dark:text-[#F5F5F5] mb-2">
+                            Tahun Pencatatan<span class="text-rose-500 dark:text-rose-400">*</span>
+                        </label>
+                        <select
+                            v-model.number="props.formData.tahun"
+                            class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3.5 text-sm text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] cursor-pointer"
+                        >
+                            <option :value="2024" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">2024</option>
+                            <option :value="2025" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">2025</option>
+                            <option :value="2026" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">2026 (Tahun Berjalan)</option>
+                            <option :value="2027" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">2027</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-[#171B17] dark:text-[#F5F5F5] mb-2">
+                            Triwulan Pencatatan<span class="text-rose-500 dark:text-rose-400">*</span>
+                        </label>
+                        <select
+                            v-model.number="props.formData.triwulan"
+                            class="w-full h-10 bg-[#F4F5F2] dark:bg-[#181818] border border-[#E0E4DD] dark:border-[#1E1E1E] rounded-lg px-3.5 text-sm text-[#171B17] dark:text-[#F5F5F5] outline-none focus:border-[#00D084] cursor-pointer"
+                        >
+                            <option :value="1" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Triwulan I (Jan - Mar)</option>
+                            <option :value="2" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Triwulan II (Apr - Jun)</option>
+                            <option :value="3" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Triwulan III (Jul - Sep)</option>
+                            <option :value="4" class="bg-white dark:bg-[#181818] text-[#171B17] dark:text-[#F5F5F5]">Triwulan IV (Okt - Des)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <!-- Row 2: 2 Kolom Seimbang (Angka Populasi/Produksi/Kasus di Kiri, Catatan di Kanan) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
                 <!-- Left Column -->
