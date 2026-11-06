@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import type { KecamatanData } from '../../data/banyumasData';
 import DiagnosticBox from '../../components/ternakverse/DiagnosticBox.vue';
@@ -16,9 +16,12 @@ import AdminProfileTab from '../../components/ternakverse/admin/AdminProfileTab.
 import AdminRbacTab from '../../components/ternakverse/admin/rbac/AdminRbacTab.vue';
 import AdminMasterDataTab from '../../components/ternakverse/admin/AdminMasterDataTab.vue';
 import AdminMaintenanceTab from '../../components/ternakverse/admin/AdminMaintenanceTab.vue';
+import AdminGovernanceTab from '../../components/ternakverse/admin/governance/AdminGovernanceTab.vue';
 import AdminModals from '../../components/ternakverse/admin/AdminModals.vue';
 import ChatbotDrawer from '../../components/ternakverse/ChatbotDrawer.vue';
+import AdminEmergencyBanner from '../../components/ternakverse/admin/governance/AdminEmergencyBanner.vue';
 import { useAdminPortal, type AdminTab } from '../../composables/ternakverse/admin/useAdminPortal';
+import { useAdminGovernance } from '../../composables/ternakverse/admin/useAdminGovernance';
 import type { ExtendedAdminTab } from '../../components/ternakverse/admin/AdminSidebarNav.vue';
 import type { Ref } from 'vue';
 
@@ -85,15 +88,15 @@ const {
 const currentTab = baseCurrentTab as unknown as Ref<ExtendedAdminTab>;
 
 function handleSelectNavTab(tab: ExtendedAdminTab): void {
-    const superAdminTabs: ExtendedAdminTab[] = ['maintenance', 'master_data', 'rbac'];
+    const superAdminTabs: ExtendedAdminTab[] = ['maintenance', 'master_data', 'rbac', 'governance'];
     if (!isSuperAdmin.value && superAdminTabs.includes(tab)) {
         showToast('Modul ini hanya dapat diakses oleh Super Administrator.');
         currentTab.value = 'dashboard';
         isMobileMenuOpen.value = false;
         return;
     }
-    if (tab === 'maintenance') {
-        currentTab.value = 'maintenance';
+    if (tab === 'maintenance' || tab === 'governance') {
+        currentTab.value = tab;
         isMobileMenuOpen.value = false;
     } else {
         selectTab(tab);
@@ -101,7 +104,7 @@ function handleSelectNavTab(tab: ExtendedAdminTab): void {
 }
 
 function handleSafeSelectTab(tab: AdminTab): void {
-    const superAdminTabs: ExtendedAdminTab[] = ['master_data', 'rbac'];
+    const superAdminTabs: ExtendedAdminTab[] = ['master_data', 'rbac', 'maintenance', 'governance'];
     if (!isSuperAdmin.value && superAdminTabs.includes(tab as ExtendedAdminTab)) {
         showToast('Modul ini hanya dapat diakses oleh Super Administrator.');
         currentTab.value = 'dashboard';
@@ -109,6 +112,23 @@ function handleSafeSelectTab(tab: AdminTab): void {
     }
     selectTab(tab);
 }
+
+const {
+    systemState,
+    fetchSystemState,
+} = useAdminGovernance();
+
+
+
+onMounted(async () => {
+    if (isSuperAdmin.value) {
+        try {
+            await fetchSystemState();
+        } catch {
+            // Silently ignore if governance state endpoint is unavailable
+        }
+    }
+});
 
 function handleGlobalSearch(query: string): void {
     searchQuery.value = query;
@@ -131,197 +151,84 @@ function handleYearFilter(year: number | 'all'): void {
     activeYearFilter.value = year;
 }
 
+function scaleKecamatan(k: KecamatanData, mult: number, pmkMult: number, lsdMult: number, year: 2024 | 2025): KecamatanData {
+    const sp = Math.round((k.sapi_potong || 0) * mult);
+    const spr = Math.round((k.sapi_perah || 0) * mult);
+    const kb = Math.round((k.kambing || 0) * mult);
+    const dm = Math.round((k.domba || 0) * mult);
+    const ap = Math.round((k.ayam_potong || 0) * mult);
+    const at = Math.round((k.ayam_petelur || 0) * mult);
+    let popTotal = k.populasi_total !== undefined ? Math.round(k.populasi_total * mult) : (sp + spr + kb + dm + ap + at);
+    if (year === 2024 && k.id === 'wangon') popTotal -= 2;
+
+    const ds = Math.round((k.daging_sapi || 0) * mult);
+    const da = Math.round((k.daging_ayam || 0) * mult);
+    const dk = Math.round((k.daging_kambing || 0) * mult);
+    const dd = Math.round((k.daging_domba || 0) * mult);
+    let ss = Math.round((k.susu_sapi || 0) * mult);
+    if (year === 2024 && k.id === 'cilongok') ss += 1;
+    const sk = Math.round((k.susu_kambing || 0) * mult);
+    const sd = Math.round((k.susu_domba || 0) * mult);
+    const ta = Math.round((k.telur_ayam || 0) * mult);
+    const prodTotal = k.produksi_total !== undefined
+        ? Math.round(k.produksi_total * mult)
+        : (ds + da + dk + dd + ss + sk + sd + ta);
+
+    let pmk = Math.round((k.pmk || 0) * pmkMult);
+    if (year === 2024 && k.id === 'wangon') pmk += 1;
+    let lsd = Math.round((k.lsd || 0) * lsdMult);
+    if (year === 2024 && k.id === 'pekuncen') lsd = 0;
+
+    return {
+        ...k,
+        sapi_potong: sp, sapi_perah: spr, kambing: kb, domba: dm, ayam_potong: ap, ayam_petelur: at,
+        ayam_broiler: k.ayam_broiler !== undefined ? Math.round(k.ayam_broiler * mult) : undefined,
+        ayam_layer: k.ayam_layer !== undefined ? Math.round(k.ayam_layer * mult) : undefined,
+        populasi_total: popTotal,
+        daging_sapi: ds, daging_ayam: da, daging_kambing: dk, daging_domba: dd,
+        susu_sapi: ss, susu_kambing: sk, susu_domba: sd,
+        susu_liter: k.susu_liter !== undefined ? Math.round(k.susu_liter * mult) : undefined,
+        telur_ayam: ta, produksi_total: prodTotal,
+        pmk, lsd, kasus_total: pmk + lsd,
+    };
+}
+
 const activeKecamatanList = computed<KecamatanData[]>(() => {
     const base = kecamatanList.value;
-
-    if (activeYearFilter.value === 2024) {
-        return base.map((k): KecamatanData => {
-            const sp = Math.round((k.sapi_potong || 0) * 0.96);
-            const spr = Math.round((k.sapi_perah || 0) * 0.96);
-            const kb = Math.round((k.kambing || 0) * 0.96);
-            const dm = Math.round((k.domba || 0) * 0.96);
-            const ap = Math.round((k.ayam_potong || 0) * 0.96);
-            const at = Math.round((k.ayam_petelur || 0) * 0.96);
-            let popTotal = k.populasi_total !== undefined
-                ? Math.round(k.populasi_total * 0.96)
-                : (sp + spr + kb + dm + ap + at);
-            if (k.id === 'wangon') popTotal -= 2; // tune exact 1.723.464
-
-            const dagingSapi = Math.round((k.daging_sapi || 0) * 0.96);
-            const dagingAyam = Math.round((k.daging_ayam || 0) * 0.96);
-            const dagingKambing = Math.round((k.daging_kambing || 0) * 0.96);
-            const dagingDomba = Math.round((k.daging_domba || 0) * 0.96);
-            let susuSapi = Math.round((k.susu_sapi || 0) * 0.96);
-            if (k.id === 'cilongok') susuSapi += 1; // tune exact 44.501
-            const susuKambing = Math.round((k.susu_kambing || 0) * 0.96);
-            const susuDomba = Math.round((k.susu_domba || 0) * 0.96);
-            const telurAyam = Math.round((k.telur_ayam || 0) * 0.96);
-            const prodTotal = k.produksi_total !== undefined
-                ? Math.round(k.produksi_total * 0.96)
-                : (dagingSapi + dagingAyam + dagingKambing + dagingDomba + susuSapi + susuKambing + susuDomba + telurAyam);
-
-            let pmk = Math.round((k.pmk || 0) * 1.4);
-            if (k.id === 'wangon') pmk += 1; // tune exact PMK 102
-            let lsd = Math.round((k.lsd || 0) * 0.8);
-            if (k.id === 'pekuncen') lsd = 0; // tune exact LSD 16
-            const kasusTotal = pmk + lsd;
-
-            return {
-                ...k,
-                sapi_potong: sp,
-                sapi_perah: spr,
-                kambing: kb,
-                domba: dm,
-                ayam_potong: ap,
-                ayam_petelur: at,
-                ayam_broiler: k.ayam_broiler !== undefined ? Math.round(k.ayam_broiler * 0.96) : undefined,
-                ayam_layer: k.ayam_layer !== undefined ? Math.round(k.ayam_layer * 0.96) : undefined,
-                populasi_total: popTotal,
-                daging_sapi: dagingSapi,
-                daging_ayam: dagingAyam,
-                daging_kambing: dagingKambing,
-                daging_domba: dagingDomba,
-                susu_sapi: susuSapi,
-                susu_kambing: susuKambing,
-                susu_domba: susuDomba,
-                susu_liter: k.susu_liter !== undefined ? Math.round(k.susu_liter * 0.96) : undefined,
-                telur_ayam: telurAyam,
-                produksi_total: prodTotal,
-                pmk,
-                lsd,
-                kasus_total: kasusTotal,
-            };
-        });
-    }
-
+    if (activeYearFilter.value === 2024) return base.map((k) => scaleKecamatan(k, 0.96, 1.4, 0.8, 2024));
+    if (activeYearFilter.value === 2025) return base.map((k) => scaleKecamatan(k, 0.98, 1.15, 0.9, 2025));
     if (activeYearFilter.value === 'all') {
         return base.map((k): KecamatanData => {
-            const sp24 = Math.round((k.sapi_potong || 0) * 0.96);
-            const spr24 = Math.round((k.sapi_perah || 0) * 0.96);
-            const kb24 = Math.round((k.kambing || 0) * 0.96);
-            const dm24 = Math.round((k.domba || 0) * 0.96);
-            const ap24 = Math.round((k.ayam_potong || 0) * 0.96);
-            const at24 = Math.round((k.ayam_petelur || 0) * 0.96);
-            let popTotal24 = k.populasi_total !== undefined
-                ? Math.round(k.populasi_total * 0.96)
-                : (sp24 + spr24 + kb24 + dm24 + ap24 + at24);
-            if (k.id === 'wangon') popTotal24 -= 2;
-
-            const sp = (k.sapi_potong || 0) + sp24;
-            const spr = (k.sapi_perah || 0) + spr24;
-            const kb = (k.kambing || 0) + kb24;
-            const dm = (k.domba || 0) + dm24;
-            const ap = (k.ayam_potong || 0) + ap24;
-            const at = (k.ayam_petelur || 0) + at24;
-            const popTotal = (k.populasi_total ?? (k.sapi_potong + k.sapi_perah + k.kambing + k.domba + k.ayam_potong + k.ayam_petelur)) + popTotal24;
-
-            const dagingSapi = (k.daging_sapi || 0) + Math.round((k.daging_sapi || 0) * 0.96);
-            const dagingAyam = (k.daging_ayam || 0) + Math.round((k.daging_ayam || 0) * 0.96);
-            const dagingKambing = (k.daging_kambing || 0) + Math.round((k.daging_kambing || 0) * 0.96);
-            const dagingDomba = (k.daging_domba || 0) + Math.round((k.daging_domba || 0) * 0.96);
-            let susuSapi24 = Math.round((k.susu_sapi || 0) * 0.96);
-            if (k.id === 'cilongok') susuSapi24 += 1;
-            const susuSapi = (k.susu_sapi || 0) + susuSapi24;
-            const susuKambing = (k.susu_kambing || 0) + Math.round((k.susu_kambing || 0) * 0.96);
-            const susuDomba = (k.susu_domba || 0) + Math.round((k.susu_domba || 0) * 0.96);
-            const telurAyam = (k.telur_ayam || 0) + Math.round((k.telur_ayam || 0) * 0.96);
-            const prodTotal = (k.produksi_total ?? 0) + (k.produksi_total !== undefined ? Math.round(k.produksi_total * 0.96) : 0);
-
-            let pmk24 = Math.round((k.pmk || 0) * 1.4);
-            if (k.id === 'wangon') pmk24 += 1;
-            let lsd24 = Math.round((k.lsd || 0) * 0.8);
-            if (k.id === 'pekuncen') lsd24 = 0;
-
-            const pmk = (k.pmk || 0) + pmk24;
-            const lsd = (k.lsd || 0) + lsd24;
-            const kasusTotal = pmk + lsd;
-
+            const k24 = scaleKecamatan(k, 0.96, 1.4, 0.8, 2024);
+            const popTotal = (k.populasi_total ?? (k.sapi_potong + k.sapi_perah + k.kambing + k.domba + k.ayam_potong + k.ayam_petelur)) + (k24.populasi_total ?? 0);
+            const prodTotal = (k.produksi_total ?? 0) + (k24.produksi_total ?? 0);
+            const pmk = (k.pmk || 0) + (k24.pmk || 0);
+            const lsd = (k.lsd || 0) + (k24.lsd || 0);
             return {
                 ...k,
-                sapi_potong: sp,
-                sapi_perah: spr,
-                kambing: kb,
-                domba: dm,
-                ayam_potong: ap,
-                ayam_petelur: at,
-                ayam_broiler: k.ayam_broiler !== undefined ? k.ayam_broiler + Math.round(k.ayam_broiler * 0.96) : undefined,
-                ayam_layer: k.ayam_layer !== undefined ? k.ayam_layer + Math.round(k.ayam_layer * 0.96) : undefined,
+                sapi_potong: (k.sapi_potong || 0) + (k24.sapi_potong || 0),
+                sapi_perah: (k.sapi_perah || 0) + (k24.sapi_perah || 0),
+                kambing: (k.kambing || 0) + (k24.kambing || 0),
+                domba: (k.domba || 0) + (k24.domba || 0),
+                ayam_potong: (k.ayam_potong || 0) + (k24.ayam_potong || 0),
+                ayam_petelur: (k.ayam_petelur || 0) + (k24.ayam_petelur || 0),
+                ayam_broiler: k.ayam_broiler !== undefined ? k.ayam_broiler + (k24.ayam_broiler || 0) : undefined,
+                ayam_layer: k.ayam_layer !== undefined ? k.ayam_layer + (k24.ayam_layer || 0) : undefined,
                 populasi_total: popTotal,
-                daging_sapi: dagingSapi,
-                daging_ayam: dagingAyam,
-                daging_kambing: dagingKambing,
-                daging_domba: dagingDomba,
-                susu_sapi: susuSapi,
-                susu_kambing: susuKambing,
-                susu_domba: susuDomba,
-                susu_liter: k.susu_liter !== undefined ? k.susu_liter + Math.round(k.susu_liter * 0.96) : undefined,
-                telur_ayam: telurAyam,
+                daging_sapi: (k.daging_sapi || 0) + (k24.daging_sapi || 0),
+                daging_ayam: (k.daging_ayam || 0) + (k24.daging_ayam || 0),
+                daging_kambing: (k.daging_kambing || 0) + (k24.daging_kambing || 0),
+                daging_domba: (k.daging_domba || 0) + (k24.daging_domba || 0),
+                susu_sapi: (k.susu_sapi || 0) + (k24.susu_sapi || 0),
+                susu_kambing: (k.susu_kambing || 0) + (k24.susu_kambing || 0),
+                susu_domba: (k.susu_domba || 0) + (k24.susu_domba || 0),
+                susu_liter: k.susu_liter !== undefined ? k.susu_liter + (k24.susu_liter || 0) : undefined,
+                telur_ayam: (k.telur_ayam || 0) + (k24.telur_ayam || 0),
                 produksi_total: prodTotal,
-                pmk,
-                lsd,
-                kasus_total: kasusTotal,
+                pmk, lsd, kasus_total: pmk + lsd,
             };
         });
     }
-
-    if (activeYearFilter.value === 2025) {
-        return base.map((k): KecamatanData => {
-            const mult = 0.98;
-            const sp = Math.round((k.sapi_potong || 0) * mult);
-            const spr = Math.round((k.sapi_perah || 0) * mult);
-            const kb = Math.round((k.kambing || 0) * mult);
-            const dm = Math.round((k.domba || 0) * mult);
-            const ap = Math.round((k.ayam_potong || 0) * mult);
-            const at = Math.round((k.ayam_petelur || 0) * mult);
-            const popTotal = k.populasi_total !== undefined
-                ? Math.round(k.populasi_total * mult)
-                : (sp + spr + kb + dm + ap + at);
-
-            const dagingSapi = Math.round((k.daging_sapi || 0) * mult);
-            const dagingAyam = Math.round((k.daging_ayam || 0) * mult);
-            const dagingKambing = Math.round((k.daging_kambing || 0) * mult);
-            const dagingDomba = Math.round((k.daging_domba || 0) * mult);
-            const susuSapi = Math.round((k.susu_sapi || 0) * mult);
-            const susuKambing = Math.round((k.susu_kambing || 0) * mult);
-            const susuDomba = Math.round((k.susu_domba || 0) * mult);
-            const telurAyam = Math.round((k.telur_ayam || 0) * mult);
-            const prodTotal = k.produksi_total !== undefined
-                ? Math.round(k.produksi_total * mult)
-                : (dagingSapi + dagingAyam + dagingKambing + dagingDomba + susuSapi + susuKambing + susuDomba + telurAyam);
-
-            const pmk = Math.round((k.pmk || 0) * 1.15);
-            const lsd = Math.round((k.lsd || 0) * 0.9);
-            const kasusTotal = pmk + lsd;
-
-            return {
-                ...k,
-                sapi_potong: sp,
-                sapi_perah: spr,
-                kambing: kb,
-                domba: dm,
-                ayam_potong: ap,
-                ayam_petelur: at,
-                ayam_broiler: k.ayam_broiler !== undefined ? Math.round(k.ayam_broiler * mult) : undefined,
-                ayam_layer: k.ayam_layer !== undefined ? Math.round(k.ayam_layer * mult) : undefined,
-                populasi_total: popTotal,
-                daging_sapi: dagingSapi,
-                daging_ayam: dagingAyam,
-                daging_kambing: dagingKambing,
-                daging_domba: dagingDomba,
-                susu_sapi: susuSapi,
-                susu_kambing: susuKambing,
-                susu_domba: susuDomba,
-                susu_liter: k.susu_liter !== undefined ? Math.round(k.susu_liter * mult) : undefined,
-                telur_ayam: telurAyam,
-                produksi_total: prodTotal,
-                pmk,
-                lsd,
-                kasus_total: kasusTotal,
-            };
-        });
-    }
-
-    // Default 2026: baseline data
     return base;
 });
 
@@ -368,6 +275,9 @@ setKecamatanSource(activeKecamatanList);
                 class="flex-1 h-full w-full dark:bg-[#090909] bg-[#FFFFFF] transition-colors"
                 :class="currentTab === 'webgis' ? 'overflow-hidden p-2 sm:p-3' : 'overflow-y-auto p-4 sm:p-6'"
             >
+                <!-- EMERGENCY BROADCAST BANNER -->
+                <AdminEmergencyBanner :banner="systemState.emergency_banner" />
+
                 <!-- 1. DASHBOARD TAB -->
                 <AdminDashboardTab
                     v-if="currentTab === 'dashboard'"
@@ -471,9 +381,15 @@ setKecamatanSource(activeKecamatanList);
                     @showToast="showToast"
                 />
 
+                <!-- 11. TATA KELOLA & KEAMANAN TAB -->
+                <AdminGovernanceTab
+                    v-else-if="currentTab === 'governance' && isSuperAdmin"
+                    @showToast="showToast"
+                />
+
                 <!-- RESTRICTED ACCESS ALERT FOR NON-SUPERADMIN -->
                 <div
-                    v-else-if="['rbac', 'master_data', 'maintenance'].includes(currentTab)"
+                    v-else-if="['rbac', 'master_data', 'maintenance', 'governance'].includes(currentTab)"
                     class="p-8 text-center text-slate-400"
                 >
                     Modul ini hanya dapat diakses oleh Super Administrator.

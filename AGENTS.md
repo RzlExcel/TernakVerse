@@ -1,7 +1,7 @@
 # Project facts: TernakVerse
 
-Facts about this repository only, checked against its files on 2026-10-31. Kit behaviour lives
-in `.agents/GEMINI.md` and `.agents/rules/`. Refresh this file with `/onboard-repo` when the stack changes.
+Facts about this repository only, checked on 2026-11-06. Kit behaviour in
+`.agents/GEMINI.md` and `.agents/rules/`. Refresh with `/onboard-repo` on stack changes.
 
 ## Stack
 - Laravel 12 (composer.json: laravel/framework ^12.0, require.php >= 8.2), PHP 8.2+
@@ -24,7 +24,7 @@ in `.agents/GEMINI.md` and `.agents/rules/`. Refresh this file with `/onboard-re
 - Dev / run: `npm run dev` and `php artisan serve`
 - Build: `npm run build`
 - Typecheck: `npm run types:check`
-- Test: `php artisan test` or `php artisan test --filter=UiUxTransformationVerificationTest`
+- Test: `php artisan test`
 - Everything: `node .agents/scripts/verify.mjs`
 
 ## Conventions & Gotchas
@@ -36,5 +36,6 @@ in `.agents/GEMINI.md` and `.agents/rules/`. Refresh this file with `/onboard-re
 - Database seeding: guard engine-specific DDL/truncation with `DB::getDriverName() === 'pgsql'` to preserve SQLite test environment compatibility
 - Vite dev server on Windows: explicitly bind server.host to '127.0.0.1' in vite.config.ts to avoid IPv6 loopback connection timeouts
 - Multi-role RBAC: supported roles include superadmin, admin_dinas, admin, and stakeholder; authorization checks must allow all permitted roles instead of strict single-role equality
-- Geospatial Analytics Performance: Dinas dashboard spatial aggregations are cached for 300s via Cache::remember with composite table indexes (idx_populasi_perf, idx_produksi_perf, idx_kasus_perf); frontend filter updates use Inertia partial reloads (only: [...]) to avoid re-fetching static GeoJSON layers
-
+- Geospatial Analytics: Dinas dashboard aggregations cached 300s via Cache::remember with composite indexes; filter updates use Inertia partial reloads (only: [...]) to avoid re-fetching GeoJSON
+- Quarterly Survey Sync: POST /admin/api/survey-quarterly upserts populasi_ternak and kasus_penyakit by year and triwulan; non-negative zero counts ($count >= 0) allow metric resets
+- System Governance & Security: /admin/api/governance endpoints require superadmin role and CheckIpAccessAndMaintenance firewall; maintenance mode bypasses Super Admin and auth routes

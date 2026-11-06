@@ -376,7 +376,7 @@ function getCommoditySubDetails(kec: KecamatanData): string {
                                 class="py-3.5 px-4 font-mono tabular-nums"
                                 :class="props.selectedRowIds.includes(kec.id) ? 'text-white/70' : 'text-[#6E776D] dark:text-[#858585]'"
                             >
-                                {{ props.selectedYear === 'all' ? '2024 - 2026' : (props.selectedYear || 2026) }}
+                                {{ kec.tahun ? `${kec.tahun} TW ${kec.triwulan || 1}` : (props.selectedYear === 'all' ? '2024 - 2026' : (props.selectedYear || 2026)) }}
                             </td>
 
                             <!-- Status Zona EWS -->

@@ -155,6 +155,17 @@
         </div>
       </section>
 
+      <!-- ZERO STATE NOTICE -->
+      <div
+        v-if="(kpiCards?.total_populasi_ternak ?? 0) === 0"
+        class="flex items-center gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-medium"
+      >
+        <Info class="w-4 h-4 shrink-0 text-amber-500" />
+        <span>
+          Belum ada pencatatan survei ternak untuk periode <strong>Tahun {{ filterState.tahun }}{{ filterState.triwulan ? ` Triwulan ${filterState.triwulan}` : '' }}</strong>. Menampilkan data aktual (0 data).
+        </span>
+      </div>
+
       <!-- ROW 2: 6 KPI BENTO CARDS -->
       <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <!-- 1. Total Populasi Ternak -->

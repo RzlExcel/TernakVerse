@@ -7,14 +7,17 @@ namespace App\Http\Controllers\Internal;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\FasilitasRph;
+use App\Models\KasusPenyakit;
 use App\Models\KategoriProduksi;
 use App\Models\Kecamatan;
 use App\Models\Komoditas;
 use App\Models\ParameterZonasi;
 use App\Models\Penyakit;
+use App\Models\PopulasiTernak;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
@@ -647,5 +650,153 @@ class MasterDataManagementController extends Controller
                 'message' => 'Gagal membersihkan cache: '.$e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Store quarterly survey data for a kecamatan and synchronize to populasi_ternak and kasus_penyakit.
+     */
+    public function storeSurveyQuarterly(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'nama' => 'required|string',
+            'kode_kec' => 'nullable|string',
+            'tahun' => 'required|integer|between:2020,2035',
+            'triwulan' => 'required|integer|between:1,4',
+            'sapi_potong' => 'nullable|numeric|min:0',
+            'sapi_perah' => 'nullable|numeric|min:0',
+            'kambing' => 'nullable|numeric|min:0',
+            'kambing_perah' => 'nullable|numeric|min:0',
+            'domba' => 'nullable|numeric|min:0',
+            'ayam_broiler' => 'nullable|numeric|min:0',
+            'ayam_petelur' => 'nullable|numeric|min:0',
+            'pmk' => 'nullable|integer|min:0',
+            'lsd' => 'nullable|integer|min:0',
+        ]);
+
+        $nama = trim($validated['nama']);
+        $cleanNama = trim((string) preg_replace('/^kecamatan\s+/i', '', $nama));
+        $tahun = (int) $validated['tahun'];
+        $triwulan = (int) $validated['triwulan'];
+
+        $kecamatan = null;
+        if ($request->filled('kode_kec')) {
+            $kecamatan = Kecamatan::where('kode_kecamatan', trim((string) $request->input('kode_kec')))->first();
+        }
+
+        if (! $kecamatan) {
+            $kecamatan = Kecamatan::where(function ($q) use ($cleanNama, $nama) {
+                $q->whereRaw('LOWER(nama_kecamatan) = ?', [strtolower($cleanNama)])
+                  ->orWhereRaw('LOWER(nama_kecamatan) = ?', [strtolower($nama)]);
+
+                if (strlen($cleanNama) >= 3) {
+                    $q->orWhere('nama_kecamatan', 'LIKE', '%' . $cleanNama . '%');
+                }
+            })->first();
+        }
+
+        if (! $kecamatan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Wilayah/Kecamatan '{$request->nama}' tidak ditemukan dalam basis data.",
+            ], 422);
+        }
+
+        $desa = DB::table('desa')->where('kecamatan_id', $kecamatan->id)->first();
+        if (! $desa) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Desa pada kecamatan '{$kecamatan->nama_kecamatan}' belum terdaftar.",
+            ], 422);
+        }
+
+        $komoditasMap = Komoditas::pluck('id', 'kode')->all();
+
+        $commodityCounts = [
+            'SAPI_POTONG' => isset($validated['sapi_potong']) && $validated['sapi_potong'] !== null ? (float) $validated['sapi_potong'] : null,
+            'SAPI_PERAH' => isset($validated['sapi_perah']) && $validated['sapi_perah'] !== null ? (float) $validated['sapi_perah'] : null,
+            'KAMBING' => isset($validated['kambing']) && $validated['kambing'] !== null ? (float) $validated['kambing'] : null,
+            'KAMBING_PERAH' => isset($validated['kambing_perah']) && $validated['kambing_perah'] !== null ? (float) $validated['kambing_perah'] : null,
+            'DOMBA' => isset($validated['domba']) && $validated['domba'] !== null ? (float) $validated['domba'] : null,
+            'AYAM_POTONG' => isset($validated['ayam_broiler']) && $validated['ayam_broiler'] !== null ? (float) $validated['ayam_broiler'] : null,
+            'AYAM_TELUR' => isset($validated['ayam_petelur']) && $validated['ayam_petelur'] !== null ? (float) $validated['ayam_petelur'] : null,
+        ];
+
+        foreach ($commodityCounts as $code => $count) {
+            if ($count !== null && $count >= 0 && isset($komoditasMap[$code])) {
+                $komId = (int) $komoditasMap[$code];
+                $jantan = (int) ceil($count * 0.4);
+                $betina = (int) floor($count * 0.6);
+
+                PopulasiTernak::updateOrCreate(
+                    [
+                        'desa_id' => $desa->id,
+                        'komoditas_id' => $komId,
+                        'tahun' => $tahun,
+                        'triwulan' => $triwulan,
+                    ],
+                    [
+                        'jumlah_jantan' => $jantan,
+                        'jumlah_betina' => $betina,
+                    ]
+                );
+            }
+        }
+
+        $penyakitMap = Penyakit::pluck('id', 'kode')->all();
+        $defaultKomoditasId = (int) ($komoditasMap['SAPI_POTONG'] ?? ($komoditasMap['SAPI_PERAH'] ?? 1));
+        $month = str_pad((string) ($triwulan * 3), 2, '0', STR_PAD_LEFT);
+        $tanggalLaporan = "{$tahun}-{$month}-15";
+
+        $pmkCount = isset($validated['pmk']) && $validated['pmk'] !== null ? (int) $validated['pmk'] : null;
+        if ($pmkCount !== null && $pmkCount >= 0 && isset($penyakitMap['PMK'])) {
+            KasusPenyakit::updateOrCreate(
+                [
+                    'desa_id' => $desa->id,
+                    'penyakit_id' => (int) $penyakitMap['PMK'],
+                    'komoditas_id' => $defaultKomoditasId,
+                    'tahun' => $tahun,
+                    'triwulan' => $triwulan,
+                ],
+                [
+                    'tanggal_laporan' => $tanggalLaporan,
+                    'kasus_positif' => $pmkCount,
+                    'kasus_suspek' => (int) round($pmkCount * 0.3),
+                    'kasus_sembuh' => (int) round($pmkCount * 0.1),
+                    'kasus_mati' => 0,
+                    'potong_bersyarat' => 0,
+                    'catatan_lapangan' => 'Laporan surveilans lapangan Dinas Perikanan dan Peternakan Banyumas',
+                ]
+            );
+        }
+
+        $lsdCount = isset($validated['lsd']) && $validated['lsd'] !== null ? (int) $validated['lsd'] : null;
+        if ($lsdCount !== null && $lsdCount >= 0 && isset($penyakitMap['LSD'])) {
+            KasusPenyakit::updateOrCreate(
+                [
+                    'desa_id' => $desa->id,
+                    'penyakit_id' => (int) $penyakitMap['LSD'],
+                    'komoditas_id' => $defaultKomoditasId,
+                    'tahun' => $tahun,
+                    'triwulan' => $triwulan,
+                ],
+                [
+                    'tanggal_laporan' => $tanggalLaporan,
+                    'kasus_positif' => $lsdCount,
+                    'kasus_suspek' => (int) round($lsdCount * 0.3),
+                    'kasus_sembuh' => (int) round($lsdCount * 0.1),
+                    'kasus_mati' => 0,
+                    'potong_bersyarat' => 0,
+                    'catatan_lapangan' => 'Laporan surveilans lapangan Dinas Perikanan dan Peternakan Banyumas',
+                ]
+            );
+        }
+
+        Cache::flush();
+        AuditLog::catat('UPDATE', 'populasi_ternak', (int) $kecamatan->id, null, $validated);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data triwulan berhasil disimpan dan disinkronisasi ke basis data.',
+        ]);
     }
 }

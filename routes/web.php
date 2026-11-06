@@ -4,6 +4,8 @@ use App\Http\Controllers\AdminAuditLogController;
 use App\Http\Controllers\AdminPanelController;
 use App\Http\Controllers\DinasDashboardController;
 use App\Http\Controllers\Internal\MasterDataManagementController;
+use App\Http\Controllers\Internal\SystemGovernanceController;
+use App\Http\Middleware\CheckIpAccessAndMaintenance;
 use App\Http\Middleware\EnsureUserRole;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -42,13 +44,16 @@ $publicPortalHandler = function (Request $request) {
     return Inertia::render('Public/Portal');
 };
 
-Route::get('/', $publicPortalHandler)->name('home');
-
-Route::get('/portal', $publicPortalHandler)->name('public.portal');
-
-Route::get('/welcome', function () {
-    return Inertia::render('Welcome');
-})->name('welcome');
+Route::middleware([CheckIpAccessAndMaintenance::class])->group(function () use ($publicPortalHandler) {
+    Route::get('/', $publicPortalHandler)->name('home');
+    Route::get('/portal', $publicPortalHandler)->name('public.portal');
+    Route::get('/welcome', function () {
+        return Inertia::render('Welcome');
+    })->name('welcome');
+    Route::get('/design-rule', function () {
+        return Inertia::render('DesignRule');
+    })->name('design.rule');
+});
 
 // 2. PORTAL INTERNAL PETUGAS (Pintu Masuk Login Sesi)
 Route::get('/internal/login', function () {
@@ -150,13 +155,8 @@ Route::match(['get', 'post'], '/internal/logout', function (Request $request) {
     return redirect()->route('internal.login');
 })->name('internal.logout');
 
-// 3. LIVING DESIGN SYSTEM & TOKEN INSPECTOR
-Route::get('/design-rule', function () {
-    return Inertia::render('DesignRule');
-})->name('design.rule');
-
-// 4. PORTAL DINAS (Analisis Kuantitatif & Kewaspadaan Wabah)
-Route::middleware([EnsureUserRole::class.':superadmin,admin_dinas,admin,stakeholder'])->group(function () {
+// 3. PORTAL DINAS (Analisis Kuantitatif & Kewaspadaan Wabah)
+Route::middleware([EnsureUserRole::class.':superadmin,admin_dinas,admin,stakeholder', CheckIpAccessAndMaintenance::class])->group(function () {
     Route::get('/internal/dinas', function () {
         return Inertia::render('Internal/DinasPortal');
     })->name('internal.dinas');
@@ -169,8 +169,8 @@ Route::middleware([EnsureUserRole::class.':superadmin,admin_dinas,admin,stakehol
     Route::get('/internal/laporan/ekspor-excel', fn (Request $r) => app(App\Http\Controllers\Internal\DinasDashboardController::class)->downloadLaporan($r->merge(['format' => 'excel'])))->name('internal.laporan.excel');
 });
 
-// 5. PANEL ADMIN TEKNIS (Staf Teknis - Tata Letak 1160px & CRUD Data)
-Route::middleware([EnsureUserRole::class.':superadmin,admin_dinas,admin'])->group(function () {
+// 4. PANEL ADMIN TEKNIS (Staf Teknis - Tata Letak 1160px & CRUD Data)
+Route::middleware([EnsureUserRole::class.':superadmin,admin_dinas,admin', CheckIpAccessAndMaintenance::class])->group(function () {
     Route::get('/internal/admin', function () {
         return Inertia::render('Internal/AdminPortal');
     })->name('internal.admin');
@@ -190,6 +190,7 @@ Route::middleware([EnsureUserRole::class.':superadmin,admin_dinas,admin'])->grou
             Route::put('/facilities/{id}', [MasterDataManagementController::class, 'updateFasilitas'])->name('facilities.update');
             Route::delete('/facilities/{id}', [MasterDataManagementController::class, 'destroyFasilitas'])->name('facilities.destroy');
             Route::put('/kecamatan/{id}/hmt', [MasterDataManagementController::class, 'updateKecamatanHmt'])->name('kecamatan.hmt.update');
+            Route::post('/survey-quarterly', [MasterDataManagementController::class, 'storeSurveyQuarterly'])->name('survey.quarterly.store');
 
             // CRUD Penyakit & Parameter EWS
             Route::get('/diseases', [MasterDataManagementController::class, 'indexDiseases'])->name('diseases.index');
@@ -206,11 +207,54 @@ Route::middleware([EnsureUserRole::class.':superadmin,admin_dinas,admin'])->grou
             // Maintenance & Operasional Server
             Route::get('/maintenance/status', [MasterDataManagementController::class, 'maintenanceStatus'])->name('maintenance.status');
             Route::post('/maintenance/clear-cache', [MasterDataManagementController::class, 'clearCache'])->name('maintenance.clear-cache');
+
+            // Governance & System Administration (Super Admin Only)
+            Route::prefix('governance')->name('governance.')->middleware([EnsureUserRole::class.':superadmin', CheckIpAccessAndMaintenance::class])->group(function () {
+                // 1. Business Policy & Thematic Intervals
+                Route::get('/thematic-intervals', [SystemGovernanceController::class, 'indexThematicIntervals'])->name('thematic-intervals.index');
+                Route::match(['put', 'post'], '/thematic-intervals', [SystemGovernanceController::class, 'updateThematicIntervals'])->name('thematic-intervals.update');
+                Route::post('/thematic-intervals/recalculate', [SystemGovernanceController::class, 'recalculateThematicIntervals'])->name('thematic-intervals.recalculate');
+                Route::match(['put', 'post'], '/conversion-factors', [SystemGovernanceController::class, 'updateConversionFactors'])->name('conversion-factors.update');
+
+                // 2. System State & Availability
+                Route::get('/state', [SystemGovernanceController::class, 'indexState'])->name('state.index');
+                Route::match(['put', 'post'], '/maintenance', [SystemGovernanceController::class, 'updateMaintenanceMode'])->name('maintenance.update');
+                Route::match(['put', 'post'], '/emergency-banner', [SystemGovernanceController::class, 'updateEmergencyBanner'])->name('emergency-banner.update');
+                Route::match(['put', 'post'], '/features', [SystemGovernanceController::class, 'updateFeatureFlags'])->name('features.update');
+                Route::post('/cache/clear', [SystemGovernanceController::class, 'clearGranularCache'])->name('cache.clear');
+
+                // 3. Data Resilience & Backup
+                Route::get('/backups', [SystemGovernanceController::class, 'indexBackups'])->name('backups.index');
+                Route::post('/backups', [SystemGovernanceController::class, 'createBackup'])->name('backups.store');
+                Route::get('/backups/{id}/download', [SystemGovernanceController::class, 'downloadBackup'])->name('backups.download');
+                Route::post('/backups/{id}/restore', [SystemGovernanceController::class, 'restoreBackup'])->name('backups.restore');
+                Route::delete('/backups/{id}', [SystemGovernanceController::class, 'destroyBackup'])->name('backups.destroy');
+                Route::get('/queue-status', [SystemGovernanceController::class, 'queueStatus'])->name('queue-status');
+
+                // 4. Security & Access Governance
+                Route::get('/sessions', [SystemGovernanceController::class, 'indexSessions'])->name('sessions.index');
+                Route::delete('/sessions/{sessionId}', [SystemGovernanceController::class, 'terminateSession'])->name('sessions.destroy');
+                Route::post('/sessions/terminate-others', [SystemGovernanceController::class, 'terminateAllOtherSessions'])->name('sessions.terminate-others');
+                Route::get('/ip-rules', [SystemGovernanceController::class, 'indexIpAccessRules'])->name('ip-rules.index');
+                Route::post('/ip-rules', [SystemGovernanceController::class, 'storeIpAccessRule'])->name('ip-rules.store');
+                Route::delete('/ip-rules/{id}', [SystemGovernanceController::class, 'destroyIpAccessRule'])->name('ip-rules.destroy');
+                Route::match(['put', 'post'], '/security-policies', [SystemGovernanceController::class, 'updateSecurityPolicies'])->name('security-policies.update');
+
+                // 5. Observability & Auditing
+                Route::get('/audit-logs', [SystemGovernanceController::class, 'indexAuditLogs'])->name('audit-logs.index');
+                Route::get('/system-logs', [SystemGovernanceController::class, 'indexSystemLogs'])->name('system-logs.index');
+                Route::get('/health', [SystemGovernanceController::class, 'systemHealth'])->name('health');
+
+                // 6. Integrations & Gateway Settings
+                Route::get('/integrations', [SystemGovernanceController::class, 'indexIntegrations'])->name('integrations.index');
+                Route::match(['put', 'post'], '/integrations', [SystemGovernanceController::class, 'updateIntegrations'])->name('integrations.update');
+                Route::post('/integrations/{gateway}/test', [SystemGovernanceController::class, 'testIntegrationConnection'])->name('integrations.test');
+            });
         });
     });
 });
 
-// 6. DISPATCHER DASHBOARD (Redirect cerdas sesuai peran pengguna setelah autentikasi)
+// 5. DISPATCHER DASHBOARD (Redirect cerdas sesuai peran pengguna setelah autentikasi)
 Route::get('/dashboard', function (Request $request) {
     $user = $request->user();
     if ($user && in_array($user->role, ['superadmin', 'admin', 'admin_dinas'], true)) {
@@ -218,7 +262,7 @@ Route::get('/dashboard', function (Request $request) {
     }
 
     return redirect()->route('internal.dinas');
-})->name('dashboard');
+})->middleware([CheckIpAccessAndMaintenance::class])->name('dashboard');
 
 // 7. PENGATURAN PENGGUNA (Profile, Security, Appearance)
 require __DIR__.'/settings.php';
