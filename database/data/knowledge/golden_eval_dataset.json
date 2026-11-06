@@ -1,0 +1,1441 @@
+[
+  {
+    "id": "EVAL-001",
+    "category": "PMK consultation",
+    "question": "Apa saja gejala klinis awal yang khas saat sapi potong mulai terinfeksi virus PMK di kandang?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "demam tinggi",
+      "hipersalivasi",
+      "air liur berbusa",
+      "lepuh",
+      "mukosa mulut",
+      "teracak kuku",
+      "pincang"
+    ]
+  },
+  {
+    "id": "EVAL-002",
+    "category": "PMK consultation",
+    "question": "Bagaimana cara penularan virus PMK antar ternak dan antar kandang di satu kawasan desa?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "aerosol",
+      "udara",
+      "kontak langsung",
+      "peralatan kandang",
+      "pakaian peternak",
+      "lalu lintas ternak",
+      "vektor mekanis"
+    ]
+  },
+  {
+    "id": "EVAL-003",
+    "category": "PMK consultation",
+    "question": "Bagaimana SOP perawatan luka lepuh pada lidah dan gusi sapi yang menderita sariawan parah akibat PMK?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "pembersihan luka",
+      "larutan antiseptik",
+      "asam sitrat",
+      "pakan lunak",
+      "poskeswan",
+      "suportif"
+    ]
+  },
+  {
+    "id": "EVAL-004",
+    "category": "PMK consultation",
+    "question": "Sapi saya teracak kukunya mengelupas dan luka berdarah karena PMK, pertolongan pertama apa yang harus diberikan?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "antiseptik semprot",
+      "kaki bersih kering",
+      "salep antibiotik topikal",
+      "hindari kandang basah",
+      "konsultasi dokter hewan"
+    ]
+  },
+  {
+    "id": "EVAL-005",
+    "category": "PMK consultation",
+    "question": "Berapa kali sapi harus divaksinasi PMK dan kapan waktu booster vaksin berikutnya dilakukan?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "vaksinasi primer",
+      "booster 4-6 minggu",
+      "revaksinasi berkala",
+      "6 bulan sekali",
+      "ternak sehat"
+    ]
+  },
+  {
+    "id": "EVAL-006",
+    "category": "PMK consultation",
+    "question": "Jenis desinfektan apa yang paling efektif dan terjangkau untuk sanitasi kandang membunuh virus PMK?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "asam sitrat 0.2%",
+      "natrium karbonat soda ash 4%",
+      "natrium hipoklorit pemutih",
+      "desinfeksi semprot kandang"
+    ]
+  },
+  {
+    "id": "EVAL-007",
+    "category": "PMK consultation",
+    "question": "Apakah daging sapi yang tertular virus PMK tetap aman dikonsumsi oleh manusia jika dimasak matang?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "bukan zoonosis",
+      "aman dikonsumsi",
+      "perebusan 30 menit",
+      "buang jeroan kepala kuku",
+      "pemanasan sempurna"
+    ]
+  },
+  {
+    "id": "EVAL-008",
+    "category": "PMK consultation",
+    "question": "Bagaimana penanganan sapi bunting trimester akhir yang menunjukkan gejala PMK agar terhindar dari keguguran?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "penurun panas antipiretik",
+      "antiinflamasi aman kebuntingan",
+      "suplemen vitamin",
+      "hindari stres",
+      "pengawasan medik veteriner"
+    ]
+  },
+  {
+    "id": "EVAL-009",
+    "category": "PMK consultation",
+    "question": "Berapa lama masa isolasi ketat yang wajib diterapkan pada kandang sapi yang baru terpapar PMK?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "karantina isolasi",
+      "minimal 14 hari",
+      "hingga 21-28 hari",
+      "bebas gejala klinis",
+      "desinfeksi berkala"
+    ]
+  },
+  {
+    "id": "EVAL-010",
+    "category": "PMK consultation",
+    "question": "Berapa persen penurunan produksi susu pada sapi perah yang terkena PMK dan apakah susunya bisa pulih kembali?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "penurunan drastis 50-80%",
+      "mastitis sekunder",
+      "rehabilitasi laktasi",
+      "nutrisi konsentrat tinggi",
+      "pasteurisasi susu"
+    ]
+  },
+  {
+    "id": "EVAL-011",
+    "category": "PMK consultation",
+    "question": "Terapi suportif apa saja yang dianjurkan untuk mempercepat pemulihan nafsu makan sapi pasca PMK?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "vitamin b kompleks",
+      "suplemen elektrolit",
+      "analgesik antipiretik",
+      "pakan lunak bergizi",
+      "probiotik ruminansia"
+    ]
+  },
+  {
+    "id": "EVAL-012",
+    "category": "PMK consultation",
+    "question": "Bolehkah menggunakan air garam atau terusi (CuSO4) untuk merendam kuku sapi yang luka PMK?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "footbath kuku",
+      "tembaga sulfat terusi konsentrasi rendah",
+      "larutan garam hangat",
+      "antiseptik luka kuku",
+      "hindari iritasi"
+    ]
+  },
+  {
+    "id": "EVAL-013",
+    "category": "PMK consultation",
+    "question": "Apakah rumput dan jerami yang diambil dari areal sekitar peternakan wabah PMK aman untuk pakan ternak?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "kontaminasi virus pada pakan",
+      "hindari padang rumput tercemar",
+      "pemberian pakan kering simpanan",
+      "biosekuriti pakan"
+    ]
+  },
+  {
+    "id": "EVAL-014",
+    "category": "PMK consultation",
+    "question": "Berapa lama masa inkubasi virus PMK sejak sapi pertama kali terpapar hingga muncul gejala klinis?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "masa inkubasi 2-14 hari",
+      "rata-rata 3-5 hari",
+      "pelepasan virus viral shedding",
+      "deteksi dini"
+    ]
+  },
+  {
+    "id": "EVAL-015",
+    "category": "PMK consultation",
+    "question": "Bagaimana cara pengolahan kotoran dan feses ternak terinfeksi PMK agar tidak mencemari lingkungan dan air warga?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "pengomposan panas aerobik",
+      "penaburan kapur tohor",
+      "disinfeksi kotoran",
+      "hindari pembuangan langsung ke sungai"
+    ]
+  },
+  {
+    "id": "EVAL-016",
+    "category": "LSD consultation",
+    "question": "Apa ciri-ciri khas bentuk bentol dan nodul kulit pada sapi yang terkena Lumpy Skin Disease (LSD)?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "nodul berbatas tegas",
+      "diameter 2-5 cm",
+      "kulit leher punggung perineum",
+      "nodul mengeras",
+      "sit-fast nekrosis"
+    ]
+  },
+  {
+    "id": "EVAL-017",
+    "category": "LSD consultation",
+    "question": "Serangga apa saja yang menjadi vektor utama penularan penyakit kulit berbenjol (LSD) di peternakan?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "lalat penghisap darah Stomoxys",
+      "nyamuk Aedes Culex",
+      "lalat pikat Tabanus",
+      "caplak Rhipicephalus"
+    ]
+  },
+  {
+    "id": "EVAL-018",
+    "category": "LSD consultation",
+    "question": "Bagaimana membedakan bentol akibat gigitan serangga biasa dengan nodul infeksi virus LSD pada sapi?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "demam penyerta",
+      "nodul padat permanen berminggu-minggu",
+      "pembesaran kelenjar limfa preskapularis",
+      "keropeng sit-fast"
+    ]
+  },
+  {
+    "id": "EVAL-019",
+    "category": "LSD consultation",
+    "question": "Jenis vaksin apa yang digunakan oleh dinas peternakan untuk pencegahan LSD dan efektivitasnya?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "vaksin homolog live attenuated",
+      "Neethling strain",
+      "kekebalan protektif",
+      "suntikan subkutan tahunan"
+    ]
+  },
+  {
+    "id": "EVAL-020",
+    "category": "LSD consultation",
+    "question": "Bagaimana strategi pengendalian vektor lalat dan nyamuk di sekitar kandang sapi untuk memutus siklus LSD?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "insektisida pour-on cypermethrin",
+      "penyemprotan larvasida",
+      "drainase genangan air",
+      "fogging berkala",
+      "perangkap lalat"
+    ]
+  },
+  {
+    "id": "EVAL-021",
+    "category": "LSD consultation",
+    "question": "Nodul LSD pada sapi saya pecah dan berdarah, bagaimana cara mengobatinya agar tidak membusuk atau belatungan?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "antiseptik povidone iodine",
+      "semprotan anti lalat gusanex",
+      "mencegah myiasis",
+      "salep antibiotik topikal"
+    ]
+  },
+  {
+    "id": "EVAL-022",
+    "category": "LSD consultation",
+    "question": "Apakah kambing dan domba rentan tertular virus LSD jika ditempatkan satu kandang dengan sapi yang sakit?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "inang spesifik sapi dan kerbau",
+      "domba kambing rentan sheep pox goat pox",
+      "pemisahan kandang tetap dianjurkan"
+    ]
+  },
+  {
+    "id": "EVAL-023",
+    "category": "LSD consultation",
+    "question": "Berapa lama waktu yang dibutuhkan sampai luka nodul LSD benar-benar sembuh dan bekasnya hilang?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "pemulihan 2-6 bulan",
+      "keropeng lepas bertahap",
+      "bekas luka parut permanen pada kulit",
+      "regenerasi jaringan"
+    ]
+  },
+  {
+    "id": "EVAL-024",
+    "category": "LSD consultation",
+    "question": "Terapi suportif apa yang aman diberikan untuk mengatasi demam tinggi dan nafsu makan drop pada sapi penderita LSD?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "antipiretik penurun panas",
+      "antiinflamasi",
+      "vitamin penambah stamina",
+      "rehidrasi cairan",
+      "pemberian pakan hijauan segar"
+    ]
+  },
+  {
+    "id": "EVAL-025",
+    "category": "LSD consultation",
+    "question": "Desinfektan apa yang terbukti manjur mematikan virus keluarga Poxviridae penyebab LSD di lantai kandang?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "kloroform formalin",
+      "natrium hipoklorit 2-3%",
+      "larutan iodofor",
+      "senyawa amonium kuartener",
+      "sinar matahari UV"
+    ]
+  },
+  {
+    "id": "EVAL-026",
+    "category": "LSD consultation",
+    "question": "Apakah sapi pejantan yang sembuh dari LSD kualitas spermanya menurun atau mengalami kemandulan sementara?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "infertilitas temporer",
+      "kerusakan testis orkitis",
+      "penurunan kualitas semen",
+      "istirahat kawin 3-6 bulan"
+    ]
+  },
+  {
+    "id": "EVAL-027",
+    "category": "LSD consultation",
+    "question": "Apakah pemasangan jaring kelambu kasa pada kandang efektif mencegah penularan LSD pada pedet muda?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "insect-proofing",
+      "menghalangi gigitan vektor",
+      "efektif untuk pedet rentan",
+      "ventilasi udara tetap lancar"
+    ]
+  },
+  {
+    "id": "EVAL-028",
+    "category": "LSD consultation",
+    "question": "Mengapa pada sapi LSD sering terjadi pembengkakan besar di depan bahu dan pangkal paha?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "limfadenitis",
+      "pembesaran kelenjar limfa",
+      "prescapular prefemoral",
+      "respon imun sistemik",
+      "edema jaringan"
+    ]
+  },
+  {
+    "id": "EVAL-029",
+    "category": "LSD consultation",
+    "question": "Apakah sapi yang masih memiliki benjolan keropeng LSD diperbolehkan dibawa ke pasar hewan atau dijual ke luar kota?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "larangan mutasi ternak sakit",
+      "penolakan SKKH",
+      "karantina isolasi",
+      "menunggu sembuh tuntas"
+    ]
+  },
+  {
+    "id": "EVAL-030",
+    "category": "LSD consultation",
+    "question": "Bagaimana prosedur pencegahan penularan virus LSD akibat pemakaian jarum suntik secara berulang antar ternak?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "penularan iatrogenik",
+      "satu jarum satu ekor disposable",
+      "sterilisasi alat suntik",
+      "protokol medis veteriner"
+    ]
+  },
+  {
+    "id": "EVAL-031",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "DARURAT! Ada 2 ekor sapi perah di Kemranjen mati mendadak keluar darah hitam kental dari lubang hidung dan anus, apa yang harus dilakukan?",
+    "expected_intent": "hybrid",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "suspek antraks",
+      "jangan bedah bangkai",
+      "tutup lubang kotoran",
+      "isolasi radius ketat",
+      "hubungi Poskeswan segera",
+      "zoonosis berbahaya"
+    ]
+  },
+  {
+    "id": "EVAL-032",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Laporan darurat: Di Desa Pernasidi Cilongok ada 4 sapi demam 41 derajat, mulut berbusa lebat dan kuku copot tidak bisa berdiri, tolong bantuannya!",
+    "expected_intent": "hybrid",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "PMK akut",
+      "isolasi mandiri",
+      "jangan pindahkan sapi",
+      "Poskeswan Ajibarang / Cilongok",
+      "desinfeksi kandang"
+    ]
+  },
+  {
+    "id": "EVAL-033",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Berapa nomor hotline darurat Poskeswan Ajibarang dan kecamatan mana saja yang masuk dalam wilayah kerjanya?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "Poskeswan Ajibarang",
+      "0812-3456-7892",
+      "wilayah kerja Ajibarang Pekuncen Cilongok Gumelar",
+      "petugas medik dinas"
+    ]
+  },
+  {
+    "id": "EVAL-034",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Bagaimana cara menghubungi kontak darurat Poskeswan Purwokerto untuk penanganan sapi potong terluka parah?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "Poskeswan Purwokerto",
+      "0812-3456-7890",
+      "Purwokerto Utara Selatan Barat Timur",
+      "layanan medis veteriner"
+    ]
+  },
+  {
+    "id": "EVAL-035",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Sapi perah saya baru melahirkan kemarin sore lalu ambruk kedinginan leher terpelintir S-shape dan tidak bisa berdiri, apa tindakan pertama?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "milk fever",
+      "hipokalsemia paresis puerperalis",
+      "infus kalsium glukonat darurat",
+      "jangan paksa berdiri",
+      "segera panggil dokter hewan"
+    ]
+  },
+  {
+    "id": "EVAL-036",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Langkah isolasi darurat apa yang harus segera diambil peternak jika satu sapi di kandang komunal positif PMK?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "sekat pemisah minimal 10-20 meter",
+      "larangan keluar-masuk kandang",
+      "alas kaki celup desinfektan",
+      "pemberian pakan terakhir di kandang sakit"
+    ]
+  },
+  {
+    "id": "EVAL-037",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Ada laporan warga kambing mati mendadak dengan pembengkakan limpa di perbatasan Brebes-Banyumas, kemana harus melapor?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "Dinas Perikanan dan Peternakan Banyumas",
+      "Poskeswan terdekat",
+      "karantina wilayah",
+      "investigasi epidemiologi"
+    ]
+  },
+  {
+    "id": "EVAL-038",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Nomor telepon Poskeswan Wangon yang bisa dihubungi untuk kasus darurat kecelakaan truk pengangkut sapi di jalur selatan?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "Poskeswan Wangon",
+      "0812-3456-7893",
+      "wilayah Wangon Jatilawang Rawalo Purwojati Lumbir",
+      "evakuasi medis ternak"
+    ]
+  },
+  {
+    "id": "EVAL-039",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Ternak sapi perut kirinya membesar kencang seperti drum berbunyi mendengkur dan susah bernapas, pertolongan darurat apa yang harus dilakukan?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "timpani bloat kembung akut rumen",
+      "posisi kepala lebih tinggi",
+      "minyak nabati minyak kelapa",
+      "trokar kanula darurat dokter hewan"
+    ]
+  },
+  {
+    "id": "EVAL-040",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Hotline Poskeswan Sokaraja untuk pelaporan wabah diare cair kuning campur darah pada anak sapi pedet di Kalibagor?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "Poskeswan Sokaraja",
+      "0812-3456-7891",
+      "wilayah Sokaraja Kalibagor Banyumas Patikraja",
+      "terapi rehidrasi elektrolit oral"
+    ]
+  },
+  {
+    "id": "EVAL-041",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Bagaimana kontak Poskeswan Tambak untuk melaporkan kematian mendadak ternak di wilayah Banyumas timur?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "Poskeswan Tambak",
+      "0812-3456-7894",
+      "wilayah Tambak Sumpiuh Kemranjen",
+      "laporan investigasi cepat"
+    ]
+  },
+  {
+    "id": "EVAL-042",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Peralatan APD dan protokol biosafety apa yang wajib digunakan petugas ketika mendatangi kandang yang dicurigai wabah zoonosis?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "APD coverall hazmat",
+      "sarung tangan nitril ganda",
+      "sepatu boot karet",
+      "masker N95 kacamata goggle",
+      "dekontaminasi desinfektan"
+    ]
+  },
+  {
+    "id": "EVAL-043",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Kemana saya bisa melaporkan truk pedagang yang menurunkan sapi bergejala pincang dan liuran tanpa dokumen SKKH?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "Dinas Perikanan dan Peternakan Kabupaten Banyumas",
+      "Satpol PP checkpoint lalu lintas ternak",
+      "penahanan ternak suspek"
+    ]
+  },
+  {
+    "id": "EVAL-044",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Sapi makan daun singkong beracun lalu kejang mulut berbusa dan selaput lendir merah terang, apa antidot daruratnya?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "keracunan asam sianida HCN",
+      "air gula kelapa arang aktif",
+      "antidot natrium tiosulfat intravena",
+      "panggil dokter hewan darurat"
+    ]
+  },
+  {
+    "id": "EVAL-045",
+    "category": "Emergency triage & outbreak reporting",
+    "question": "Bagaimana SOP penguburan bangkai ternak yang mati akibat penyakit menular berbahaya agar spora tidak menyebar?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "DARURAT",
+    "ground_truth_keywords": [
+      "kedalaman minimal 2 meter",
+      "lapisan kapur tohor kalsium oksida",
+      "jauh dari sumber air minum minimal 50 meter",
+      "jangan disembelih atau dikuliti"
+    ]
+  },
+  {
+    "id": "EVAL-046",
+    "category": "Zoning inquiries",
+    "question": "Bagaimana status zonasi risiko epidemiologi PMK terkini di Kecamatan Cilongok beserta jumlah kasus aktifnya?",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "Kecamatan Cilongok",
+      "status_zona",
+      "total_kasus_aktif",
+      "rekomendasi_tindakan",
+      "PMK"
+    ]
+  },
+  {
+    "id": "EVAL-047",
+    "category": "Zoning inquiries",
+    "question": "Periksa status zonasi dan rekomendasi tindakan kesehatan hewan untuk wilayah Kecamatan Ajibarang.",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "Kecamatan Ajibarang",
+      "status_zona",
+      "total_kasus_aktif",
+      "rekomendasi_tindakan"
+    ]
+  },
+  {
+    "id": "EVAL-048",
+    "category": "Zoning inquiries",
+    "question": "Apakah Kecamatan Baturraden saat ini masuk dalam Zona Hijau atau Zona Kuning untuk penyakit PMK?",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Baturraden",
+      "status_zona",
+      "PMK",
+      "total_kasus_aktif"
+    ]
+  },
+  {
+    "id": "EVAL-049",
+    "category": "Zoning inquiries",
+    "question": "Bagaimana kondisi zonasi risiko penyakit LSD di Kecamatan Sumbang untuk tahun 2026?",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Sumbang",
+      "LSD",
+      "status_zona",
+      "tahun 2026"
+    ]
+  },
+  {
+    "id": "EVAL-050",
+    "category": "Zoning inquiries",
+    "question": "Cek status zona dan akumulasi data kasus aktif PMK pada Kecamatan Wangon.",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Wangon",
+      "status_zona",
+      "total_kasus_aktif",
+      "rekomendasi_tindakan"
+    ]
+  },
+  {
+    "id": "EVAL-051",
+    "category": "Zoning inquiries",
+    "question": "Apa saja rekomendasi tindakan jika suatu kecamatan berstatus Zona Merah seperti di Kecamatan Sokaraja?",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "Kecamatan Sokaraja",
+      "status_zona MERAH",
+      "pengawasan ketat lalu lintas ternak",
+      "pembatasan pasar hewan",
+      "karantina"
+    ]
+  },
+  {
+    "id": "EVAL-052",
+    "category": "Zoning inquiries",
+    "question": "Periksa status epidemiologi zonasi PMK di Kecamatan Pekuncen.",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Pekuncen",
+      "status_zona",
+      "total_kasus_aktif",
+      "rekomendasi"
+    ]
+  },
+  {
+    "id": "EVAL-053",
+    "category": "Zoning inquiries",
+    "question": "Bagaimana status zonasi penyakit mulut dan kuku di Kecamatan Purwokerto Timur?",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Purwokerto Timur",
+      "status_zona",
+      "total_kasus_aktif"
+    ]
+  },
+  {
+    "id": "EVAL-054",
+    "category": "Zoning inquiries",
+    "question": "Cek zonasi kesehatan ternak ruminansia di Kecamatan Jatilawang.",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Jatilawang",
+      "status_zona",
+      "total_kasus_aktif"
+    ]
+  },
+  {
+    "id": "EVAL-055",
+    "category": "Zoning inquiries",
+    "question": "Apakah Kecamatan Rawalo aman dari wabah PMK dan masuk kategori Zona Hijau?",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Rawalo",
+      "status_zona",
+      "rekomendasi_tindakan"
+    ]
+  },
+  {
+    "id": "EVAL-056",
+    "category": "Zoning inquiries",
+    "question": "Tolong tampilkan status zonasi risiko dan kasus aktif ternak di Kecamatan Kembaran.",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Kembaran",
+      "status_zona",
+      "total_kasus_aktif"
+    ]
+  },
+  {
+    "id": "EVAL-057",
+    "category": "Zoning inquiries",
+    "question": "Bagaimana status zonasi ternak sapi perah dan potong di Kecamatan Kedungbanteng?",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Kedungbanteng",
+      "status_zona",
+      "total_kasus_aktif"
+    ]
+  },
+  {
+    "id": "EVAL-058",
+    "category": "Zoning inquiries",
+    "question": "Cek status zonasi wilayah perbatasan Kecamatan Tambak Kabupaten Banyumas.",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Tambak",
+      "status_zona",
+      "total_kasus_aktif"
+    ]
+  },
+  {
+    "id": "EVAL-059",
+    "category": "Zoning inquiries",
+    "question": "Apa syarat membawa sapi masuk ke Kecamatan Banyumas jika daerah asal berstatus zona kuning?",
+    "expected_intent": "hybrid",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Banyumas",
+      "status_zona",
+      "SKKH",
+      "vaksinasi",
+      "pemeriksaan fisik veteriner"
+    ]
+  },
+  {
+    "id": "EVAL-060",
+    "category": "Zoning inquiries",
+    "question": "Berapa kasus aktif PMK dan apa status zona Kecamatan Sumpiuh saat ini?",
+    "expected_intent": "tool",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Sumpiuh",
+      "status_zona",
+      "total_kasus_aktif",
+      "rekomendasi_tindakan"
+    ]
+  },
+  {
+    "id": "EVAL-061",
+    "category": "RPH discovery & ASUH education",
+    "question": "Dimana lokasi fasilitas Rumah Potong Hewan (RPH) resmi milik pemerintah terdekat di sekitar Ajibarang?",
+    "expected_intent": "tool",
+    "expected_tool": "getFasilitasRph",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "RPH Ajibarang",
+      "alamat_lengkap",
+      "kapasitas_potong_harian",
+      "status_operasional Aktif"
+    ]
+  },
+  {
+    "id": "EVAL-062",
+    "category": "RPH discovery & ASUH education",
+    "question": "Berapa kapasitas pemotongan harian dan alamat RPH resmi di wilayah Purwokerto Barat?",
+    "expected_intent": "tool",
+    "expected_tool": "getFasilitasRph",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "RPH Purwokerto Barat",
+      "kapasitas_potong_harian",
+      "alamat_lengkap",
+      "status_operasional"
+    ]
+  },
+  {
+    "id": "EVAL-063",
+    "category": "RPH discovery & ASUH education",
+    "question": "Apa yang dimaksud dengan standar daging ASUH (Aman, Sehat, Utuh, Halal) menurut regulasi veteriner?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "ASUH",
+      "Aman bebas residu biologis kimia",
+      "Sehat bebas bibit penyakit",
+      "Utuh tidak dicampur daging lain",
+      "Halal syariat Islam"
+    ]
+  },
+  {
+    "id": "EVAL-064",
+    "category": "RPH discovery & ASUH education",
+    "question": "Cari data fasilitas RPH resmi di Kecamatan Sokaraja beserta status operasionalnya.",
+    "expected_intent": "tool",
+    "expected_tool": "getFasilitasRph",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Sokaraja",
+      "RPH",
+      "kapasitas_potong_harian",
+      "status_operasional"
+    ]
+  },
+  {
+    "id": "EVAL-065",
+    "category": "RPH discovery & ASUH education",
+    "question": "Bagaimana alur pemeriksaan kesehatan antemortem pada sapi hidup sebelum dipotong di RPH resmi?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "pemeriksaan antemortem",
+      "istirahat minimal 12 jam",
+      "pemeriksaan suhu nafas mukosa",
+      "bebas PMK antraks",
+      "persetujuan medik veteriner"
+    ]
+  },
+  {
+    "id": "EVAL-066",
+    "category": "RPH discovery & ASUH education",
+    "question": "Apa saja organ jeroan sapi yang wajib diperiksa dalam inspeksi postmortem setelah pemotongan di RPH?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "inspeksi postmortem",
+      "hati cacing Fasciola",
+      "paru-paru tuberkulosis",
+      "jantung sistiserkosis",
+      "limpa kelenjar limfa"
+    ]
+  },
+  {
+    "id": "EVAL-067",
+    "category": "RPH discovery & ASUH education",
+    "question": "Apa syarat utama bagi unit usaha pemotongan ternak agar mendapatkan Nomor Kontrol Veteriner (NKV)?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Nomor Kontrol Veteriner NKV",
+      "kelayakan dasar hygiene sanitasi",
+      "fasilitas pemisahan area bersih kotor",
+      "pengawasan dokter hewan"
+    ]
+  },
+  {
+    "id": "EVAL-068",
+    "category": "RPH discovery & ASUH education",
+    "question": "Mengapa sapi betina produktif dilarang keras dipotong di RPH sesuai Undang-Undang Peternakan?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "UU No 18 2009 No 41 2014",
+      "pencegahan pemotongan betina produktif",
+      "menjaga populasi swasembada daging",
+      "sanksi pidana dan denda"
+    ]
+  },
+  {
+    "id": "EVAL-069",
+    "category": "RPH discovery & ASUH education",
+    "question": "Apa peran Juru Sembelih Halal (JULEHA) bersertifikat BNSP dalam proses penyembelihan di RPH Banyumas?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "JULEHA bersertifikat",
+      "tiga saluran trakea esofagus pembuluh darah",
+      "kesejahteraan hewan animal welfare",
+      "kehalalan syar'i"
+    ]
+  },
+  {
+    "id": "EVAL-070",
+    "category": "RPH discovery & ASUH education",
+    "question": "Bagaimana standar suhu pendinginan rantai dingin (cold chain) untuk penyimpanan karkas daging sapi di RPH?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "chilling room 0 hingga 4 derajat celsius",
+      "freezer beku minus 18 derajat",
+      "mencegah pertumbuhan bakteri pembusuk"
+    ]
+  },
+  {
+    "id": "EVAL-071",
+    "category": "RPH discovery & ASUH education",
+    "question": "Apakah ada fasilitas Rumah Potong Hewan resmi di Kecamatan Banyumas atau sekitarnya?",
+    "expected_intent": "tool",
+    "expected_tool": "getFasilitasRph",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kecamatan Banyumas",
+      "daftar RPH",
+      "kapasitas_potong_harian",
+      "jarak"
+    ]
+  },
+  {
+    "id": "EVAL-072",
+    "category": "RPH discovery & ASUH education",
+    "question": "Apa bahaya kesehatan masyarakat veteriner jika warga memotong sapi di tempat pemotongan liar tak berizin?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "resiko penularan zoonosis",
+      "kontaminasi bakteri E. coli Salmonella",
+      "tidak ada antemortem postmortem",
+      "daging gelonggongan"
+    ]
+  },
+  {
+    "id": "EVAL-073",
+    "category": "RPH discovery & ASUH education",
+    "question": "Bagaimana standar pengolahan air limbah darah dan kotoran (IPAL) di RPH pemerintah Kabupaten Banyumas?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "IPAL anaerobik aerobik",
+      "pemisahan darah dan lemak",
+      "baku mutu air limbah lingkungan",
+      "pencegahan bau dan lalat"
+    ]
+  },
+  {
+    "id": "EVAL-074",
+    "category": "RPH discovery & ASUH education",
+    "question": "Kapan sapi boleh dilakukan pemotongan darurat (emergency slaughter) dan apa saja syarat sahnya?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "patah tulang trauma kecelakaan",
+      "bukan penyakit menular sistemik zoonosis",
+      "persetujuan medik veteriner",
+      "daging aman konsumsi"
+    ]
+  },
+  {
+    "id": "EVAL-075",
+    "category": "RPH discovery & ASUH education",
+    "question": "Bagaimana cara memastikan daging sapi yang dibeli di pasar tradisional Banyumas berasal dari RPH resmi berstempel?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "stempel cap veteriner RPH",
+      "tinta food grade ungu",
+      "warna daging merah segar kenyal",
+      "surat asal daging RPH"
+    ]
+  },
+  {
+    "id": "EVAL-076",
+    "category": "Population & livestock statistics",
+    "question": "Berapa jumlah populasi sapi potong di Kecamatan Cilongok berdasarkan data statistik terkini?",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Sapi Potong",
+      "Cilongok",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-077",
+    "category": "Population & livestock statistics",
+    "question": "Tampilkan statistik populasi sapi perah di sentra peternakan Kecamatan Baturraden.",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Sapi Perah",
+      "Baturraden",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-078",
+    "category": "Population & livestock statistics",
+    "question": "Berapa total populasi ternak kambing yang tercatat di Kecamatan Ajibarang?",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kambing",
+      "Ajibarang",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-079",
+    "category": "Population & livestock statistics",
+    "question": "Berapa populasi ternak domba di seluruh Kabupaten Banyumas untuk sensus periode terbaru?",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Domba",
+      "Banyumas",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-080",
+    "category": "Population & livestock statistics",
+    "question": "Berapa rincian jumlah sapi potong jantan dan betina di Kecamatan Sumbang?",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Sapi Potong",
+      "Sumbang",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-081",
+    "category": "Population & livestock statistics",
+    "question": "Tampilkan data populasi komoditas sapi potong di Kecamatan Wangon.",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Sapi Potong",
+      "Wangon",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-082",
+    "category": "Population & livestock statistics",
+    "question": "Berapa total keseluruhan populasi sapi perah di tingkat Kabupaten Banyumas?",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Sapi Perah",
+      "Kabupaten Banyumas",
+      "grand_total",
+      "total_betina"
+    ]
+  },
+  {
+    "id": "EVAL-083",
+    "category": "Population & livestock statistics",
+    "question": "Cek data populasi ternak kambing di Kecamatan Purwojati.",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kambing",
+      "Purwojati",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-084",
+    "category": "Population & livestock statistics",
+    "question": "Berapa jumlah ternak kerbau yang tercatat di Kecamatan Rawalo?",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kerbau",
+      "Rawalo",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-085",
+    "category": "Population & livestock statistics",
+    "question": "Berapa populasi sapi potong di Kecamatan Pekuncen pada tahun 2026?",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Sapi Potong",
+      "Pekuncen",
+      "tahun 2026",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-086",
+    "category": "Population & livestock statistics",
+    "question": "Berapa total ternak domba di Kecamatan Sokaraja?",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Domba",
+      "Sokaraja",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-087",
+    "category": "Population & livestock statistics",
+    "question": "Berapa jumlah populasi ternak babi di Kabupaten Banyumas?",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Babi",
+      "Kabupaten Banyumas",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-088",
+    "category": "Population & livestock statistics",
+    "question": "Berapa ekor populasi ternak sapi potong di Kecamatan Jatilawang?",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Sapi Potong",
+      "Jatilawang",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-089",
+    "category": "Population & livestock statistics",
+    "question": "Tampilkan statistik populasi ternak kambing di Kecamatan Tambak.",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Kambing",
+      "Tambak",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-090",
+    "category": "Population & livestock statistics",
+    "question": "Berapa data populasi sapi potong di Kecamatan Kedungbanteng?",
+    "expected_intent": "tool",
+    "expected_tool": "getPopulasiTernak",
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Sapi Potong",
+      "Kedungbanteng",
+      "total_jantan",
+      "total_betina",
+      "grand_total"
+    ]
+  },
+  {
+    "id": "EVAL-091",
+    "category": "Veterinary regulations & biosecurity",
+    "question": "Bagaimana syarat dan alur pengurusan Surat Keterangan Kesehatan Hewan (SKKH) untuk pengiriman sapi ke luar Banyumas?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "SKKH",
+      "pemeriksaan fisik dokter hewan",
+      "kartu vaksinasi PMK eartag",
+      "surat rekomendasi dinas",
+      "masa berlaku"
+    ]
+  },
+  {
+    "id": "EVAL-092",
+    "category": "Veterinary regulations & biosecurity",
+    "question": "Apa saja jenis Penyakit Hewan Menular Strategis (PHMS) prioritas pengawasan di Kabupaten Banyumas?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "PHMS",
+      "Penyakit Mulut dan Kuku PMK",
+      "Lumpy Skin Disease LSD",
+      "Anthrax",
+      "Rabies",
+      "Flu Burung Avian Influenza"
+    ]
+  },
+  {
+    "id": "EVAL-093",
+    "category": "Veterinary regulations & biosecurity",
+    "question": "Apa sanksi pidana dan denda bagi pelaku pemotongan sapi betina produktif menurut UU Peternakan?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "Pasal 86 UU No 41 2014",
+      "pidana penjara 1 hingga 3 tahun",
+      "denda 100 juta hingga 300 juta rupiah",
+      "kecuali majir cacat"
+    ]
+  },
+  {
+    "id": "EVAL-094",
+    "category": "Veterinary regulations & biosecurity",
+    "question": "Bagaimana penerapan 3 pilar biosekuriti kandang (konseptual, struktural, operasional) pada peternakan rakyat?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "biosekuriti konseptual lokasi kandang",
+      "biosekuriti struktural pagar sekat",
+      "biosekuriti operasional desinfeksi SOP sanitasi"
+    ]
+  },
+  {
+    "id": "EVAL-095",
+    "category": "Veterinary regulations & biosecurity",
+    "question": "Bagaimana standar operasional desinfeksi armada truk pengangkut ternak di pos pemeriksaan (check point)?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "vehicle dipping tire bath",
+      "penyemprotan sasis dan bak truk",
+      "desinfektan aktif",
+      "pemeriksaan dokumen muatan"
+    ]
+  },
+  {
+    "id": "EVAL-096",
+    "category": "Veterinary regulations & biosecurity",
+    "question": "Bagaimana prosedur pendaftaran Nomor Kontrol Veteriner (NKV) untuk unit peternakan sapi perah rakyat?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "sertifikasi NKV",
+      "Dinas Peternakan Provinsi",
+      "audit kelayakan higiene",
+      "level NKV I II III",
+      "keamanan pangan"
+    ]
+  },
+  {
+    "id": "EVAL-097",
+    "category": "Veterinary regulations & biosecurity",
+    "question": "Kapan pemerintah daerah Banyumas berwenang menerbitkan Surat Edaran penutupan sementara pasar hewan?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "lonjakan eskalasi kasus wabah",
+      "status darurat epidemiologi",
+      "Surat Edaran Bupati",
+      "mencegah klaster penularan pasar"
+    ]
+  },
+  {
+    "id": "EVAL-098",
+    "category": "Veterinary regulations & biosecurity",
+    "question": "Apa fungsi pemasangan secure eartag ber-QR code pada telinga sapi oleh Kementerian Pertanian?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "MONITORING",
+    "ground_truth_keywords": [
+      "identifikasi ternak identik PKH",
+      "rekam jejak vaksinasi",
+      "traceability keterlacakan",
+      "syarat lalu lintas ternak"
+    ]
+  },
+  {
+    "id": "EVAL-099",
+    "category": "Veterinary regulations & biosecurity",
+    "question": "Siapa pihak yang secara hukum memiliki kewenangan menerbitkan resep dan memberikan obat keras antibiotik veteriner?",
+    "expected_intent": "rag",
+    "expected_tool": null,
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "Medik Veteriner Dokter Hewan berizin SIPV",
+      "bukan peternak mandiri",
+      "mencegah resistensi antimikroba AMR",
+      "pengawasan dinas"
+    ]
+  },
+  {
+    "id": "EVAL-100",
+    "category": "Veterinary regulations & biosecurity",
+    "question": "Apa regulasi ketat lalu lintas pengeluaran ternak ruminansia hidup dari kecamatan yang berstatus Zona Merah?",
+    "expected_intent": "hybrid",
+    "expected_tool": "getStatusZonasi",
+    "expected_triage_level": "WASPADA",
+    "ground_truth_keywords": [
+      "larangan mutasi ternak keluar zona merah",
+      "karantina peternakan",
+      "pengawasan ketat pos lalu lintas",
+      "uji laboratorium negatif"
+    ]
+  }
+]
